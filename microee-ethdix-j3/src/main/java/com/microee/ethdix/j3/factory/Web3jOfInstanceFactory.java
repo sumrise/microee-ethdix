@@ -31,7 +31,7 @@ public class Web3jOfInstanceFactory {
             synchronized (Web3jOfInstanceFactory.class) {
                 if (instance == null) {
                     instance = new Web3jOfInstanceFactory(networkOfUrl, username, password);
-                    LOGGER.info("创建了一个Web3j主网实例: networkOfUrl={}, username={}", networkOfUrl,
+                    LOGGER.info("创建了一个Web3j实例: networkOfUrl={}, username={}", networkOfUrl,
                             username);
                 }
             }
