@@ -1,6 +1,9 @@
 package com.microee.ethdix.app.actions;
 
+import java.time.Instant;
 import org.bitcoinj.wallet.UnreadableWalletException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -14,9 +17,12 @@ import com.microee.plugin.response.R;
 @RequestMapping("/wallet")
 public class WalletRestful {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WalletRestful.class);
+    
     // 创建钱包, 返回钱包地址
     @RequestMapping(value = "/setup", method = RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<String> setup(@RequestParam(value = "seedCode", required = true) String seedCode,
+    public R<String> setup(
+            @RequestParam(value = "seedCode", required = true) String seedCode,
             @RequestParam(value = "passwd", required = true) String passwd)
             throws UnreadableWalletException {
         return R.ok(DeterministicKeys.generator(seedCode, passwd)[0]);
@@ -24,9 +30,21 @@ public class WalletRestful {
 
     // 创建钱包, 返回钱包地址
     @RequestMapping(value = "/seedCode", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<String> seedCode(@RequestParam(value = "wordcount", required = false,
-            defaultValue = "12") Integer wordcount) throws UnreadableWalletException {
+    public R<String> seedCode(
+            @RequestParam(value = "wordcount", required = false, defaultValue = "12") Integer wordcount) throws UnreadableWalletException {
         return R.ok(DeterministicKeys.generateNewMnemonic(wordcount));
+    }
+
+    // 批量生成钱包地址
+    @RequestMapping(value = "/generator", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<Long> generator(
+            @RequestParam(value = "count", required = false, defaultValue = "1") Integer count) throws UnreadableWalletException {
+        Long start = Instant.now().toEpochMilli();
+        for (int i = 0; i < count; i++) {
+            String address = DeterministicKeys.generator(DeterministicKeys.generateNewMnemonic(12), "123111")[0];
+            LOGGER.info("address={}", address);
+        }
+        return R.ok(Instant.now().toEpochMilli() - start);
     }
     
 }
