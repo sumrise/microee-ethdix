@@ -5,7 +5,7 @@ import com.microee.plugin.thread.NamedThreadFactory;
 public class ETHWebsocketThreader implements Runnable {
 
     private final ETHWebSocketFactory factory;
-    private Thread currentThread;
+    private final Thread currentThread;
     
     public static ETHWebsocketThreader create(ETHWebSocketFactory factory) {
         return new ETHWebsocketThreader(factory);

@@ -8,24 +8,26 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.microee.plugin.http.assets.HttpAssets;
 import com.microee.plugin.http.assets.HttpClient;
 import com.microee.plugin.http.assets.HttpClientResult;
+import com.microee.plugin.response.R;
+import com.microee.plugin.response.exception.RestException;
 
 public class GasPriceNow implements Serializable {
 
     private static final String GAS_NOW_URL = "https://gasnow.sparkpool.com/api/v3/gas/price";
-    
+
     private static final long serialVersionUID = 5795681453021516969L;
-    
-    private Long rapid;
-    private Long fast;
-    private Long standard;
-    private Long slow;
-    private Long timestamp;
-    
+
+    private Double rapid;
+    private Double fast;
+    private Double standard;
+    private Double slow;
+    private Double timestamp;
+
     public GasPriceNow() {
-        
+
     }
 
-    public GasPriceNow(Long rapid, Long fast, Long standard, Long slow, Long timestamp) {
+    public GasPriceNow(Double rapid, Double fast, Double standard, Double slow, Double timestamp) {
         super();
         this.rapid = rapid;
         this.fast = fast;
@@ -34,47 +36,47 @@ public class GasPriceNow implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public Long getRapid() {
+    public Double getRapid() {
         return rapid;
     }
 
-    public void setRapid(Long rapid) {
+    public void setRapid(Double rapid) {
         this.rapid = rapid;
     }
 
-    public Long getFast() {
+    public Double getFast() {
         return fast;
     }
 
-    public void setFast(Long fast) {
+    public void setFast(Double fast) {
         this.fast = fast;
     }
 
-    public Long getStandard() {
+    public Double getStandard() {
         return standard;
     }
 
-    public void setStandard(Long standard) {
+    public void setStandard(Double standard) {
         this.standard = standard;
     }
 
-    public Long getSlow() {
+    public Double getSlow() {
         return slow;
     }
 
-    public void setSlow(Long slow) {
+    public void setSlow(Double slow) {
         this.slow = slow;
     }
 
-    public Long getTimestamp() {
+    public Double getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Long timestamp) {
+    public void setTimestamp(Double timestamp) {
         this.timestamp = timestamp;
     }
-    
-    public Long gasPrice(String level) {
+
+    public Double gasPrice(String level) {
         if (level.equals("rapid")) {
             return this.getRapid();
         }
@@ -87,29 +89,29 @@ public class GasPriceNow implements Serializable {
         if (level.equals("slow")) {
             return this.getSlow();
         }
-        return -1l;
+        return this.getSlow();
     }
-    
+
     public static GasPriceNow get() {
-    	HttpClientResult httpResult = HttpClient.create().doGet(GAS_NOW_URL);
-        if (httpResult != null && httpResult.isSuccess()) {
-            JSONObject dataJsonObject = new JSONObject(httpResult.getResult());
-            JSONObject dataGasPrice = dataJsonObject.getJSONObject("data");
-            GasPriceNow now = HttpAssets.parseJson(dataGasPrice.toString(), new TypeReference<GasPriceNow>() {});
-            Long rapid = now.getRapid();
-            Long fast = now.getFast();
-            Long standard = now.getStandard();
-            Long slow = now.getSlow();
-            Long timestamp = now.getTimestamp();
-            GasPriceNow nowNew = new GasPriceNow();
-            nowNew.setRapid(rapid);
-            nowNew.setFast(fast);
-            nowNew.setStandard(standard);
-            nowNew.setSlow(slow);
-            nowNew.setTimestamp(timestamp);
-            return nowNew;
+        HttpClientResult httpResult = HttpClient.create().doGet(GAS_NOW_URL);
+        if (httpResult == null || !httpResult.isSuccess()) {
+            throw new RestException(R.FAILED, httpResult == null ? "获取gas价格失败" : httpResult.getMessage());
         }
-        return null;
+        JSONObject dataJsonObject = new JSONObject(httpResult.getResult());
+        JSONObject dataGasPrice = dataJsonObject.getJSONObject("data");
+        GasPriceNow now = HttpAssets.parseJson(dataGasPrice.toString(), new TypeReference<GasPriceNow>() {});
+        Double rapid = now.getRapid();
+        Double fast = now.getFast();
+        Double standard = now.getStandard();
+        Double slow = now.getSlow();
+        Double timestamp = now.getTimestamp();
+        GasPriceNow nowNew = new GasPriceNow();
+        nowNew.setRapid(rapid);
+        nowNew.setFast(fast);
+        nowNew.setStandard(standard);
+        nowNew.setSlow(slow);
+        nowNew.setTimestamp(timestamp);
+        return nowNew;
     }
 
 }

@@ -13,14 +13,15 @@ import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Bytes32;
 
-public class Assists {
+public class ContractAssists {
 
     /**
      * BigInteger 除 BigDecimal
+     *
      * @param bigInteger
      * @param decimal
      * @param scale
-     * @return 
+     * @return
      */
     public static BigDecimal intDivDec(BigInteger bigInteger, BigDecimal decimal, int scale) {
         return toDecimal(bigInteger).divide(decimal, scale, BigDecimal.ROUND_DOWN);
@@ -28,10 +29,11 @@ public class Assists {
 
     /**
      * BigDecimal 除 BigInteger
+     *
      * @param decimal
      * @param bigInteger
      * @param scale
-     * @return 
+     * @return
      */
     public static BigDecimal decDivInt(BigDecimal decimal, BigInteger bigInteger, int scale) {
         return decimal.divide(toDecimal(bigInteger), scale, BigDecimal.ROUND_DOWN);
@@ -39,9 +41,10 @@ public class Assists {
 
     /**
      * BigDecimal 乘 BigInteger
+     *
      * @param decimal
      * @param bigInteger
-     * @return 
+     * @return
      */
     public static BigDecimal decMulInt(BigDecimal decimal, BigInteger bigInteger) {
         return decimal.multiply(toDecimal(bigInteger));
@@ -49,9 +52,10 @@ public class Assists {
 
     /**
      * BigDecimal 减 BigInteger
+     *
      * @param decimal
      * @param bigInteger
-     * @return 
+     * @return
      */
     public static BigDecimal decSubInt(BigDecimal decimal, BigInteger bigInteger) {
         return decimal.subtract(toDecimal(bigInteger));
@@ -70,21 +74,22 @@ public class Assists {
     }
 
     @SuppressWarnings("rawtypes")
-	public static String bytes32ToString(String rawData) {
+    public static String bytes32ToString(String rawData) {
         Function function = new Function("", Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {
+                }));
         String value = "";
         try {
-            List<Type> types =
-                    FunctionReturnDecoder.decode(rawData, function.getOutputParameters());
+            List<Type> types
+                    = FunctionReturnDecoder.decode(rawData, function.getOutputParameters());
             value = types.get(0).getValue().toString();
         } catch (Exception ignored) {
         }
 
         if (value.isEmpty()) {
             try {
-                Bytes32 bytes32 =
-                        new Bytes32(org.web3j.utils.Numeric.hexStringToByteArray(rawData));
+                Bytes32 bytes32
+                        = new Bytes32(org.web3j.utils.Numeric.hexStringToByteArray(rawData));
                 value = StringUtils.newStringUsAscii(bytes32.getValue());
             } catch (Exception e) {
                 value = "unknown";

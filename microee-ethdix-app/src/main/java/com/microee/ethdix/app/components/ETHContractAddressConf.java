@@ -73,33 +73,4 @@ public class ETHContractAddressConf {
         return null;
     }
 
-    public static final BigDecimal UNIT_ETH = new BigDecimal("1000000000000000000");
-    public static final BigDecimal UNIT_USDT = new BigDecimal("1000000");
-    public static final BigDecimal UNIT_HBTC = new BigDecimal("1000000000000000000");
-    public static final BigDecimal UNIT_UNI = new BigDecimal("1000000000000000000");
-    public static final BigDecimal UNIT_UNIV2 = new BigDecimal("1000000000000000000");
-    public static final BigDecimal UNIT_DAI = new BigDecimal("1000000000000000000");
-
-    public BigDecimal getUnitDecimals(String symbol) {
-        if (symbol.equalsIgnoreCase("eth")) {
-            return UNIT_ETH;
-        }
-        if (symbol.equalsIgnoreCase("USDT")) {
-            return UNIT_USDT;
-        }
-        if (symbol.equalsIgnoreCase("HBTC")) {
-            return UNIT_HBTC;
-        }
-        if (symbol.equalsIgnoreCase("UNI")) {
-            return UNIT_UNI;
-        }
-        if (symbol.equalsIgnoreCase("UNI-V2")) {
-            return UNIT_UNIV2;
-        }
-        if (symbol.equalsIgnoreCase("DAI")) {
-            return UNIT_DAI;
-        }
-        return null;
-    }
-
 }

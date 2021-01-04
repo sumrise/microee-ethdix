@@ -39,7 +39,7 @@ public class DeterministicKeys {
     
     // 随机生成助记词
     public static String generateNewMnemonic(int wordCount) {
-        Words words = null;
+        Words words;
         switch (wordCount) {
             case 24:
                 words = Words.TWENTY_FOUR;
