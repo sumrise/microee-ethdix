@@ -15,10 +15,6 @@ import com.microee.ethdix.j3.factory.Web3jOfInstanceFactory;
 import com.microee.ethdix.j3.uniswap.UniswapV2FactoryContract;
 import com.microee.plugin.response.R;
 
-// https://blog.csdn.net/shebao3333/article/details/107012482
-// #### UniSwap 架构概述
-// 在 UniSwap 的架构中只要包含两种类型的组件：工厂合约和代币交换合约
-
 // #### 在V2中
 // 不再将ETH做为中间币, 只需调用路由合约上的 swapExactTokensForTokens 和 swapTokensForExactTokens 方法即可交易
 // 上述方法名中的 Exact 表示你希望为交换中的哪一种代币设置限额。
