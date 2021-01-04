@@ -13,8 +13,6 @@ mvn archetype:generate -DgroupId=com.microee.ethdix.j3 -DartifactId=microee-ethd
 ### ethdix 微服务 -- ethdix-app 对外接口
 mvn archetype:generate -DgroupId=com.microee.ethdix.app -DartifactId=microee-ethdix-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
-### ethdix 微服务 -- ethdix-financier 对外接口
-mvn archetype:generate -DgroupId=com.microee.ethdix.financier -DartifactId=microee-ethdix-financier -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
 ### 合约查询浏览器
 # blockchair：https://blockchair.com/zh/ethereum/erc-20
