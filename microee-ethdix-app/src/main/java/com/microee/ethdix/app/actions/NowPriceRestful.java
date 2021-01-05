@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.web3j.tuples.generated.Tuple2;
 
 import com.microee.ethdix.app.components.ETHContractAddressConf;
-import com.microee.ethdix.app.components.GasPriceNow;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.ContractAssists;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
@@ -76,33 +75,5 @@ public class NowPriceRestful {
         BigDecimal price = erc20Unit.divide(tokenUnit, 6, RoundingMode.HALF_UP);
         return R.ok(price); // 币种当前价格, 一个 eth 能买 347.23 个 currecny
     }
-
-    // 查询四种 gas 费级别
-    @RequestMapping(value = "/now-gasPricing", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<GasPriceNow> gasPricing() {
-        GasPriceNow result = GasPriceNow.get();
-        if (result != null) {
-            result.setRapid((result.getRapid() / Math.pow(10, 9)));
-            result.setFast((result.getFast() / Math.pow(10, 9)));
-            result.setSlow((result.getSlow() / Math.pow(10, 9)));
-            result.setStandard((result.getStandard() / Math.pow(10, 9)));
-        }
-        return R.ok(result);
-    }
-
-    // 根据 gas 费级别计算交易手续费
-    @RequestMapping(value = "/eth-transactionFee", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<BigDecimal> transactionFee(
-            @RequestParam(value = "gasLevel") String gasLevel,
-            @RequestParam(value = "gasLimits", required = false, defaultValue = "21000") Long gasLimits) {
-        GasPriceNow result = GasPriceNow.get();
-        Double gasPrice = result.gasPrice(gasLevel);
-        if (gasPrice == -1.0) {
-            return R.failed(R.ILLEGAL, "gasLevel 有误");
-        }
-        return R.ok(new BigDecimal((gasPrice * gasLimits) / Math.pow(10, 18) + ""));
-    }
-
+    
 }

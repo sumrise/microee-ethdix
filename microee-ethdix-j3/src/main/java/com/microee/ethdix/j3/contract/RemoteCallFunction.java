@@ -16,6 +16,10 @@ public class RemoteCallFunction<T> {
         this.call = call;
     }
     
+    public static RemoteCallFunction<?> build(RemoteCall<?> call) {
+        return new RemoteCallFunction<>(call);
+    }
+    
     @SuppressWarnings({"hiding", "unchecked"})
     public <T> T call() {
         try {

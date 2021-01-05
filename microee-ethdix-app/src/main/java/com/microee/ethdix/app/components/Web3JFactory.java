@@ -10,6 +10,8 @@ import com.microee.ethdix.app.props.ETHNetworkProperties;
 import com.microee.ethdix.j3.factory.Web3jOfInstanceFactory;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.ethdix.j3.rpc.JsonRPC.UsedCount;
+import com.microee.plugin.response.R;
+import com.microee.plugin.response.exception.RestException;
 
 @Component
 public class Web3JFactory {
@@ -28,6 +30,9 @@ public class Web3JFactory {
     private final ConcurrentMap<String, Web3j> map = new ConcurrentHashMap<>();
 
     public Web3j get(String network) {
+        if (network.startsWith("http")) {
+            throw new RestException(R.FAILED, "非法参数,误把节点地址当成网络类型传递!");
+        }
         return get(network, null);
     }
 
@@ -36,6 +41,10 @@ public class Web3JFactory {
             return build(ethnode);
         }
         return build(this.getEthNode(network));
+    }
+
+    public Web3j getByEthNode(String ethnode) {
+        return build(ethnode);
     }
 
     private synchronized Web3j build(String ethnode) {
@@ -47,6 +56,9 @@ public class Web3JFactory {
     }
 
     public String getEthNode(String network) {
+        if (network.startsWith("http")) {
+            throw new RestException(R.FAILED, "非法参数,误把节点地址当成网络类型传递!");
+        }
         if (network.equals("mainnet")) {
             return UsedCount.getEthNode(ethNetworkProperties.mainnet());
         }
@@ -64,6 +76,9 @@ public class Web3JFactory {
     public JsonRPC getJsonRpc(String network, String ethnode) {
         if (ethnode != null) {
             return new JsonRPC(ethnode);
+        }
+        if (network.startsWith("http")) {
+            throw new RestException(R.FAILED, "非法参数,误把节点地址当成网络类型传递!");
         }
         if (network.equals("mainnet")) {
             return jsonRPCClientMainnet;

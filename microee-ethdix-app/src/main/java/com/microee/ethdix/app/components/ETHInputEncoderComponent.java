@@ -23,11 +23,10 @@ public class ETHInputEncoderComponent {
     
     // 返回 erc20 合约转帐 input 参数
     public String getTransferInputData(String toAddress, Long amount) {
-        return String.format("%s%s%s", TRANSFER_FUNCTION_PREFIX_METHOD_ID, StringUtils.leftPad(toAddress, 64, "0"), StringUtils.leftPad(Long.toHexString(amount), 64, "0"));
-    }
-    
-    public static void main(String[] args) {
-        System.out.println(StringUtils.leftPad(Long.toHexString(61795), 64, "0"));
+        final int len = 64;
+        String theToAddress = toAddress.startsWith("0x") ? StringUtils.leftPad(toAddress.substring(2), len, "0") : StringUtils.leftPad(toAddress, len, "0");
+        String theAmount = StringUtils.leftPad(Long.toHexString(amount), len, "0");
+        return String.format("%s%s%s", TRANSFER_FUNCTION_PREFIX_METHOD_ID, theToAddress, theAmount);
     }
     
 }

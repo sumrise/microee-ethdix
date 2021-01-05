@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.microee.ethdix.app.components.ETHContractAddressConf;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
+import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.plugin.response.R;
+import java.math.BigInteger;
 
 //@formatter:off
 /*
@@ -75,30 +77,29 @@ public class ERC20QueryRestful {
             @RequestHeader(value = "username", required = false) String username,
             @RequestHeader(value = "password", required = false) String password,
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
-            @RequestParam(value = "network", required = false) String network, // 网络类型: 主网或测试网
+            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
             @RequestParam(value = "address", required = false) String address, // 合约地址
             @RequestParam(value = "symbol", required = false) String symbol, // 合约币种名称
-            @RequestParam(value = "attrs") String[] attrs) throws Exception { // 合约属性字段数组
+            @RequestParam(value = "attrs") String[] attrs) { // 合约属性字段数组
         Assertions.assertThat((ethnode == null || ethnode.isEmpty()) && (network == null || network.isEmpty())).withFailMessage("ethnode OR network 二选1").isFalse();
         Assertions.assertThat((address == null || address.isEmpty()) && (symbol == null || symbol.isEmpty())).withFailMessage("symbol OR address 二选1").isFalse();
         Assertions.assertThat(attrs).withFailMessage("%s 必传", "attrs").isNotEmpty();
         if (address == null || address.isEmpty()) {
             address = contractAddressConf.getContractAddress(network, symbol);
         }
-        ERC20ContractQuery erc20Contract = new ERC20ContractQuery(address, web3JFactory.get(network, ethnode));
         Map<String, Object> map = new HashMap<>();
         for (String attr : attrs) {
             if (attr.equalsIgnoreCase("name")) {
-                map.put(attr, erc20Contract.name().send());
+                map.put(attr, RemoteCallFunction.build(new ERC20ContractQuery(address, web3JFactory.get(network, ethnode)).name()).call());
             }
             if (attr.equalsIgnoreCase("symbol")) {
-                map.put(attr, erc20Contract.symbol().send());
+                map.put(attr, RemoteCallFunction.build(new ERC20ContractQuery(address, web3JFactory.get(network, ethnode)).symbol()).call());
             }
             if (attr.equalsIgnoreCase("decimals")) {
-                map.put(attr, erc20Contract.decimals().send());
+                map.put(attr, (BigInteger) RemoteCallFunction.build(new ERC20ContractQuery(address, web3JFactory.get(network, ethnode)).decimals()).call());
             }
             if (attr.equalsIgnoreCase("totalSupply")) {
-                map.put(attr, erc20Contract.totalSupply().send());
+                map.put(attr, RemoteCallFunction.build(new ERC20ContractQuery(address, web3JFactory.get(network, ethnode)).totalSupply()).call());
             }
         }
         return R.ok(map);
