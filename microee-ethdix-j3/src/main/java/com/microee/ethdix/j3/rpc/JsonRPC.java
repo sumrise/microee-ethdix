@@ -55,19 +55,15 @@ public class JsonRPC {
     private ETHWebSocketFactory webSocketFactoryMainnet;
     private Headers authHeaders;
 
-    public JsonRPC() {
+    public JsonRPC(String ethnode) {
+        this.ethnodes = new String[] { ethnode };
         this.httpClient = HttpClient.create();
     }
-
-    public JsonRPC(String httpUsername, String httpPasswd) {
-        this.httpClient = HttpClient.create();
-        this.authHeaders = Headers.of("Authorization", okhttp3.Credentials.basic("ausername", "apassword"));
-    }
-
+    
     public JsonRPC(String ethnode, String httpUsername, String httpPasswd) {
         this.ethnodes = new String[] { ethnode };
         this.httpClient = HttpClient.create();
-        this.authHeaders = Headers.of("Authorization", okhttp3.Credentials.basic("ausername", "apassword"));
+        this.authHeaders = Headers.of("Authorization", okhttp3.Credentials.basic(httpUsername, httpPasswd));
     }
 
     public JsonRPC(String[] ethnodes) {
@@ -108,38 +104,36 @@ public class JsonRPC {
     
     /**
      * 返回链id
-     * @param ethnode
      * @return 
      */
-    public Long getChainId(String ethnode) {
+    public Long getChainId() {
         String methodName = "eth_chainId";
-        String chainId = this.post(ethnode, methodName, new Object[]{}, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
+        String chainId = this.post(methodName, new Object[]{}, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
         return Long.parseLong(chainId.substring(2));
     }
 
     /**
      * 返回当前账户的所有地址 Infura 不支持解锁账户, 所以该接口不会返回任何账户地址, 当使用 Infura 接口时需发送加密后的数据
      *
-     * @param ethNode
      * @return
      */
-    public String[] accounts(String ethNode) {
+    public String[] accounts() {
         String methodName = "eth_accounts";
         Object params = new Object[]{};
-        return this.post(ethNode, methodName, params, new TypeReference<JsonRpcResponse<String[]>>() { }).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<String[]>>() { }).getResult();
     }
 
     /**
      * 查询合约代码
      *
-     * @param ethNode
      * @param address
      * @return
      */
-    public String getCode(String ethNode, String address) {
+
+    public String getCode(String address) {
         String methodName = "eth_getCode";
         Object params = new Object[]{ address, "latest" };
-        return this.post(ethNode, methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
     }
 
     //@formatter:off
@@ -182,7 +176,6 @@ public class JsonRPC {
     /**
      * 创建 eth 转帐签名
      *
-     * @param ethnode
      * @param fromAddress
      * @param to
      * @param gasPrice
@@ -191,10 +184,10 @@ public class JsonRPC {
      * @param privateKey
      * @return 返回 signedTransactionData
      */
-    public String signETHTransaction(String ethnode, String fromAddress, String to, Long gasPrice, Long gasLimit, Long value, String privateKey) {
+    public String signETHTransaction(String fromAddress, String to, Long gasPrice, Long gasLimit, Long value, String privateKey) {
         BigInteger privateKeyInBT = new BigInteger(privateKey, 16);
         ECKeyPair aPair = ECKeyPair.create(privateKeyInBT);
-        Long nonce = this.getTransactionCount(ethnode, fromAddress);
+        Long nonce = this.getTransactionCount(fromAddress);
         RawTransaction rawTransaction = RawTransaction.createEtherTransaction(BigInteger.valueOf(nonce), BigInteger.valueOf(gasPrice), BigInteger.valueOf(gasLimit), to, BigInteger.valueOf(value));
         // byte[] encodedMessage = TransactionEncoder.encode(rawTransaction);
         // RawTransaction result = TransactionDecoder.decode(Numeric.toHexString(encodedMessage));
@@ -209,7 +202,6 @@ public class JsonRPC {
     
     /**
      * erc20 转帐签名
-     * @param ethnode
      * @param fromAddress
      * @param to
      * @param gasPrice
@@ -218,10 +210,10 @@ public class JsonRPC {
      * @param hexData
      * @return 
      */
-    public String signTokenTransaction(String ethnode, String fromAddress, String to, Long gasPrice, Long gasLimit, String privateKey, String hexData) {
+    public String signTokenTransaction(String fromAddress, String to, Long gasPrice, Long gasLimit, String privateKey, String hexData) {
         BigInteger privateKeyInBT = new BigInteger(privateKey, 16);
         ECKeyPair aPair = ECKeyPair.create(privateKeyInBT);
-        Long nonce = this.getTransactionCount(ethnode, fromAddress);
+        Long nonce = this.getTransactionCount(fromAddress);
         RawTransaction rawTransaction = RawTransaction.createTransaction(BigInteger.valueOf(nonce), BigInteger.valueOf(gasPrice), BigInteger.valueOf(gasLimit), to, BigInteger.valueOf(0), hexData);
         byte[] encodedMessage = TransactionEncoder.encode(rawTransaction);
         RawTransaction result = TransactionDecoder.decode(Numeric.toHexString(encodedMessage));
@@ -245,33 +237,31 @@ public class JsonRPC {
     
     /**
      * 预估 gas limits
-     * @param ethnode
      * @param from
      * @param to
      * @param gasPrice
      * @param value
      * @return 
      */
-    public Long estimateGasLimits(String ethnode, String from, String to, Long gasPrice, Long value) {
+    public Long estimateGasLimits(String from, String to, Long gasPrice, Long value) {
         String methodName = "eth_estimateGas";
-        Object params = new Object[]{ Helper.mapOf(KV.of("from", from), KV.of("to", to), KV.of("gasPrice", "0x" + Long.toHexString(gasPrice)), KV.of("value", "0x" + Long.toHexString(value))) };
-        String balance = this.post(ethnode, methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
+        Object params = new Object[]{ Helper.mapOf(KV.of("from", from), KV.of("to", to), KV.of("gasPrice", "0x" + Long.toHexString(gasPrice)), KV.of("value", value == null ? null : "0x" + Long.toHexString(value))) };
+        String balance = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
         return Long.parseLong(balance.substring(2), 16);
     }
     
     /**
      * 预估 gas limits
-     * @param ethnode
      * @param from
      * @param to
      * @param gasPrice
      * @param data
      * @return 
      */
-    public Long estimateGasLimits(String ethnode, String from, String to, Long gasPrice, String data) {
+    public Long estimateGasLimits(String from, String to, Long gasPrice, String data) {
         String methodName = "eth_estimateGas";
         Object params = new Object[]{ Helper.mapOf(KV.of("from", from), KV.of("to", to), KV.of("gasPrice", "0x" + Long.toHexString(gasPrice)), KV.of("value", "0x0"), KV.of("data", data)) };
-        String balance = this.post(ethnode, methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
+        String balance = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
         return Long.parseLong(balance.substring(2), 16);
     }
     
@@ -296,15 +286,14 @@ public class JsonRPC {
     /**
      * 发送交易
      *
-     * @param ethNode
      * @param signedTransactionData
      * @return
      */
-    public String sendRawTransaction(String ethNode, String signedTransactionData) {
+    public String sendRawTransaction(String signedTransactionData) {
         String methodName = "eth_sendRawTransaction";
         Object params = new Object[]{signedTransactionData};
         try {
-            return this.post(ethNode, methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
+            return this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
         } catch (Exception e) {
             logger.error("发送交易异常: signedTransactionData={}, errorMessage={}", signedTransactionData, e.getMessage(), e);
             throw new RuntimeException(e);
@@ -314,53 +303,49 @@ public class JsonRPC {
     /**
      * 获取交易基本信息
      *
-     * @param ethNode
      * @param hash 交易哈希, 例如:
      * 0xd0567b3ec6e740d40ad1c0ad1e1143fea56c3d9edcfd7529e74a2aa6d8826544
      * @return
      */
-    public EthRawTransaction getTransactionByHash(String ethNode, String hash) {
+    public EthRawTransaction getTransactionByHash(String hash) {
         String methodName = "eth_getTransactionByHash";
         Object params = new Object[]{hash};
-        return this.post(ethNode, methodName, params, new TypeReference<JsonRpcResponse<EthRawTransaction>>() { }).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<EthRawTransaction>>() { }).getResult();
     }
 
     /**
      * 查询当前地址在当前节点上的交易数量
      *
-     * @param ethNode
      * @param accountAddress 以太坊账户地址
      * @return
      */
-    public Long getTransactionCount(String ethNode, String accountAddress) {
+    public Long getTransactionCount(String accountAddress) {
         String methodName = "eth_getTransactionCount";
         Object params = new Object[]{accountAddress, "latest"};
-        String transactionCountString = this.post(ethNode, methodName, params, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
+        String transactionCountString = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
         if (transactionCountString.length() > 2) {
             return Long.parseLong(transactionCountString.substring(2), 16);
         }
         return null;
     }
-
+    
     /**
      * 根据交易哈希获取交易回执
      *
-     * @param ethNode
-     * @param hash 交易哈希, 例如:
-     * 0xd0567b3ec6e740d40ad1c0ad1e1143fea56c3d9edcfd7529e74a2aa6d8826544
+     * @param hash 交易哈希, 例如: 0xd0567b3ec6e740d40ad1c0ad1e1143fea56c3d9edcfd7529e74a2aa6d8826544
      * @return
      */
-    public EthTransactionReceipt getTransactionReceipt(String ethNode, String hash) {
+    public EthTransactionReceipt getTransactionReceipt(String hash) {
         String methodName = "eth_getTransactionReceipt";
         Object params = new Object[]{hash};
-        return this.post(ethNode, methodName, params, new TypeReference<JsonRpcResponse<EthTransactionReceipt>>() { }).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<EthTransactionReceipt>>() { }).getResult();
     }
 
     // 获取当前块高
-    public long blockNumber(String ethNode) {
+    public long blockNumber() {
         String methodName = "eth_blockNumber";
         Object params = new Object[]{};
-        String result = this.post(ethNode, methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
+        String result = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
         if (result == null || result.isEmpty()) {
             return 0l;
         }
@@ -369,46 +354,27 @@ public class JsonRPC {
 
     // 根据高度获取区块
     // {"jsonrpc":"2.0","id":"56ffc283-d604-4d4f-acf2-0e11bfaca5a6","result":{"difficulty":"0x3ff800000","extraData":"0x476574682f76312e302e302f6c696e75782f676f312e342e32","gasLimit":"0x1388","gasUsed":"0x0","hash":"0x88e96d4537bea4d9c05d12549907b32561d3bf31f45aae734cdc119f13406cb6","logsBloom":"0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","miner":"0x05a56e2d52c817161883f50c441c3228cfe54d9f","mixHash":"0x969b900de27b6ac6a67742365dd65f55a0526c41fd18e1b16f1a1215c2e66f59","nonce":"0x539bd4979fef1ec4","number":"0x1","parentHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","receiptsRoot":"0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421","sha3Uncles":"0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347","size":"0x219","stateRoot":"0xd67e4d450343046425ae4271474353857ab860dbc0a1dde64b41b5cd3a532bf3","timestamp":"0x55ba4224","totalDifficulty":"0x7ff800000","transactions":[],"transactionsRoot":"0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421","uncles":[]}}
-    public EthRawBlock getBlockByNumber(String ethNode, long height) {
-        try {
-            return this.getBlockByHexNumber(ethNode, "0x" + Long.toHexString(height));
-        } catch (Exception e) {
-            try {
-                return this.getBlockByHexNumber(ethNode, "0x" + Long.toHexString(height));
-            } catch (Exception e2) {
-                try {
-                    return this.getBlockByHexNumber(ethNode, "0x" + Long.toHexString(height));
-                } catch (Exception e3) {
-                    throw new RestException(R.FAILED, "查询失败" + e3.getMessage());
-                }
-            }
-        }
+    public EthRawBlock getBlockByNumber(long height) {
+        return this.getBlockByHexNumber("0x" + Long.toHexString(height));
     }
 
     // 查询平台币余额
     public Long getQueryEthBalance(String accountAddress) {
-        return this.getQueryEthBalance(accountAddress);
-    }
-
-    // 查询平台币余额
-    public Long getQueryEthBalance(String ethNode, String accountAddress) {
         String methodName = "eth_getBalance";
         Object params = new Object[]{accountAddress, "latest"};
-        String balance = this.post(ethNode, methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
+        String balance = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() { }).getResult();
         return Long.parseLong(balance.substring(2), 16);
     }
 
     // 根据高度获取区块
-    public EthRawBlock getBlockByHexNumber(String ethNode, String hexLong) {
+    public EthRawBlock getBlockByHexNumber(String hexLong) {
         String methodName = "eth_getBlockByNumber";
         Object params = new Object[]{hexLong, true};
-        return this.post(ethNode, methodName, params, new TypeReference<JsonRpcResponse<EthRawBlock>>() {
-        }).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<EthRawBlock>>() { }).getResult();
     }
 
-    public <T> T post(String ethNode, String method, Object params, TypeReference<T> typeRef) {
-        String theEthNode = ethNode == null || ethNode.isEmpty() ? UsedCount.getEthNode(this.ethnodes) : ethNode;
-        HttpClientResult httpResult = this.httpClient.postJsonBody(theEthNode, authHeaders, JsonRpcRequest.json(method, params));
+    public <T> T post(String method, Object params, TypeReference<T> typeRef) {
+        HttpClientResult httpResult = this.httpClient.postJsonBody(UsedCount.getEthNode(this.ethnodes), authHeaders, JsonRpcRequest.json(method, params));
         if (httpResult == null) {
             throw new RestException(R.TIME_OUT, "查询超时");
         }
@@ -538,6 +504,7 @@ public class JsonRPC {
             this.params = params;
         }
 
+        @Override
         public String toString() {
             return HttpAssets.toJsonString(this);
         }

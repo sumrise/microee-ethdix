@@ -1,16 +1,15 @@
 package com.microee.ethdix.app.service;
 
+import com.microee.ethdix.app.components.Web3JFactory;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import com.microee.ethdix.app.props.ETHNetworkProperties;
-import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.stacks.mongodb.support.Mongo;
 
@@ -22,8 +21,7 @@ public class ETHTransService {
     public static final String COLLECTION_TRANS = "eth_blocks_trans";
 
     @Autowired
-    @Qualifier("jsonRPCClientMainnet")
-    private JsonRPC jsonRPCClient;
+    private Web3JFactory web3JFactory;
 
     @Autowired
     private ETHNetworkProperties ethNetworkProperties;
@@ -32,11 +30,11 @@ public class ETHTransService {
     private Mongo mongo;
 
     // 查询并保存交易基本信息
-    public EthRawTransaction ethGetTransaction(String ethNode, Long blockNumber, String transHash) {
+    public EthRawTransaction ethGetTransaction(String ethnode, String network, Long blockNumber, String transHash) {
         EthRawTransaction result = mongo.queryByStringId(ethNetworkProperties.getCollectionName(COLLECTION_TRANS, blockNumber), transHash, EthRawTransaction.class);
         if (result == null) {
-            result = this.jsonRPCClient.getTransactionByHash(ethNode, transHash);
-            if ((ethNode == null || ethNode.isEmpty()) && result != null) {
+            result = web3JFactory.getJsonRpc(network, ethnode).getTransactionByHash(transHash);
+            if ((ethnode == null || ethnode.isEmpty()) && result != null) {
                 if (result.getBlockNumber() != null) {
                     mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_TRANS, blockNumber), result, transHash);
                 }

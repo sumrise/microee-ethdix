@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/input")
-public class EthInputRestful {
+public class ETHInputRestful {
 
     @Autowired
     private ETHInputEncoderComponent ethInputEncoder;

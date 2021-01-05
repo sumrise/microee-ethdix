@@ -55,19 +55,17 @@ public class ERC20QueryRestful {
     private Web3JFactory web3JFactory;
 
     @Autowired
-    @Qualifier("jsonRPCClientMainnet")
-    private JsonRPC jsonRPCClientMainnet;
-
-    @Autowired
     private ETHContractAddressConf contractAddressConf;
 
     // ### 查询合约代码
     @NotNull
     @RequestMapping(value = "/eth-getCode", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<String> ethGetCode(@RequestParam(value = "ethNode", required = false) String ethNode,
+    public R<String> ethGetCode(
+            @RequestParam(value = "ethnode", required = false) String ethnode,
+            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network,
             @RequestParam(value = "address") String address) {
         Assertions.assertThat(address).withFailMessage("%s 必传", "address").isNotBlank();
-        return R.ok(this.jsonRPCClientMainnet.getCode(ethNode, address));
+        return R.ok(web3JFactory.getJsonRpc(network, ethnode).getCode(address));
     }
 
     // ### 查询合约基本信息

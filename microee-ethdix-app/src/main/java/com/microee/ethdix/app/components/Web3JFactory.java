@@ -25,7 +25,7 @@ public class Web3JFactory {
     @Qualifier("jsonRPCClientRopsten")
     private JsonRPC jsonRPCClientRopsten;
 
-    private ConcurrentMap<String, Web3j> map = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Web3j> map = new ConcurrentHashMap<>();
 
     public Web3j get(String network) {
         return get(network, null);
@@ -53,7 +53,18 @@ public class Web3JFactory {
         return UsedCount.getEthNode(ethNetworkProperties.ropsten());
     }
 
+    public JsonRPC getJsonRpcByEthNode(String ethnode) {
+        return new JsonRPC(ethnode);
+    }
+
     public JsonRPC getJsonRpc(String network) {
+        return this.getJsonRpc(network, null);
+    }
+
+    public JsonRPC getJsonRpc(String network, String ethnode) {
+        if (ethnode != null) {
+            return new JsonRPC(ethnode);
+        }
         if (network.equals("mainnet")) {
             return jsonRPCClientMainnet;
         }

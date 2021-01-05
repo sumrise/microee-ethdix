@@ -1,6 +1,5 @@
 package com.microee.ethdix.app.components;
 
-import java.math.BigDecimal;
 
 import org.springframework.stereotype.Component;
 

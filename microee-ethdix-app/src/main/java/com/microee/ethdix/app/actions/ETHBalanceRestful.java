@@ -17,7 +17,7 @@ import com.microee.plugin.response.R;
 
 @RestController
 @RequestMapping("/balance")
-public class EthBalanceRestful {
+public class ETHBalanceRestful {
 
     @Autowired
     private Web3JFactory web3JFactory;

@@ -23,9 +23,9 @@ import com.microee.plugin.response.R;
 
 @RestController
 @RequestMapping("/explore")
-public class EthExploreRestful {
+public class ETHExploreRestful {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EthBlockRestful.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ETHBlockRestful.class);
 
     @Autowired
     private ETHBlockTxReceiptService txReceiptService;
@@ -36,10 +36,13 @@ public class EthExploreRestful {
     // ### 获取交易基本信息
     @RequestMapping(value = "/eth-getTransaction", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<EthRawTransaction> ethGetTransaction(@RequestParam(value = "ethNode", required = false) String ethNode,
-            @RequestParam("blockNumber") Long blockNumber, @RequestParam("transHash") String transHash) {
+    public R<EthRawTransaction> ethGetTransaction(
+            @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
+            @RequestParam(value = "network", required = false) String network, // 网络类型: 主网或测试网
+            @RequestParam("blockNumber") Long blockNumber, 
+            @RequestParam("transHash") String transHash) {
         Assertions.assertThat(transHash).withFailMessage("%s 必传", "transHash").isNotBlank();
-        EthRawTransaction trans = ethTransService.ethGetTransaction(ethNode, blockNumber, transHash); 
+        EthRawTransaction trans = ethTransService.ethGetTransaction(ethnode, network, blockNumber, transHash); 
         if (trans == null) {
             return R.ok(null);
         }
@@ -56,21 +59,21 @@ public class EthExploreRestful {
     @RequestMapping(value = "/eth-getTransDecoder", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getTransDecoder(
-            @RequestParam(value = "ethNode", required = false) String ethNode,
+            @RequestParam(value = "ethnode", required = false) String ethnode,
+            @RequestParam(value = "network", required = false) String network,
             @RequestParam("blockNumber") Long blockNumber, 
             @RequestParam("transHash") String transHash) {
         Assertions.assertThat(transHash).withFailMessage("%s 必传", "transHash").isNotBlank();
-        EthTransactionReceipt transReceipt =
-                this.txReceiptService.getTransactionReceipt(ethNode, blockNumber, transHash); // 取得交易回执
+        EthTransactionReceipt transReceipt = this.txReceiptService.getTransactionReceipt(ethnode, network, blockNumber, transHash); // 取得交易回执
         List<EthTransactionReceipt.ReceiptLog> receiptReceiptLogs = transReceipt.getLogs(); // 取得交易日志 
-        if (receiptReceiptLogs == null || receiptReceiptLogs.size() == 0) {
+        if (receiptReceiptLogs == null || receiptReceiptLogs.isEmpty()) {
             LOGGER.warn("当前交易回执没有交易日志: trans-receipt-hash={}", transHash);
             return R.ok(null);
         }
         ETHContractType contractType = ETHContractType.NAN;
         for (EthTransactionReceipt.ReceiptLog receiptLog : receiptReceiptLogs) {
             List<String> topics = receiptLog.getTopics();
-            if (topics.size() == 0) {
+            if (topics.isEmpty()) {
                 LOGGER.warn("当前交易日志没有topic: trans-receipt-hash={}", transHash);
                 continue;
             }
@@ -81,29 +84,34 @@ public class EthExploreRestful {
             String tokenAddress = null;
             if (topicHash.equalsIgnoreCase(Constrants.TRANSFER_HASH_MARK)) {
                 // 符合 erc20 转账的 event 事件
-                if (topics.size() == 3) {
-                    // erc20
-                    tokenFrom = "0x" + topics.get(1).substring(26);
-                    tokenTo = "0x" + topics.get(2).substring(26);
-                    String tokenValueStr = receiptLog.getData().substring(2);
-                    tokenValue = new BigInteger(tokenValueStr, 16);
-                    tokenAddress = receiptLog.getAddress();
-                    contractType = ETHContractType.ERC20;
-                } else if (topics.size() == 1) {
-                    // erc721
-                    String data = receiptLog.getData().replace("0x", "");
-                    if (data.length() == 192) {
-                        tokenFrom = "0x" + data.substring(0, 64).substring(24);
-                        tokenTo = "0x" + data.substring(64, 128).substring(24); 
+                switch (topics.size()) {
+                    case 3:
+                        // erc20
+                        tokenFrom = "0x" + topics.get(1).substring(26);
+                        tokenTo = "0x" + topics.get(2).substring(26);
+                        String tokenValueStr = receiptLog.getData().substring(2);
+                        tokenValue = new BigInteger(tokenValueStr, 16); 
                         tokenAddress = receiptLog.getAddress();
-                    }
-                    contractType = ETHContractType.ERC721;
-                } else if (topics.size() == 4) {
-                    // erc721
-                    tokenFrom = "0x" + topics.get(1).substring(26);
-                    tokenTo = "0x" + topics.get(2).substring(26);
-                    tokenAddress = receiptLog.getAddress();
-                    contractType = ETHContractType.ERC721;
+                        contractType = ETHContractType.ERC20;
+                        break;
+                    case 1:
+                        // erc721
+                        String data = receiptLog.getData().replace("0x", "");
+                        if (data.length() == 192) {
+                            tokenFrom = "0x" + data.substring(0, 64).substring(24);
+                            tokenTo = "0x" + data.substring(64, 128).substring(24);
+                            tokenAddress = receiptLog.getAddress();
+                        }   contractType = ETHContractType.ERC721;
+                        break;
+                    case 4:
+                        // erc721
+                        tokenFrom = "0x" + topics.get(1).substring(26);
+                        tokenTo = "0x" + topics.get(2).substring(26);
+                        tokenAddress = receiptLog.getAddress();
+                        contractType = ETHContractType.ERC721;
+                        break;
+                    default:
+                        break;
                 }
             } else if (topicHash.equalsIgnoreCase(Constrants.ERC1155_TRANSFER_MARK)
                     && topics.size() == 4) {
@@ -123,7 +131,7 @@ public class EthExploreRestful {
                         topicHash, tokenFrom, tokenTo, tokenValue, tokenAddress);
             }
         }
-        return R.ok(contractType == null ? null : contractType.name ).message(contractType.desc);
+        return R.ok(contractType.name).message(contractType.desc);
     }
     
     // 查询指定地址的转入记录

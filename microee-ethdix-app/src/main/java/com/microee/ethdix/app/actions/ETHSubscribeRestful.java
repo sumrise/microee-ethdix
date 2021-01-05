@@ -12,7 +12,7 @@ import com.microee.plugin.response.R;
 
 @RestController
 @RequestMapping("/subscribe")
-public class EthSubscribeRestful {
+public class ETHSubscribeRestful {
 
     @Autowired
     @Qualifier("jsonRPCClientMainnet")

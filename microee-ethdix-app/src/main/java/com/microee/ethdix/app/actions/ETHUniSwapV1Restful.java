@@ -3,20 +3,20 @@ package com.microee.ethdix.app.actions;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.Constrants;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
-import com.microee.ethdix.j3.factory.Web3jOfInstanceFactory;
-import com.microee.ethdix.j3.rpc.JsonRPC;
-import com.microee.ethdix.j3.uniswap.UniswapV2FactoryContract;
+import com.microee.ethdix.j3.uniswap.UniswapV1FactoryContract;
 import com.microee.plugin.response.R;
+import java.util.ArrayList;
+import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.web3j.protocol.Web3j;
 
+// V1 开发者文档
+// https://uniswap.org/docs/v1/
 //@formatter:off
 // 实现代币交易的第三种方法是:
 // 在多个ERC20代币之间进行交易, 直至获得我们想要买入的代币为止
@@ -26,7 +26,6 @@ import org.web3j.protocol.Web3j;
 // 这个方法使用频率可能不高，因为在通过一至2个中间代币转移价值后，额外的gas费会让迂回交易变得很不划算。
 // 或许通过中心化交易所交易成本反而更低。
 // 尽管如此一旦ETH2.0主网上线，采用更加高效的PoS算法，再加上可扩展性功能，让迂回交易变得更加可行，这种方法将得到更广泛的应用。
-
 // #### 价格信息传输机制
 // https://uniswap.org/docs/v2/core-concepts/oracles/
 // 虽然 UniSwap 提供代币价格，但是它不会在链上存储任何历史价格。需要开发者自选基于一段时间的累计价格来计算某个代币在这段时间的平均价格。
@@ -35,7 +34,6 @@ import org.web3j.protocol.Web3j;
 // 所谓的TWAP就是在链上选定一段区块作为时间区间，将某个代币在这段区块内的累计价格（该代币在每个区块的价格）除以时间戳区间（结束区块的时间戳减去起始区块的时间戳），得出该代币在这段区块的平均价格。
 // TWAP 是可靠的，反应了一段时间内的特定代币对的代币价格，采取这种方法可以避免闪电崩盘和剧烈的价格波动，这些在加密货币市场上很常见。当市场出现价格波动时，TWAP可以更准确的反应代币的情况。
 // 如果需要开发者可以通过 UniSwap 的 JavaScript SDK 免费获取价格信息
-
 // #### 闪电交易（Flash Swap）
 // 闪电交易指的是通过一个交易来完成从 UniSwap 的流动性池中借出代币、使用这些代币进行某项操作后偿还这些代币的一个多阶段流程。
 // 如果这个多阶段流程中的任意阶段失败，所有状态更改都会撤销，相关代币重新回到对应的 UniSwap 流动性池中。
@@ -43,15 +41,12 @@ import org.web3j.protocol.Web3j;
 // 闪电交易的一大用例就是套利交易，而且交易者一定能在获利的同时将之前借得的代币价值归还至 UniSwap 流动性池内，交易者每次都能通过套利交易轻松获得收益。
 // 另一个用例是使用 UniSwap 流动性结算 Maker 金库，你可以偿还债务，并取出 Maker 金库中作为担保品的 ETH （或其他代币）来偿还 UniSwap 流动性池。相比直接使用自己持有的代币来还款，这种方式消耗的 gas 更少。
 // 在交易机器人这一用例中，闪电交易还可以用来自动执行套利交易。交易机器人不需要资金来执行交易，只需要识别套利机会并执行闪电交易。
-
 // #### API
 // API 不能自动执行交易，只能帮你准备一笔交易，把你愿意接受的市场价格中位数，和交换所得的最低数量（也就是所谓的“滑点”考虑进去）
 // 交易准备好之后用户必须手动使用钱包软件发起和签名交易
-
 // #### 关于 UniSwap 的代币列表
 // 该代币列表是人工维护的，UniSwap 团队会用视频会议讨论要加入的的代币。
 // 如果你是某代币的发行者，你想要你的代币出现在 UniSwap.exchange 默认的代币列表上，你需要在 Default Token List repository 上提交一个 GitHub Issue
-
 // #### 总结 UniSwap V2
 // 更高效的代币互换
 // 按时间来加权的价格信息标识机制
@@ -60,7 +55,6 @@ import org.web3j.protocol.Web3j;
 // UniSwap 没有没有实时订单薄功能，因此交易员想使用交易策略还是需要到交易所去交易。
 // UniSwap 需要用户套利来保持交易所内代币价格与市场价格的一致。中心话交易所仍旧在平衡 UniSwap 的汇率上发挥着不可替代的作用。DeFi 替代 CeFi 还是长路慢慢。
 // 等等....
-
 // #### 在V1中, 将代币A兑换成代币B: 
 // 必须先用代币A买入ETH, 再用ETH买入代币B. 因为交易者需要支付两笔交易费和gas费
 // 即以 ETH 作为中间代币实现间接互换, 与之对应的智能合约的方法是: 
@@ -69,7 +63,6 @@ import org.web3j.protocol.Web3j;
 // swapTokensForExactETH
 // swapExactTokenForETH
 // https://uniswap.org/
-
 // https://blog.csdn.net/shebao3333/article/details/107012482
 // #### UniSwap 架构概述
 // 在 UniSwap 的架构中只要包含两种类型的组件：工厂合约和代币交换合约
@@ -93,7 +86,6 @@ import org.web3j.protocol.Web3j;
 // 1. 用 eth 换 KBB: 其实就是发送一笔交易, to 地址就是`KBB交换合约`地址
 // 2. 交换两种不同的ERC20代币, 例如: 将 usdt 换成 KBB
 //@formatter:on
-
 // 1.create.exchange.js 
 //@formatter:off
 /*
@@ -134,9 +126,8 @@ import org.web3j.protocol.Web3j;
         console.log('sent', result)
       })
     })
-*/ 
+ */
 // @formatter:on
-
 //2.get.exchange.address.js
 //@formatter:off
 /*
@@ -156,9 +147,8 @@ import org.web3j.protocol.Web3j;
         console.log("the exchange address for ERC20 token is:" + exchange)
     }
     getTokenExchange()
-*/ 
+ */
 //@formatter:on
-
 // 3.approve.exchange.js
 //@formatter:off
 /*
@@ -209,9 +199,8 @@ import org.web3j.protocol.Web3j;
         console.log('sent', result)
       })
     })
-*/ 
+ */
 //@formatter:on
-
 // 4.add.liquidity.js
 //@formatter:off
 /*
@@ -264,9 +253,8 @@ import org.web3j.protocol.Web3j;
         console.log('sent', result)
       })
     })
-*/ 
+ */
 //@formatter:on
-
 // 5.eth2erc20.swap.js 
 //@formatter:off
 /*
@@ -318,9 +306,8 @@ import org.web3j.protocol.Web3j;
         console.log('sent', result)
       })
     })
-*/ 
+ */
 //@formatter:on
-
 // 6.convert.token2token.js
 //@formatter:off
 /*
@@ -375,7 +362,7 @@ import org.web3j.protocol.Web3j;
         console.log('sent', result)
       })
     })
-*/ 
+ */
 //@formatter:on
 @RestController
 @RequestMapping("/uniswapv1")
@@ -383,24 +370,62 @@ public class ETHUniSwapV1Restful {
 
     @Autowired
     private Web3JFactory web3JFactory;
-    
-    // 根据两个ERC20代币合约地址 通过 UniSwapV2 工厂合约查询交易对合约地址
+
+    // https://www.coingecko.com/en/exchanges/uniswap
+    // 列出所有代币交换合约地址
     @RequestMapping(value = "/getPairAddr", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<String> getPairAddress(
+    public R<List<String>> exchanges() {
+        List<String> result = new ArrayList<>();
+        return R.ok(result);
+    }
+
+    /*
+        // uniswap v1 工厂合约地址
+        const mainnet = '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95'
+        const ropsten = '0x9c83dCE8CA20E9aAF9D3efc003b2ea62aBC08351'
+        const rinkeby = '0xf5D915570BC477f9B8D6C0E980aA81757A3AaC36'
+        const kovan = '0xD3E51Ef092B2845f10401a0159B2B96e8B6c3D30'
+        const görli = '0x6Ce570d02D73d4c384b46135E87f8C592A8c86dA'
+     */
+    // 查询代币交换合约地址
+    @RequestMapping(value = "/getExchangeAddr", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<String> getExchangeAddr(
             @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
-            @RequestParam(value = "uniswapV2FactoryAddr", required = false, defaultValue = "0xf5d915570bc477f9b8d6c0e980aa81757a3aac36") String uniswapV2FactoryAddress, // uniswap v2 工厂合约地址
-            @RequestParam(value = "tokenA") String tokenA, // 0x6b175474e89094c44da98b954eedeac495271d0f
-            @RequestParam(value = "tokenB") String tokenB // 0xae17f4f5ca32f77ea8e3786db7c0b2fe877ac176
+            @RequestParam(value = "uniswapV1FactoryAddr", required = false, defaultValue = "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95") String uniswapV1FactoryAddr,
+            @RequestParam(value = "tokenAddr", required = true) String tokenAddr
     ) {
-        // https://etherscan.io/address/0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f#events
-        // https://docs.google.com/spreadsheets/d/1jKEhOi9gIcM9bKdn7rgJEK0RKpzbE1k6bPy_kJW75Aw/edit#gid=1707981752
         Assertions.assertThat(network).withFailMessage("`network` 必传").isNotBlank();
-        Web3j web3j = new Web3jOfInstanceFactory(web3JFactory.getEthNode(network)).j3();
-        String pairAddress = new RemoteCallFunction<>(new UniswapV2FactoryContract(uniswapV2FactoryAddress, web3j).getPairAddress(tokenA, tokenB)).call();
-        if (pairAddress.equalsIgnoreCase(Constrants.EMPTY_ADDRESS)) {
-            return R.ok(null);
-        }
-        return R.ok(pairAddress);
+        Assertions.assertThat(tokenAddr).withFailMessage("`tokenAddr` 必传").isNotBlank();
+        String exchangeAddr = new RemoteCallFunction<>(new UniswapV1FactoryContract(uniswapV1FactoryAddr, web3JFactory.get(network)).getExchangeAddr(tokenAddr)).call();
+        return R.ok(Constrants.EMPTY_ADDRESS.equalsIgnoreCase(exchangeAddr) ? null : exchangeAddr);
+    }
+
+    // 根据交换合约地址查询代币地址
+    @RequestMapping(value = "/getTokenAddress", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<String> getTokenAddress(
+            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
+            @RequestParam(value = "uniswapV1FactoryAddr", required = false, defaultValue = "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95") String uniswapV1FactoryAddr,
+            @RequestParam(value = "exchangeAddr", required = true) String exchangeAddr
+    ) {
+        Assertions.assertThat(network).withFailMessage("`network` 必传").isNotBlank();
+        Assertions.assertThat(exchangeAddr).withFailMessage("`exchangeAddr` 必传").isNotBlank();
+        String tokenAddr = new RemoteCallFunction<>(new UniswapV1FactoryContract(uniswapV1FactoryAddr, web3JFactory.get(network)).getToken(exchangeAddr)).call();
+        return R.ok(Constrants.EMPTY_ADDRESS.equalsIgnoreCase(tokenAddr) ? null : tokenAddr);
     }
     
+    // 平台币与代币兑换, eth 减少, 代币增加
+    @RequestMapping(value = "/eth2TokenSwap", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<String> eth2TokenSwap(
+            @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
+            @RequestParam(value = "contractAddress", required = true) String contractAddress, // erc20 合约地址
+            @RequestParam(value = "toAddress", required = true) String toAddress, // 转入地址, 账户地址
+            @RequestParam(value = "gasPrice", required = true) Long gasPrice, // 即 rapid OR fast OR standard OR slow 对应的值
+            @RequestParam(value = "gasLimit", required = false, defaultValue = "21000") Long gasLimit,
+            @RequestParam(value = "amount", required = true) Double amount, // 转帐数量, 单位是 erc20代币单位
+            @RequestParam(value = "fromAddress", required = true) String fromAddress, // 出帐地址
+            @RequestParam(value = "privateKey", required = true) String privateKey) {
+        
+        return R.ok(null);
+    }
+
 }
