@@ -35,7 +35,7 @@ public class ETHBlockService {
     private ETHBlockTxReceiptService txReceiptService;
 
     @Autowired
-    private ETHTransService ethTransService;
+    private ETHBlockTransService ethTransService;
 
     @Autowired
     private Web3JFactory web3JFactory;

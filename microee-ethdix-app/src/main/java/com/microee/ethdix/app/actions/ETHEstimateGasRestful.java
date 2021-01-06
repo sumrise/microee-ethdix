@@ -1,9 +1,9 @@
 package com.microee.ethdix.app.actions;
 
-import com.microee.ethdix.app.components.ETHInputEncoderComponent;
 import com.microee.ethdix.app.components.GasPriceNow;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
+import com.microee.ethdix.j3.contract.ETHInputEncoder;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.plugin.response.R;
 import java.math.BigDecimal;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 // 预估各种gas费
 @RestController
-@RequestMapping("/estimate")
+@RequestMapping("/estimates")
 public class ETHEstimateGasRestful {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(ETHEstimateGasRestful.class);
@@ -28,9 +28,6 @@ public class ETHEstimateGasRestful {
     @Autowired
     private Web3JFactory web3JFactory;
     
-    @Autowired
-    private ETHInputEncoderComponent ethInputEncoder;
-
     // 查询四种 gas 费级别
     @RequestMapping(value = "/now-gasPricing", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -82,28 +79,36 @@ public class ETHEstimateGasRestful {
     @RequestMapping(value = "/estimateGasLimitsForTokenTransfer", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Long> estimateGasLimitsForTokenTransfer(
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
+            @RequestParam(value = "fromAddr", required = true) String fromAddr, // 出帐地址
             @RequestParam(value = "contractAddr", required = true) String contractAddr, // erc20 合约地址
             @RequestParam(value = "toAddr", required = true) String toAddr, // 转入地址, 账户地址
             @RequestParam(value = "gasPrice", required = true) Long gasPrice, // 即 rapid OR fast OR standard OR slow 对应的值
-            @RequestParam(value = "amount", required = true) Double amount, // 转帐数量, 单位是 erc20代币单位
-            @RequestParam(value = "fromAddr", required = true) String fromAddr // 出帐地址
+            @RequestParam(value = "amount", required = true) Double amount // 转帐数量, 单位是 erc20代币单位
     ) {
-        try {
-            Assertions.assertThat(ethnode == null || ethnode.isEmpty()).withFailMessage("`ethnode` 必传").isFalse();
-            Assertions.assertThat(toAddr).withFailMessage("`toAddr` 必传").isNotBlank();
-            BigInteger tokenDecimal = (BigInteger) RemoteCallFunction.build(new ERC20ContractQuery(contractAddr, web3JFactory.getByEthNode(ethnode)).decimals()).call();
-            final Double amountDouble = (amount * (Math.pow(10, tokenDecimal.intValue()))); // 转帐数量(代币的最小单位), 例如: 1usdt = 1000000
-            final String inputData = ethInputEncoder.getTransferInputData(toAddr, amountDouble.longValue());
-            LOGGER.info("inputData: amount={}, tokenDecimal={}, amountDouble={}, inputData={}", amount, tokenDecimal, amountDouble, inputData);
-            return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).estimateGasLimits(fromAddr, contractAddr, gasPrice, inputData));
-        } catch (Exception e) {
-            LOGGER.error("errorMessage={}", e.getMessage(), e);
-            return R.failed(R.FAILED, e.getMessage());
-        }
+        Assertions.assertThat(ethnode == null || ethnode.isEmpty()).withFailMessage("`ethnode` 必传").isFalse();
+        Assertions.assertThat(toAddr).withFailMessage("`toAddr` 必传").isNotBlank();
+        BigInteger tokenDecimal = (BigInteger) RemoteCallFunction.build(new ERC20ContractQuery(contractAddr, web3JFactory.getByEthNode(ethnode)).decimals()).call();
+        final Double amountDouble = (amount * (Math.pow(10, tokenDecimal.intValue()))); // 转帐数量(代币的最小单位), 例如: 1usdt = 1000000
+        final String inputData = ETHInputEncoder.getInputDataForTokenTransfer(toAddr, amountDouble.longValue());
+        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).estimateGasLimits(fromAddr, contractAddr, gasPrice, inputData));
     }
-    
-    public static void main(String[] args) {
-        System.out.println(Long.toHexString(1000000l));
+
+    // 预估eth兑换代币手续费
+    @RequestMapping(value = "/estimateGasLimitsForETH2TokenSwaper", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<Long> estimateGasLimitsForETH2TokenSwaper(
+            @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
+            @RequestParam(value = "fromAddr", required = true) String fromAddr, // 出帐地址
+            @RequestParam(value = "contractAddr", required = true) String contractAddr, // 代币地址
+            @RequestParam(value = "uniswapExchangeAddr", required = true) String uniswapExchangeAddr, // uniswap 兑换合约地址
+            @RequestParam(value = "gasPrice", required = true) Long gasPrice, // 即 rapid OR fast OR standard OR slow 对应的值
+            @RequestParam(value = "amount", required = true) Double amount // 转帐数量, 单位是 erc20代币单位
+    ) {
+        Assertions.assertThat(ethnode == null || ethnode.isEmpty()).withFailMessage("`ethnode` 必传").isFalse();
+        BigInteger tokenDecimal = (BigInteger) RemoteCallFunction.build(new ERC20ContractQuery(contractAddr, web3JFactory.getByEthNode(ethnode)).decimals()).call();
+        final Double amountDouble = (amount * (Math.pow(10, tokenDecimal.intValue()))); // 转帐数量(代币的最小单位), 例如: 1usdt = 1000000
+        final String inputData = ETHInputEncoder.getInputDataForTokenTransfer(uniswapExchangeAddr, amountDouble.longValue());
+        LOGGER.info("inputData: amount={}, tokenDecimal={}, amountDouble={}, inputData={}", amount, tokenDecimal, amountDouble, inputData);
+        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).estimateGasLimits(fromAddr, uniswapExchangeAddr, gasPrice, inputData));
     }
     
 }

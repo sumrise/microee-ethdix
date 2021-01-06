@@ -29,6 +29,7 @@ public class Web3JFactory {
 
     private final ConcurrentMap<String, Web3j> map = new ConcurrentHashMap<>();
 
+    // mainnet, Ropsten, Rinkeby, Görli, Kovan
     public Web3j get(String network) {
         if (network.startsWith("http")) {
             throw new RestException(R.FAILED, "非法参数,误把节点地址当成网络类型传递!");

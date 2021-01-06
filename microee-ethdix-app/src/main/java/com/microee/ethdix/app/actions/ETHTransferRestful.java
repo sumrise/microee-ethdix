@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.web3j.crypto.RawTransaction;
-import com.microee.ethdix.app.components.ETHInputEncoderComponent;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
+import com.microee.ethdix.j3.contract.ETHInputEncoder;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.plugin.response.R;
@@ -26,9 +26,6 @@ public class ETHTransferRestful {
 
     @Autowired
     private Web3JFactory web3JFactory;
-
-    @Autowired
-    private ETHInputEncoderComponent ethInputEncoder;
 
     // 根据网络类型随机返回一个节点地址
     @RequestMapping(value = "/getETHNode", method = RequestMethod.GET, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -106,7 +103,7 @@ public class ETHTransferRestful {
         Assertions.assertThat(toAddress.equals(fromAddress)).withFailMessage("`from` and `to` 必须不相等").isFalse();
         BigInteger tokenDecimal = (BigInteger) new RemoteCallFunction<>(new ERC20ContractQuery(contractAddress, web3JFactory.get(null, ethnode)).decimals()).call();
         final Double amountDouble = (amount * (Math.pow(10, tokenDecimal.intValue()))); // 转帐数量(代币的最小单位), 例如: 1usdt = 1000000
-        final String inputData = ethInputEncoder.getTransferInputData(toAddress, amountDouble.longValue());
+        final String inputData = ETHInputEncoder.getInputDataForTokenTransfer(toAddress, amountDouble.longValue());
         return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).signTokenTransaction(fromAddress, contractAddress, gasPrice, gasLimit, privateKey, inputData));
     }
 

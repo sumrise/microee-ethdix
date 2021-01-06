@@ -74,13 +74,12 @@ public class ERC20QueryRestful {
     @NotNull
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> query(
-            @RequestHeader(value = "username", required = false) String username,
-            @RequestHeader(value = "password", required = false) String password,
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
             @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
             @RequestParam(value = "address", required = false) String address, // 合约地址
             @RequestParam(value = "symbol", required = false) String symbol, // 合约币种名称
-            @RequestParam(value = "attrs") String[] attrs) { // 合约属性字段数组
+            @RequestParam(value = "attrs") String[] attrs // 合约属性字段数组
+    ) { 
         Assertions.assertThat((ethnode == null || ethnode.isEmpty()) && (network == null || network.isEmpty())).withFailMessage("ethnode OR network 二选1").isFalse();
         Assertions.assertThat((address == null || address.isEmpty()) && (symbol == null || symbol.isEmpty())).withFailMessage("symbol OR address 二选1").isFalse();
         Assertions.assertThat(attrs).withFailMessage("%s 必传", "attrs").isNotEmpty();

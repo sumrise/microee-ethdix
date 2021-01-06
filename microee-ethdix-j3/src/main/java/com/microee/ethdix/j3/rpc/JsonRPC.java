@@ -180,15 +180,15 @@ public class JsonRPC {
      * @param to
      * @param gasPrice
      * @param gasLimit
-     * @param value
+     * @param amount
      * @param privateKey
      * @return 返回 signedTransactionData
      */
-    public String signETHTransaction(String fromAddress, String to, Long gasPrice, Long gasLimit, Long value, String privateKey) {
+    public String signETHTransaction(String fromAddress, String to, Long gasPrice, Long gasLimit, Long amount, String privateKey) {
         BigInteger privateKeyInBT = new BigInteger(privateKey, 16);
         ECKeyPair aPair = ECKeyPair.create(privateKeyInBT);
         Long nonce = this.getTransactionCount(fromAddress);
-        RawTransaction rawTransaction = RawTransaction.createEtherTransaction(BigInteger.valueOf(nonce), BigInteger.valueOf(gasPrice), BigInteger.valueOf(gasLimit), to, BigInteger.valueOf(value));
+        RawTransaction rawTransaction = RawTransaction.createEtherTransaction(BigInteger.valueOf(nonce), BigInteger.valueOf(gasPrice), BigInteger.valueOf(gasLimit), to, BigInteger.valueOf(amount));
         // byte[] encodedMessage = TransactionEncoder.encode(rawTransaction);
         // RawTransaction result = TransactionDecoder.decode(Numeric.toHexString(encodedMessage));
         // logger.info("nonce={}", result.getNonce());

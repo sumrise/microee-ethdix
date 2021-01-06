@@ -107,12 +107,13 @@ public class ERC20ContractQuery extends Contract {
 //            }
 //        });
 //    }
+    
     @SuppressWarnings("rawtypes")
     public RemoteCall<String> name() {
-        final Function function = new Function("name",
+        final Function function = new Function(
+                "name",
                 Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {
-                }));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() { }));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
@@ -120,18 +121,17 @@ public class ERC20ContractQuery extends Contract {
     public RemoteCall<TransactionReceipt> approve(String _spender, BigInteger _value) {
         final Function function = new Function(
                 "approve",
-                Arrays.<Type>asList(new Address(_spender),
-                        new Uint256(_value)),
+                Arrays.<Type>asList(new Address(_spender), new Uint256(_value)),
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     @SuppressWarnings("rawtypes")
     public RemoteCall<BigInteger> totalSupply() {
-        final Function function = new Function("totalSupply",
+        final Function function = new Function(
+                "totalSupply",
                 Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() { }));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
@@ -139,28 +139,26 @@ public class ERC20ContractQuery extends Contract {
     public RemoteCall<TransactionReceipt> transferFrom(String _from, String _to, BigInteger _value) {
         final Function function = new Function(
                 "transferFrom",
-                Arrays.<Type>asList(new Address(_from),
-                        new Address(_to),
-                        new Uint256(_value)),
+                Arrays.<Type>asList(new Address(_from), new Address(_to), new Uint256(_value)),
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     @SuppressWarnings("rawtypes")
     public RemoteCall<BigInteger> INITIAL_SUPPLY() {
-        final Function function = new Function("INITIAL_SUPPLY",
-                Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }));
+        final Function function = new Function(
+                "INITIAL_SUPPLY", 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() { }));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
     @SuppressWarnings("rawtypes")
     public RemoteCall<BigInteger> decimals() {
-        final Function function = new Function("decimals",
+        final Function function = new Function(
+                "decimals",
                 Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint8>() {
-                }));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint8>() { }));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
@@ -168,27 +166,26 @@ public class ERC20ContractQuery extends Contract {
     public RemoteCall<TransactionReceipt> decreaseApproval(String _spender, BigInteger _subtractedValue) {
         final Function function = new Function(
                 "decreaseApproval",
-                Arrays.<Type>asList(new Address(_spender),
-                        new Uint256(_subtractedValue)),
+                Arrays.<Type>asList(new Address(_spender), new Uint256(_subtractedValue)),
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     @SuppressWarnings("rawtypes")
     public RemoteCall<BigInteger> balanceOf(String _owner) {
-        final Function function = new Function("balanceOf",
+        final Function function = new Function(
+                "balanceOf",
                 Arrays.<Type>asList(new Address(_owner)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() { }));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
     @SuppressWarnings("rawtypes")
     public RemoteCall<String> symbol() {
-        final Function function = new Function("symbol",
+        final Function function = new Function(
+                "symbol",
                 Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {
-                }));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() { }));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
@@ -196,8 +193,7 @@ public class ERC20ContractQuery extends Contract {
     public RemoteCall<TransactionReceipt> transfer(String _to, BigInteger _value) {
         final Function function = new Function(
                 "transfer",
-                Arrays.<Type>asList(new Address(_to),
-                        new Uint256(_value)),
+                Arrays.<Type>asList(new Address(_to), new Uint256(_value)),
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
@@ -206,19 +202,17 @@ public class ERC20ContractQuery extends Contract {
     public RemoteCall<TransactionReceipt> increaseApproval(String _spender, BigInteger _addedValue) {
         final Function function = new Function(
                 "increaseApproval",
-                Arrays.<Type>asList(new Address(_spender),
-                        new Uint256(_addedValue)),
+                Arrays.<Type>asList(new Address(_spender), new Uint256(_addedValue)),
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     @SuppressWarnings("rawtypes")
     public RemoteCall<BigInteger> allowance(String _owner, String _spender) {
-        final Function function = new Function("allowance",
-                Arrays.<Type>asList(new Address(_owner),
-                        new Address(_spender)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }));
+        final Function function = new Function(
+                "allowance",
+                Arrays.<Type>asList(new Address(_owner), new Address(_spender)),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() { }));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
@@ -231,7 +225,6 @@ public class ERC20ContractQuery extends Contract {
     }
 
     public static class ApprovalEventResponse {
-
         public Log log;
         public String owner;
         public String spender;
@@ -239,7 +232,6 @@ public class ERC20ContractQuery extends Contract {
     }
 
     public static class TransferEventResponse {
-
         public Log log;
         public String from;
         public String to;

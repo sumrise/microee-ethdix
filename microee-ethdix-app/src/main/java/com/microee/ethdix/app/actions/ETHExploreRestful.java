@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.microee.ethdix.app.service.ETHBlockTxReceiptService;
-import com.microee.ethdix.app.service.ETHTransService;
+import com.microee.ethdix.app.service.ETHBlockTransService;
 import com.microee.ethdix.j3.Constrants;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.EthTransactionReceipt;
@@ -31,7 +31,7 @@ public class ETHExploreRestful {
     private ETHBlockTxReceiptService txReceiptService;
 
     @Autowired
-    private ETHTransService ethTransService;
+    private ETHBlockTransService ethBlockTransService;
 
     // ### 获取交易基本信息
     @RequestMapping(value = "/eth-getTransaction", method = RequestMethod.GET,
@@ -42,7 +42,7 @@ public class ETHExploreRestful {
             @RequestParam("blockNumber") Long blockNumber, 
             @RequestParam("transHash") String transHash) {
         Assertions.assertThat(transHash).withFailMessage("%s 必传", "transHash").isNotBlank();
-        EthRawTransaction trans = ethTransService.ethGetTransaction(ethnode, network, blockNumber, transHash); 
+        EthRawTransaction trans = ethBlockTransService.ethGetTransaction(ethnode, network, blockNumber, transHash); 
         if (trans == null) {
             return R.ok(null);
         }
@@ -138,14 +138,14 @@ public class ETHExploreRestful {
     @RequestMapping(value = "/eth-queryTransferTo", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<List<EthRawTransaction>> queryTransferTo(@RequestParam(value = "toAddress", required = false) String hashAddress) {
-        return R.ok(ethTransService.queryTransferTo(hashAddress));
+        return R.ok(ethBlockTransService.queryTransferTo(hashAddress));
     }
     
     // 查询指定地址的转出记录
     @RequestMapping(value = "/eth-queryTransferFrom", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<List<EthRawTransaction>> queryTransferFrom(@RequestParam(value = "fromAddress", required = false) String hashAddress) {
-        return R.ok(ethTransService.queryTransferFrom(hashAddress)); 
+        return R.ok(ethBlockTransService.queryTransferFrom(hashAddress)); 
     }
 
 }

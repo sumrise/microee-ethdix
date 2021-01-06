@@ -14,9 +14,9 @@ import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.stacks.mongodb.support.Mongo;
 
 @Service
-public class ETHTransService {
+public class ETHBlockTransService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ETHTransService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ETHBlockTransService.class);
 
     public static final String COLLECTION_TRANS = "eth_blocks_trans";
 
@@ -62,7 +62,7 @@ public class ETHTransService {
         Query query = Query.query(Criteria.where("to").is(hashAddress));
         List<String> collectionList = ethNetworkProperties.getCollectionNamesByBlockNumber(null);
         List<EthRawTransaction> resultList = new ArrayList<>();
-        collectionList.stream().map(collectionKey -> ethNetworkProperties.getCollectionName(ETHTransService.COLLECTION_TRANS, collectionKey)).map(collectionName -> {
+        collectionList.stream().map(collectionKey -> ethNetworkProperties.getCollectionName(ETHBlockTransService.COLLECTION_TRANS, collectionKey)).map(collectionName -> {
             Boolean collectionExists = mongo.collectionExists(collectionName);
             LOGGER.info("collectionExists={}", collectionExists);
             List<EthRawTransaction> currentList = mongo.queryList(collectionName, query, EthRawTransaction.class);
@@ -78,7 +78,7 @@ public class ETHTransService {
         Query query = Query.query(Criteria.where("from").is(hashAddress));
         List<String> collectionList = ethNetworkProperties.getCollectionNamesByBlockNumber(null);
         List<EthRawTransaction> resultList = new ArrayList<>();
-        collectionList.stream().map(collectionKey -> ethNetworkProperties.getCollectionName(ETHTransService.COLLECTION_TRANS, collectionKey)).map(collectionName -> {
+        collectionList.stream().map(collectionKey -> ethNetworkProperties.getCollectionName(ETHBlockTransService.COLLECTION_TRANS, collectionKey)).map(collectionName -> {
             Boolean collectionExists = mongo.collectionExists(collectionName);
             LOGGER.info("collectionExists={}", collectionExists);
             List<EthRawTransaction> currentList = mongo.queryList(collectionName, query, EthRawTransaction.class);

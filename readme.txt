@@ -43,3 +43,17 @@ mvn archetype:generate -DgroupId=com.microee.ethdix.app -DartifactId=microee-eth
 # https://nomics.com/exchanges/binance#about
 
 
+
+### 什么是abi
+# 应用程序二进制接口，以太坊的调用合约时的接口说明
+# ABI是两个程序模块之间的接口，主要是用于将数据编码或解码为源代码所表示的代码。
+# 以太坊中主要用于solidity合约的函数调用，以及反向编码读取数据的中的方法
+# https://blog.csdn.net/qq_35434814/article/details/104682616
+
+### Application Binary Interface
+# https://docs.web3j.io/smart_contracts/application_binary_interface/
+
+### ABI codec
+# https://github.com/dolomite-exchange/abi-encoder-v2-java
+
+

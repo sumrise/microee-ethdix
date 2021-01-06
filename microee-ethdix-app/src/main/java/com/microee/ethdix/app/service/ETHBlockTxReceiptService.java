@@ -26,7 +26,7 @@ public class ETHBlockTxReceiptService {
     private Web3JFactory web3JFactory;
     
     @Autowired
-    private ETHTransService ethTransService;
+    private ETHBlockTransService ethBlockTransService;
 
     @Autowired
     private ETHNetworkProperties ethNetworkProperties;
@@ -46,7 +46,7 @@ public class ETHBlockTxReceiptService {
             }
         }
         if (blockNumber != null) {
-            ethTransService.ethGetTransaction(ethnode, network, blockNumber, txHash);
+            ethBlockTransService.ethGetTransaction(ethnode, network, blockNumber, txHash);
         }
         return result;
     }

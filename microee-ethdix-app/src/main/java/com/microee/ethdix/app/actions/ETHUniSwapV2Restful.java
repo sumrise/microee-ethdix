@@ -13,7 +13,11 @@ import com.microee.ethdix.j3.Constrants;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.j3.factory.Web3jOfInstanceFactory;
 import com.microee.ethdix.j3.uniswap.UniswapV2FactoryContract;
+import com.microee.ethdix.j3.uniswap.UniswapV2Route02Contract;
 import com.microee.plugin.response.R;
+import java.util.HashMap;
+import java.util.Map;
+import org.web3j.abi.datatypes.Address;
 
 // #### 在V2中
 // 不再将ETH做为中间币, 只需调用路由合约上的 swapExactTokensForTokens 和 swapTokensForExactTokens 方法即可交易
@@ -28,14 +32,30 @@ public class ETHUniSwapV2Restful {
 
     @Autowired
     private Web3JFactory web3JFactory;
-
-    // 根据网络类型随机返回一个节点地址
-    @RequestMapping(value = "/getETHNode", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<String> getETHNode(
-            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network // 网络类型: 主网或测试网
+    
+    // 根据 router02 合约地址查询相关信息, 例如: UniSwapV2工厂合约地址
+    // https://uniswap.org/docs/v2/smart-contracts/router02/
+    @RequestMapping(value = "/router02", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<Map<String, Object>> router02(
+            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
+            @RequestParam(value = "router02Addr", required = false, defaultValue = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D") String router02Addr,
+            @RequestParam(value = "attrs", required = false) String[] attrs // 合约属性字段数组
     ) {
         Assertions.assertThat(network).withFailMessage("`network` 必传").isNotBlank();
-        return R.ok(web3JFactory.getEthNode(network));
+        Map<String, Object> map = new HashMap<>();
+        if (attrs != null) {
+            for (String attr : attrs) {
+                if (attr.equalsIgnoreCase("factory")) {
+                    Address factoryAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.get(network)).factoryAddr()).call();
+                    map.put(attr, factoryAddr == null ? null : factoryAddr.getValue());
+                }
+                if (attr.equalsIgnoreCase("WETH")) {
+                    Address factoryAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.get(network)).WETH()).call();
+                    map.put(attr, factoryAddr == null ? null : factoryAddr.getValue());
+                }
+            }
+        }
+        return R.ok(map);
     }
     
     // 根据两个ERC20代币合约地址 通过 UniSwapV2 工厂合约查询交易对合约地址
@@ -84,4 +104,34 @@ public class ETHUniSwapV2Restful {
         return R.ok(Constrants.EMPTY_ADDRESS.equalsIgnoreCase(tokenAddr) ? null : tokenAddr);
     }
 
+    // https://app.uniswap.org/#/swap
+    //---------------------------------------------------------------------------------------------------------
+    // 0x7ff36ab5
+    // 00000000000000000000000000000000000000000000000000000000009d0e0e
+    // 0000000000000000000000000000000000000000000000000000000000000080
+    // 000000000000000000000000493ba3316c2e246d55edf81427d833631eff9a10
+    // 000000000000000000000000000000000000000000000000000000005ff46720
+    // 0000000000000000000000000000000000000000000000000000000000000002
+    // 000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+    // 000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7
+    
+    //Function: swapExactETHForTokens(uint256 amountOutMin, address[] path, address to, uint256 deadline)
+    //---------------------------------------------------------------------------------------------------------
+    //MethodID: 0x7ff36ab5
+    //[0]:  00000000000000000000000000000000000000000000000000000000009d0e0e
+    //[1]:  0000000000000000000000000000000000000000000000000000000000000080
+    //[2]:  000000000000000000000000493ba3316c2e246d55edf81427d833631eff9a10    // 用户地址
+    //[3]:  000000000000000000000000000000000000000000000000000000005ff46720
+    //[4]:  0000000000000000000000000000000000000000000000000000000000000002
+    //[5]:  000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2    // WETH代币合约地址
+    //[6]:  000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7    // USDT代币合约地址
+    
+    //#	Name            Type        Data
+    //----------------------------------------------------------------------------------------------------------
+    //0	amountOutMin	uint256     10292750
+    //1	path            address[]   0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2   // WETH代币合约地址
+    //                              0xdAC17F958D2ee523a2206206994597C13D831ec7   // USDT代币合约地址
+    //2	to              address     0x493bA3316C2E246d55EDf81427D833631EFf9A10   // 用户地址
+    //3	deadline	uint256     1609852704
+    
 }

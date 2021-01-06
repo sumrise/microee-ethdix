@@ -1,6 +1,6 @@
 package com.microee.ethdix.app.actions;
 
-import com.microee.ethdix.app.components.ETHInputEncoderComponent;
+import com.microee.ethdix.j3.contract.ETHInputEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,16 +13,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.microee.plugin.response.R;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/input")
 public class ETHInputRestful {
 
-    @Autowired
-    private ETHInputEncoderComponent ethInputEncoder;
-    
     // 解析合约里的input参数
     // ===============================================================================
     // 0xa9059cbb000000000000000000000000a17c53f7427979213eaf31def9afaa1d249f764600000000000000000000000000000000000000000000000000000000b7a73adc
@@ -46,14 +42,14 @@ public class ETHInputRestful {
         if (inputData.equals("0x0")) {
             return R.ok(null);
         }
-        if (inputData.startsWith(ETHInputEncoderComponent.TRANSFER_FUNCTION_PREFIX_METHOD_ID)) {
+        if (inputData.startsWith(ETHInputEncoder.TRANSFER_FUNCTION_PREFIX_METHOD_ID)) {
             map.put("Function", "transfer");
-            map.put("MethodID", ETHInputEncoderComponent.TRANSFER_FUNCTION_PREFIX_METHOD_ID);
+            map.put("MethodID", ETHInputEncoder.TRANSFER_FUNCTION_PREFIX_METHOD_ID);
             map.put("To", "0x" + inputData.substring(10, 74).replaceAll("^0+", ""));
             map.put("Value", Long.parseLong(inputData.substring(74).replaceAll("^0+", ""), 16));
-        } else if (inputData.startsWith(ETHInputEncoderComponent.APPROVE_FUNCTION_PREFIX_METHOD_ID)) {
+        } else if (inputData.startsWith(ETHInputEncoder.APPROVE_FUNCTION_PREFIX_METHOD_ID)) {
             map.put("Function", "approve");
-            map.put("MethodID", ETHInputEncoderComponent.APPROVE_FUNCTION_PREFIX_METHOD_ID);
+            map.put("MethodID", ETHInputEncoder.APPROVE_FUNCTION_PREFIX_METHOD_ID);
         } else {
             map.put("Function", "N/a");
             map.put("MethodID", "N/a");
@@ -69,7 +65,18 @@ public class ETHInputRestful {
      */
     @RequestMapping(value = "/getTransferInputData", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getTransferInputData(@RequestParam("toAddress") String toAddress, @RequestParam("amount") Long amount) {
-        return R.ok(ethInputEncoder.getTransferInputData(toAddress, amount));
+        return R.ok(ETHInputEncoder.getTransferInputData(toAddress, amount));
+    }
+    
+    /**
+     * 返回 erc20 合约转帐 input 参数
+     * @param toAddress
+     * @param amount
+     * @return 
+     */
+    @RequestMapping(value = "/getInputDataForTokenTransfer", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<String> getInputDataForTokenTransfer(@RequestParam("toAddress") String toAddress, @RequestParam("amount") Long amount) {
+        return R.ok(ETHInputEncoder.getInputDataForTokenTransfer(toAddress, amount));
     }
     
 }
