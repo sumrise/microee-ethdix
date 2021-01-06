@@ -17,25 +17,9 @@ const port: Number = 3000;
 const routes: Array<CommonRoutesConfig> = [];
 const debugLog: debug.IDebugger = debug('app');
 
+app.use(logger('combined'));
 app.use(bodyparser.json());
 app.use(cors());
-
-// define the custom settings for each transport (file, console)
-var expressOptions = {
-    console: {
-        level: 'debug',
-        handleExceptions: true,
-        json: false,
-        colorize: true,
-    },
-};
-
-app.use(logger('combined'));
-// app.use(expressWinston.logger({
-//     transports: [
-//         new winston.transports.Console(expressOptions.console)
-//     ]
-// }));
 
 routes.push(new UsersRoutes(app));
 routes.push(new UniV2sRoutes(app));
