@@ -1,4 +1,4 @@
-import { CommonRoutesConfig } from '../common/common.routes.config';
+import { CommonRoutesConfig } from '../../common/common.routes.config';
 import express from 'express';
 import debug from 'debug';
 import { ChainId, Token, WETH, Fetcher, Route } from '@uniswap/sdk'

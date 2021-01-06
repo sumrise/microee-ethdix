@@ -8,8 +8,8 @@ import debug from 'debug';
 import logger from 'morgan';
 
 import { CommonRoutesConfig } from './common/common.routes.config';
-import { UsersRoutes } from './users/users.routes.config';
-import { UniV2sRoutes } from './univ2/univ2.routes.config';
+import { UsersRoutes } from './routers/users/users.routes.config';
+import { UniV2sRoutes } from './routers/univ2/univ2.routes.config';
 
 const app: express.Application = express();
 const server: http.Server = http.createServer(app);
