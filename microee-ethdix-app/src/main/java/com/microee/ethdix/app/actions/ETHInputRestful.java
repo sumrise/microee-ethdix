@@ -1,6 +1,9 @@
 package com.microee.ethdix.app.actions;
 
+import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.contract.ETHInputEncoder;
+import com.microee.ethdix.j3.contract.RemoteCallFunction;
+import com.microee.ethdix.j3.uniswap.UniswapV2Route02Contract;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,12 +16,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.microee.plugin.response.R;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.web3j.abi.datatypes.Address;
 
 @RestController
 @RequestMapping("/input")
 public class ETHInputRestful {
 
+    @Autowired
+    private Web3JFactory web3JFactory;
+    
     // 解析合约里的input参数
     // ===============================================================================
     // 0xa9059cbb000000000000000000000000a17c53f7427979213eaf31def9afaa1d249f764600000000000000000000000000000000000000000000000000000000b7a73adc
@@ -78,5 +86,29 @@ public class ETHInputRestful {
     public R<String> getInputDataForTokenTransfer(@RequestParam("toAddress") String toAddress, @RequestParam("amount") Long amount) {
         return R.ok(ETHInputEncoder.getInputDataForTokenTransfer(toAddress, amount));
     }
+    
+    /**
+     * UniSwap兑换: 获取 eth换代币 input 参数
+     * @param network
+     * @param amountOutMin 数量
+     * @param router02Addr
+     * @param tokenAddr 代币地址
+     * @param toAddr 用户地址
+     * @param timeout 超时时间, 单位/秒
+     * @return 
+     */
+    @RequestMapping(value = "/getInputDataForSwapExactETHForTokens", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<String> getInputDataForSwapExactETHForTokens(
+            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
+            @RequestParam(value = "router02Addr", required = false, defaultValue = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D") String router02Addr,
+            @RequestParam("amountOutMin") Long amountOutMin, 
+            @RequestParam("tokenAddr") String tokenAddr, 
+            @RequestParam("toAddr") String toAddr, 
+            @RequestParam("timeout") Long timeout 
+    ) {
+        Address wethAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.get(network)).WETH()).call();
+        return R.ok(ETHInputEncoder.getInputDataForSwapExactETHForTokens(amountOutMin, wethAddr.getValue(), tokenAddr, toAddr, timeout));
+    }
+    
     
 }

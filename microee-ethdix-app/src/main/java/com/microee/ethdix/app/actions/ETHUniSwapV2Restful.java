@@ -50,8 +50,8 @@ public class ETHUniSwapV2Restful {
                     map.put(attr, factoryAddr == null ? null : factoryAddr.getValue());
                 }
                 if (attr.equalsIgnoreCase("WETH")) {
-                    Address factoryAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.get(network)).WETH()).call();
-                    map.put(attr, factoryAddr == null ? null : factoryAddr.getValue());
+                    Address wethAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.get(network)).WETH()).call();
+                    map.put(attr, wethAddr == null ? null : wethAddr.getValue());
                 }
             }
         }
@@ -104,34 +104,5 @@ public class ETHUniSwapV2Restful {
         return R.ok(Constrants.EMPTY_ADDRESS.equalsIgnoreCase(tokenAddr) ? null : tokenAddr);
     }
 
-    // https://app.uniswap.org/#/swap
-    //---------------------------------------------------------------------------------------------------------
-    // 0x7ff36ab5
-    // 00000000000000000000000000000000000000000000000000000000009d0e0e
-    // 0000000000000000000000000000000000000000000000000000000000000080
-    // 000000000000000000000000493ba3316c2e246d55edf81427d833631eff9a10
-    // 000000000000000000000000000000000000000000000000000000005ff46720
-    // 0000000000000000000000000000000000000000000000000000000000000002
-    // 000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
-    // 000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7
-    
-    //Function: swapExactETHForTokens(uint256 amountOutMin, address[] path, address to, uint256 deadline)
-    //---------------------------------------------------------------------------------------------------------
-    //MethodID: 0x7ff36ab5
-    //[0]:  00000000000000000000000000000000000000000000000000000000009d0e0e
-    //[1]:  0000000000000000000000000000000000000000000000000000000000000080
-    //[2]:  000000000000000000000000493ba3316c2e246d55edf81427d833631eff9a10    // 用户地址
-    //[3]:  000000000000000000000000000000000000000000000000000000005ff46720
-    //[4]:  0000000000000000000000000000000000000000000000000000000000000002
-    //[5]:  000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2    // WETH代币合约地址
-    //[6]:  000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7    // USDT代币合约地址
-    
-    //#	Name            Type        Data
-    //----------------------------------------------------------------------------------------------------------
-    //0	amountOutMin	uint256     10292750
-    //1	path            address[]   0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2   // WETH代币合约地址
-    //                              0xdAC17F958D2ee523a2206206994597C13D831ec7   // USDT代币合约地址
-    //2	to              address     0x493bA3316C2E246d55EDf81427D833631EFf9A10   // 用户地址
-    //3	deadline	uint256     1609852704
     
 }
