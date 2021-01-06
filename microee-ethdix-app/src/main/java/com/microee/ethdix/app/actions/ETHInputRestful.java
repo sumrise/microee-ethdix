@@ -107,7 +107,7 @@ public class ETHInputRestful {
             @RequestParam("timeout") Long timeout 
     ) {
         Address wethAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.get(network)).WETH()).call();
-        return R.ok(ETHInputEncoder.getInputDataForSwapExactETHForTokens(amountOutMin, wethAddr.getValue(), tokenAddr, toAddr, timeout));
+        return R.ok(ETHInputEncoder.getInputDataForSwapExactETHForTokens(amountOutMin, wethAddr.getValue(), tokenAddr, toAddr));
     }
     
     

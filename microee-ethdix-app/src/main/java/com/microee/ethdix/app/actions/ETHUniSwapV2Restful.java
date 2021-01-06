@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.web3j.protocol.Web3j;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.Constrants;
+import com.microee.ethdix.j3.contract.ETHInputEncoder;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.j3.factory.Web3jOfInstanceFactory;
 import com.microee.ethdix.j3.uniswap.UniswapV2FactoryContract;
@@ -27,7 +28,7 @@ import org.web3j.abi.datatypes.Address;
 // UniSwapV2的智能和鱼就是采用了这种方法
 // https://uniswap.org
 @RestController
-@RequestMapping("/uniswapv2")
+@RequestMapping("/univ2")
 public class ETHUniSwapV2Restful {
 
     @Autowired
@@ -62,7 +63,7 @@ public class ETHUniSwapV2Restful {
     @RequestMapping(value = "/getPairAddr", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getPairAddress(
             @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
-            @RequestParam(value = "uniswapV2FactoryAddr", required = false, defaultValue = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f") String uniswapV2FactoryAddr, // uniswap v2 工厂合约地址
+            @RequestParam(value = "univ2FactoryAddr", required = false, defaultValue = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f") String univ2FactoryAddr, // uniswap v2 工厂合约地址
             @RequestParam(value = "tokenA") String tokenA, // 0x6b175474e89094c44da98b954eedeac495271d0f
             @RequestParam(value = "tokenB") String tokenB // 0xae17f4f5ca32f77ea8e3786db7c0b2fe877ac176
     ) {
@@ -70,7 +71,7 @@ public class ETHUniSwapV2Restful {
         // https://docs.google.com/spreadsheets/d/1jKEhOi9gIcM9bKdn7rgJEK0RKpzbE1k6bPy_kJW75Aw/edit#gid=1707981752
         Assertions.assertThat(network).withFailMessage("`network` 必传").isNotBlank();
         Web3j web3j = new Web3jOfInstanceFactory(web3JFactory.getEthNode(network)).j3();
-        String pairAddress = new RemoteCallFunction<>(new UniswapV2FactoryContract(uniswapV2FactoryAddr, web3j).getPairAddress(tokenA, tokenB)).call();
+        String pairAddress = new RemoteCallFunction<>(new UniswapV2FactoryContract(univ2FactoryAddr, web3j).getPairAddress(tokenA, tokenB)).call();
         if (pairAddress.equalsIgnoreCase(Constrants.EMPTY_ADDRESS)) {
             return R.ok(null);
         }
@@ -81,12 +82,12 @@ public class ETHUniSwapV2Restful {
     @RequestMapping(value = "/getExchangeAddr", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getExchangeAddr(
             @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
-            @RequestParam(value = "uniswapV2FactoryAddr", required = false, defaultValue = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f") String uniswapV2FactoryAddr,
+            @RequestParam(value = "univ2FactoryAddr", required = false, defaultValue = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f") String univ2FactoryAddr,
             @RequestParam(value = "tokenAddr", required = true) String tokenAddr
     ) {
         Assertions.assertThat(network).withFailMessage("`network` 必传").isNotBlank();
         Assertions.assertThat(tokenAddr).withFailMessage("`tokenAddr` 必传").isNotBlank();
-        String exchangeAddr = new RemoteCallFunction<>(new UniswapV2FactoryContract(uniswapV2FactoryAddr, web3JFactory.get(network)).getExchangeAddr(tokenAddr)).call();
+        String exchangeAddr = new RemoteCallFunction<>(new UniswapV2FactoryContract(univ2FactoryAddr, web3JFactory.get(network)).getExchangeAddr(tokenAddr)).call();
         return R.ok(Constrants.EMPTY_ADDRESS.equalsIgnoreCase(exchangeAddr) ? null : exchangeAddr);
     }
 
@@ -95,14 +96,37 @@ public class ETHUniSwapV2Restful {
     @RequestMapping(value = "/getTokenAddress", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getTokenAddress(
             @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
-            @RequestParam(value = "uniswapV1FactoryAddr", required = false, defaultValue = "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95") String uniswapV1FactoryAddr,
+            @RequestParam(value = "univ1FactoryAddr", required = false, defaultValue = "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95") String univ1FactoryAddr,
             @RequestParam(value = "exchangeAddr", required = true) String exchangeAddr
     ) {
         Assertions.assertThat(network).withFailMessage("`network` 必传").isNotBlank();
         Assertions.assertThat(exchangeAddr).withFailMessage("`exchangeAddr` 必传").isNotBlank();
-        String tokenAddr = new RemoteCallFunction<>(new UniswapV2FactoryContract(uniswapV1FactoryAddr, web3JFactory.get(network)).getToken(exchangeAddr)).call();
+        String tokenAddr = new RemoteCallFunction<>(new UniswapV2FactoryContract(univ1FactoryAddr, web3JFactory.get(network)).getToken(exchangeAddr)).call();
         return R.ok(Constrants.EMPTY_ADDRESS.equalsIgnoreCase(tokenAddr) ? null : tokenAddr);
     }
 
+    
+    // ETH与代币兑换, eth减少, 代币增加
+    @RequestMapping(value = "/eth2TokenSwap", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<String> eth2TokenSwap(
+            @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
+            @RequestParam(value = "router02Addr", required = false, defaultValue = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D") String router02Addr,
+            @RequestParam(value = "contractAddr", required = true) String contractAddr, // erc20 合约地址
+            @RequestParam(value = "toAddr", required = true) String toAddr, // 转入地址, 账户地址
+            @RequestParam(value = "gasPrice", required = true) Long gasPrice, // 即 rapid OR fast OR standard OR slow 对应的值
+            @RequestParam(value = "gasLimit", required = false, defaultValue = "21000") Long gasLimit,
+            @RequestParam(value = "amount", required = true) Double amount, // 转帐数量, 单位是 erc20代币单位
+            @RequestParam(value = "fromAddress", required = true) String fromAddress, // 出帐地址
+            @RequestParam(value = "privateKey", required = true) String privateKey // 出帐地址
+    ) {
+        // We use this slippage tolerance to calculate the minumum amount of DAI we must receive before our trade reverts, thanks to minimumAmountOut. 
+        // The value is the amount of ETH that must be included as the msg.value in our transaction.
+        // const amountOutMin = trade.minimumAmountOut(slippageTolerance).raw
+        Double slippageTolerance = 0.2d;
+        Long amountOutMin = null;//(amount * slippageTolerance);
+        Address wethAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.getByEthNode(ethnode)).WETH()).call();
+        String inputData = ETHInputEncoder.getInputDataForSwapExactETHForTokens(amountOutMin, wethAddr.getValue(), contractAddr, toAddr);
+        return R.ok(inputData);
+    }
     
 }

@@ -88,11 +88,11 @@ public final class ETHInputEncoder {
     // returns (uint[] memory amounts);
     // 0xa9059cbb0000000000000000000000009e7b1a22cf4d69efad71bac24a6a8518574f1fc40000000000000000000000000000000000000000000000000000008fe0b0b380
     // UniSwap兑换: 获取 eth换代币 input 参数
-    public static String getInputDataForSwapExactETHForTokens(Long amountOutMin, String wethAddr, String tokenAddr, String toAddr, Long timeout) {
-        Long deadline = Instant.now().toEpochMilli() + (timeout * 1000);
+    public static String getInputDataForSwapExactETHForTokens(Long amountOutMin, String wethAddr, String tokenAddr, String toAddr) {
+        Double deadline = (Math.floor(Instant.now().toEpochMilli() / 1000) + (60 * 20)); // 默认20分钟
         Function function = new Function(
                 "swapExactETHForTokens",
-                Arrays.asList(new Uint256(amountOutMin), new Address(wethAddr), new Address(tokenAddr), new Address(toAddr), new Uint256(deadline)),
+                Arrays.asList(new Uint256(amountOutMin), new Address(wethAddr), new Address(tokenAddr), new Address(toAddr), new Uint256(deadline.longValue())),
                 Collections.singletonList(new TypeReference<Type>() { }));
         return FunctionEncoder.encode(function).replace("0xa399e043", "0x7ff36ab5");
     }

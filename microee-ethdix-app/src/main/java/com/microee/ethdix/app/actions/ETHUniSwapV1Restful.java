@@ -365,7 +365,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 //@formatter:on
 @RestController
-@RequestMapping("/uniswapv1")
+@RequestMapping("/univ1")
 public class ETHUniSwapV1Restful {
 
     @Autowired
@@ -413,19 +413,4 @@ public class ETHUniSwapV1Restful {
         return R.ok(Constrants.EMPTY_ADDRESS.equalsIgnoreCase(tokenAddr) ? null : tokenAddr);
     }
     
-    // 平台币与代币兑换, eth 减少, 代币增加
-    @RequestMapping(value = "/eth2TokenSwap", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<String> eth2TokenSwap(
-            @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
-            @RequestParam(value = "contractAddress", required = true) String contractAddress, // erc20 合约地址
-            @RequestParam(value = "toAddress", required = true) String toAddress, // 转入地址, 账户地址
-            @RequestParam(value = "gasPrice", required = true) Long gasPrice, // 即 rapid OR fast OR standard OR slow 对应的值
-            @RequestParam(value = "gasLimit", required = false, defaultValue = "21000") Long gasLimit,
-            @RequestParam(value = "amount", required = true) Double amount, // 转帐数量, 单位是 erc20代币单位
-            @RequestParam(value = "fromAddress", required = true) String fromAddress, // 出帐地址
-            @RequestParam(value = "privateKey", required = true) String privateKey) {
-        
-        return R.ok(null);
-    }
-
 }
