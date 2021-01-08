@@ -35,6 +35,10 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
     ErrorHandler.handle(500, err, res);
 });
 
+process.on('unhandledRejection', (err: Error) => {
+    loggerError(`unhandledRejection: errorName=${err.name}, errorMessage=${err.message}`);
+});
+
 server.listen(port, () => {
     loggerInfo(`Server running at http://localhost:${port}`);
     routes.forEach((route: CommonRoutesConfig) => {

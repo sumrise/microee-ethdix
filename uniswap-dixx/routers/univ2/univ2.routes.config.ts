@@ -1,12 +1,9 @@
 import { CommonRoutesConfig } from '../../common/common.routes.config';
 import express from 'express';
-import debug from 'debug';
 import { expect } from 'chai';
 import { ChainId, Token, WETH, Fetcher, Route } from '@uniswap/sdk'
 
 // import { ErrorHandler } from '../../common/error';
-
-const debugLog: debug.IDebugger = debug('app-pricing');
 
 // https://uniswap.org/docs/v2/SDK/getting-started
 export class UniV2sRoutes extends CommonRoutesConfig {
@@ -15,7 +12,7 @@ export class UniV2sRoutes extends CommonRoutesConfig {
     }
     configureRoutes() {
         this.app.route(`/univ2/token`)
-            .get((req: express.Request, res: express.Response) => {
+            .get((req: express.Request, res: express.Response, next: express.NextFunction) => {
                 const _tokenAddr: string = req.query['tokenAddr'] as string; // 代币地址
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
                 expect(_tokenAddr, 'tokenAddr invalid').to.have.lengthOf(42);
