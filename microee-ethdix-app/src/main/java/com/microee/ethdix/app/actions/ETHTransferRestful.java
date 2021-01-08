@@ -18,6 +18,7 @@ import com.microee.ethdix.j3.contract.ETHInputEncoder;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.plugin.response.R;
+import java.math.BigDecimal;
 
 // 以太坊构建转帐交易相关借口
 @RestController
@@ -61,24 +62,24 @@ public class ETHTransferRestful {
     @RequestMapping(value = "/signETHTransferTransaction", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> signETHTransferTransaction(
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
-            @RequestParam(value = "toAddress", required = true) String toAddress, // 转入地址
+            @RequestParam(value = "toAddr", required = true) String toAddr, // 转入地址
             @RequestParam(value = "gasPrice", required = true) Long gasPrice, // 即 rapid OR fast OR standard OR slow 对应的值
             @RequestParam(value = "gasLimit", required = false, defaultValue = "21000") Long gasLimit,
-            @RequestParam(value = "amount", required = true) Double amount, // 转帐数量, 单位是 ether
-            @RequestParam(value = "fromAddress", required = true) String fromAddress, // 出帐地址
+            @RequestParam(value = "amount", required = true) BigDecimal amount, // 转帐数量, 单位是 ether
+            @RequestParam(value = "fromAddr", required = true) String fromAddr, // 出帐地址
             @RequestParam(value = "privateKey", required = true) String privateKey) { // 地址私钥
         Assertions.assertThat(ethnode == null || ethnode.isEmpty()).withFailMessage("`ethnode` 必传").isFalse();
-        Assertions.assertThat(toAddress).withFailMessage("`toAddress` 必传").isNotBlank();
+        Assertions.assertThat(toAddr).withFailMessage("`toAddr` 必传").isNotBlank();
         Assertions.assertThat(gasPrice).withFailMessage("`gasPrice`必须大于0").isGreaterThan(0l);
         Assertions.assertThat(gasLimit).withFailMessage("`gasLimit`必须大于0").isGreaterThan(0l);
-        Assertions.assertThat(amount).withFailMessage("`amount`必须大于0").isGreaterThan(0.0d);
+        Assertions.assertThat(amount).withFailMessage("`amount`必须大于0").isGreaterThan(BigDecimal.ZERO);
         Assertions.assertThat(privateKey).withFailMessage("`privateKey`必传或格式不对").isNotBlank().hasSize(64);
-        Assertions.assertThat(toAddress.equals(fromAddress)).withFailMessage("`from` and `to` 必须不相等").isFalse();
+        Assertions.assertThat(toAddr.equals(fromAddr)).withFailMessage("`fromAddr` and `toAddr` 必须不相等").isFalse();
         // 转帐数量(eth的最小单位), 单位是 wei
         // 1eth = 1000000000000000000
         // 0.035eth = 35000000000000000
-        final Double amountDouble = (amount * (Math.pow(10, 18))); // 转帐数量
-        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).signETHTransaction(fromAddress, toAddress, gasPrice, gasLimit, amountDouble.longValue(), privateKey));
+        final BigInteger amountValue = amount.multiply(new BigDecimal("10").pow(18)).toBigInteger(); // 转帐数量
+        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).signETHTransaction(fromAddr, toAddr, gasPrice, gasLimit, amountValue, privateKey));
     }
     
     // 签名交易: 构建 erc20 交易签名, 返回签名后的数据
@@ -86,25 +87,25 @@ public class ETHTransferRestful {
     @RequestMapping(value = "/signTokenTransferTransaction", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> signTokenTransferTransaction(
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
-            @RequestParam(value = "contractAddress", required = true) String contractAddress, // erc20 合约地址
-            @RequestParam(value = "toAddress", required = true) String toAddress, // 转入地址, 账户地址
+            @RequestParam(value = "erc20Addr", required = true) String erc20Addr, // erc20 合约地址
+            @RequestParam(value = "toAddr", required = true) String toAddr, // 转入地址, 账户地址
             @RequestParam(value = "gasPrice", required = true) Long gasPrice, // 即 rapid OR fast OR standard OR slow 对应的值
             @RequestParam(value = "gasLimit", required = false, defaultValue = "21000") Long gasLimit,
-            @RequestParam(value = "amount", required = true) Double amount, // 转帐数量, 单位是 erc20代币单位
-            @RequestParam(value = "fromAddress", required = true) String fromAddress, // 出帐地址
+            @RequestParam(value = "amount", required = true) BigDecimal amount, // 转帐数量, 单位是 erc20代币单位
+            @RequestParam(value = "fromAddr", required = true) String fromAddr, // 出帐地址
             @RequestParam(value = "privateKey", required = true) String privateKey) throws Exception { // 地址私钥
         Assertions.assertThat(ethnode == null || ethnode.isEmpty()).withFailMessage("`ethnode` 必传").isFalse();
-        Assertions.assertThat(contractAddress).withFailMessage("`contractAddress` 必传").isNotBlank();
-        Assertions.assertThat(toAddress).withFailMessage("`toAddress` 必传").isNotBlank();
+        Assertions.assertThat(erc20Addr).withFailMessage("`erc20Addr` 必传").isNotBlank();
+        Assertions.assertThat(toAddr).withFailMessage("`toAddr` 必传").isNotBlank();
         Assertions.assertThat(gasPrice).withFailMessage("`gasPrice`必须大于0").isGreaterThan(0l);
         Assertions.assertThat(gasLimit).withFailMessage("`gasLimit`必须大于0").isGreaterThan(0l);
-        Assertions.assertThat(amount).withFailMessage("`amount`必须大于0").isGreaterThan(0.0d);
+        Assertions.assertThat(amount).withFailMessage("`amount`必须大于0").isGreaterThan(BigDecimal.ZERO);
         Assertions.assertThat(privateKey).withFailMessage("`privateKey`必传或格式不对").isNotBlank().hasSize(64);
-        Assertions.assertThat(toAddress.equals(fromAddress)).withFailMessage("`from` and `to` 必须不相等").isFalse();
-        BigInteger tokenDecimal = (BigInteger) new RemoteCallFunction<>(new ERC20ContractQuery(contractAddress, web3JFactory.get(null, ethnode)).decimals()).call();
-        final Double amountDouble = (amount * (Math.pow(10, tokenDecimal.intValue()))); // 转帐数量(代币的最小单位), 例如: 1usdt = 1000000
-        final String inputData = ETHInputEncoder.getInputDataForTokenTransfer(toAddress, amountDouble.longValue());
-        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).signTokenTransaction(fromAddress, contractAddress, gasPrice, gasLimit, privateKey, inputData));
+        Assertions.assertThat(toAddr.equals(fromAddr)).withFailMessage("`fromAddr` and `toAddr` 必须不相等").isFalse();
+        BigInteger tokenDecimal = (BigInteger) new RemoteCallFunction<>(new ERC20ContractQuery(erc20Addr, web3JFactory.get(null, ethnode)).decimals()).call();
+        final BigInteger amountValue = amount.multiply(new BigDecimal("10").pow(tokenDecimal.intValue())).toBigInteger(); // 转帐数量(代币的最小单位), 例如: 1usdt = 1000000
+        final String inputData = ETHInputEncoder.getInputDataForTokenTransfer(toAddr, amountValue);
+        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).signTokenTransaction(fromAddr, erc20Addr, gasPrice, gasLimit, privateKey, inputData));
     }
 
     // 根据签名后的数据获取交易哈希

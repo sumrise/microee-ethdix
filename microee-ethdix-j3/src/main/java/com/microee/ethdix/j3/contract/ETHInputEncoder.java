@@ -1,5 +1,6 @@
 package com.microee.ethdix.j3.contract;
 
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,7 +41,7 @@ public final class ETHInputEncoder {
     
     // 0xa9059cbb0000000000000000000000009e7b1a22cf4d69efad71bac24a6a8518574f1fc40000000000000000000000000000000000000000000000000000008fe0b0b380
     // 获取以太坊代币转帐合约 input 参数
-    public static String getInputDataForTokenTransfer(String to, Long amount) {
+    public static String getInputDataForTokenTransfer(String to, BigInteger amount) {
         // BigInteger val = amount.multiply(new BigDecimal("10").pow(decimal)).toBigInteger(); // 根据精度转成最小单位
         Function function = new Function(
                 "transfer",
@@ -48,7 +49,6 @@ public final class ETHInputEncoder {
                 Collections.singletonList(new TypeReference<Type>() { }));
         return FunctionEncoder.encode(function);
     }
-    
     
     // https://app.uniswap.org/#/swap
     // https://uniswap.org/docs/v2/smart-contracts/router02/

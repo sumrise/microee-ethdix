@@ -49,7 +49,8 @@ public class ETHBlockService {
         if (result == null) {
             result = web3JFactory.getJsonRpc(network, ethnode).getBlockByNumber(blockNumber);
             if ((ethnode == null || ethnode.isEmpty()) && result != null) {
-                mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber, "transactions"); // remove 0x, 交易信息保存到令一个表
+                // mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber, "transactions"); // 交易信息保存到另一个表
+                mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber); // 交易信息保存到另一个表
                 ethTransService.saveTransactions(blockNumber, result.getTransactions());
             }
         }

@@ -21,11 +21,11 @@ public class WalletRestful {
     
     // 创建钱包, 返回钱包地址
     @RequestMapping(value = "/setup", method = RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<String> setup(
+    public R<String[]> setup(
             @RequestParam(value = "seedCode", required = true) String seedCode,
             @RequestParam(value = "passwd", required = true) String passwd)
             throws UnreadableWalletException {
-        return R.ok(DeterministicKeys.generator(seedCode, passwd)[0]);
+        return R.ok(DeterministicKeys.generator(seedCode, passwd));
     }
 
     // 创建钱包, 返回钱包地址

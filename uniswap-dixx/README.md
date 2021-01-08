@@ -8,17 +8,4 @@
 ### How to enable ES6 (and beyond) syntax with Node and Express
 # https://www.freecodecamp.org/news/how-to-enable-es6-and-beyond-syntax-with-node-and-express-68d3e11fe1ab/
 
-### Uniswap v2 (as a Developer)
-# https://vomtom.at/how-to-use-uniswap-v2-as-a-developer/
-
-### uniswap-pool-api
-# https://bitquery.io/blog/uniswap-pool-api
-
-### Trading
-# https://uniswap.org/docs/v2/javascript-SDK/trading/
-
-### Smart Contract Quick start
-# https://uniswap.org/docs/v2/smart-contract-integration/quick-start/
-
-
 

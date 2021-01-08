@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.microee.plugin.response.R;
+import java.math.BigInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.web3j.abi.datatypes.Address;
@@ -83,7 +84,7 @@ public class ETHInputRestful {
      * @return 
      */
     @RequestMapping(value = "/getInputDataForTokenTransfer", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<String> getInputDataForTokenTransfer(@RequestParam("toAddress") String toAddress, @RequestParam("amount") Long amount) {
+    public R<String> getInputDataForTokenTransfer(@RequestParam("toAddress") String toAddress, @RequestParam("amount") BigInteger amount) {
         return R.ok(ETHInputEncoder.getInputDataForTokenTransfer(toAddress, amount));
     }
     
