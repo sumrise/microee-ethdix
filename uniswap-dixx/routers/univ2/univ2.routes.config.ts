@@ -28,8 +28,8 @@ export class UniV2sRoutes extends CommonRoutesConfig {
         this.app.route(`/univ2/pair`)
             .get((req: express.Request, res: express.Response) => {
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
-                const _tokanA: string = req.query['tokanA'] as string; // 代币地址A
-                const _tokanB: string = req.query['tokanB'] as string; // 代币地址B
+                const _tokanA: string = req.query['tokenA'] as string; // 代币地址A
+                const _tokanB: string = req.query['tokenB'] as string; // 代币地址B
                 expect(_tokanA, 'tokanA invalid').to.have.lengthOf(42);
                 expect(_tokanB, 'tokanB invalid').to.have.lengthOf(42);
                 (async () => {
@@ -47,8 +47,8 @@ export class UniV2sRoutes extends CommonRoutesConfig {
         this.app.route(`/univ2/route`)
             .get((req: express.Request, res: express.Response) => {
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
-                const _tokanA: string = req.query['tokanA'] as string; // 代币地址A
-                const _tokanB: string = req.query['tokanB'] as string; // 代币地址B
+                const _tokanA: string = req.query['tokenA'] as string; // 代币地址A
+                const _tokanB: string = req.query['tokenB'] as string; // 代币地址B
                 expect(_tokanA, 'tokanA invalid').to.have.lengthOf(42);
                 expect(_tokanB, 'tokanB invalid').to.have.lengthOf(42);
                 (async () => {
@@ -67,8 +67,8 @@ export class UniV2sRoutes extends CommonRoutesConfig {
         this.app.route(`/univ2/trade`)
             .get((req: express.Request, res: express.Response) => {
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
-                const _tokanA: string = req.query['tokanA'] as string; // 代币地址A
-                const _tokanB: string = req.query['tokanB'] as string; // 代币地址B
+                const _tokanA: string = req.query['tokenA'] as string; // 代币地址A
+                const _tokanB: string = req.query['tokenB'] as string; // 代币地址B
                 expect(_tokanA, 'tokanA invalid').to.have.lengthOf(42);
                 expect(_tokanB, 'tokanB invalid').to.have.lengthOf(42);
                 (async () => {

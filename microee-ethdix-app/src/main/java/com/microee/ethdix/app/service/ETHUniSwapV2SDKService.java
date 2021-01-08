@@ -1,7 +1,7 @@
 package com.microee.ethdix.app.service;
 
 import com.microee.ethdix.rmi.UniSwapV2SDKClient;
-import com.microee.plugin.response.R;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,34 +11,19 @@ public class ETHUniSwapV2SDKService {
     @Autowired
     private UniSwapV2SDKClient univ2SDKClient;
     
-    public String token() {
-        R<String> tokenResult = univ2SDKClient.token();
-        return tokenResult.getData();
+    public Map<String, Object> token(String tokenAddr) {
+        return univ2SDKClient.token(tokenAddr).getData();
     }
     
-    public String pair() {
-        R<String> pairResult = univ2SDKClient.pair();
-        return pairResult.getData();
+    public Map<String, Object> pair(String tokenA, String tokenB) {
+        return univ2SDKClient.pair(tokenA, tokenB).getData();
     }
     
-    public String route() {
-        R<String> routeResult = univ2SDKClient.route();
-        return routeResult.getData();
+    public Map<String, Object> route(String tokenA, String tokenB) {
+        return univ2SDKClient.route(tokenA, tokenB).getData();
     }
     
-    public String trade() {
-        R<String> tradeResult = univ2SDKClient.trade();
-        return tradeResult.getData();
+    public Map<String, Object> trade(String tokenA, String tokenB) {
+        return univ2SDKClient.trade(tokenA, tokenB).getData();
     }
-    
-    public String fractions() {
-        R<String> fractionsResult = univ2SDKClient.fractions();
-        return fractionsResult.getData();
-    }
-    
-    public String fetcher() {
-        R<String> fetcherResult = univ2SDKClient.fetcher();
-        return fetcherResult.getData();
-    }
-    
 }
