@@ -1,8 +1,6 @@
 import express from 'express';
 import * as http from 'http';
 import * as bodyparser from 'body-parser';
-import * as winston from 'winston';
-import * as expressWinston from 'express-winston';
 import cors from 'cors'
 import debug from 'debug';
 import logger from 'morgan';
@@ -10,12 +8,16 @@ import logger from 'morgan';
 import { CommonRoutesConfig } from './common/common.routes.config';
 import { UsersRoutes } from './routers/users/users.routes.config';
 import { UniV2sRoutes } from './routers/univ2/univ2.routes.config';
+import { UniV2SimplesRoutes } from './routers/univ2/univ2-simple.routes.config';
+
+import { ErrorHandler } from './common/error';
 
 const app: express.Application = express();
 const server: http.Server = http.createServer(app);
-const port: Number = 3000;
+const port: number = 3000;
 const routes: Array<CommonRoutesConfig> = [];
-const debugLog: debug.IDebugger = debug('app');
+const loggerInfo: debug.IDebugger = debug('app');
+const loggerError: debug.IDebugger = debug('app-error');
 
 app.use(logger('combined'));
 app.use(bodyparser.json());
@@ -23,24 +25,19 @@ app.use(cors());
 
 routes.push(new UsersRoutes(app));
 routes.push(new UniV2sRoutes(app));
-
-app.use(expressWinston.errorLogger({
-    transports: [
-        new winston.transports.Console()
-    ],
-    format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.json()
-    )
-}));
+routes.push(new UniV2SimplesRoutes(app));
 
 app.get('/', (req: express.Request, res: express.Response) => {
     res.status(200).send(`Server running at http://localhost:${port}`)
 });
 
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    ErrorHandler.handle(500, err, res);
+});
+
 server.listen(port, () => {
-    debugLog(`Server running at http://localhost:${port}`);
+    loggerInfo(`Server running at http://localhost:${port}`);
     routes.forEach((route: CommonRoutesConfig) => {
-        debugLog(`Routes configured for ${route.getName()}`);
+        loggerInfo(`Routes configured for ${route.getName()}`);
     });
 });
