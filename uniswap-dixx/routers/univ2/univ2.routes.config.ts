@@ -30,8 +30,8 @@ export class UniV2sRoutes extends CommonRoutesConfig {
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
                 const _tokanA: string = req.query['tokenA'] as string; // 代币地址A
                 const _tokanB: string = req.query['tokenB'] as string; // 代币地址B
-                expect(_tokanA, 'tokanA invalid').to.have.lengthOf(42);
-                expect(_tokanB, 'tokanB invalid').to.have.lengthOf(42);
+                expect(_tokanA, 'tokenA invalid').to.have.lengthOf(42);
+                expect(_tokanB, 'tokenB invalid').to.have.lengthOf(42);
                 (async () => {
                     const tokenA = await Fetcher.fetchTokenData(_chainId, _tokanA);
                     const tokenB = await Fetcher.fetchTokenData(_chainId, _tokanB);
@@ -49,8 +49,8 @@ export class UniV2sRoutes extends CommonRoutesConfig {
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
                 const _tokanA: string = req.query['tokenA'] as string; // 代币地址A
                 const _tokanB: string = req.query['tokenB'] as string; // 代币地址B
-                expect(_tokanA, 'tokanA invalid').to.have.lengthOf(42);
-                expect(_tokanB, 'tokanB invalid').to.have.lengthOf(42);
+                expect(_tokanA, 'tokenA invalid').to.have.lengthOf(42);
+                expect(_tokanB, 'tokenB invalid').to.have.lengthOf(42);
                 (async () => {
                     const tokenA = await Fetcher.fetchTokenData(_chainId, _tokanA);
                     const tokenB = await Fetcher.fetchTokenData(_chainId, _tokanB);
@@ -69,8 +69,8 @@ export class UniV2sRoutes extends CommonRoutesConfig {
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
                 const _tokanA: string = req.query['tokenA'] as string; // 代币地址A
                 const _tokanB: string = req.query['tokenB'] as string; // 代币地址B
-                expect(_tokanA, 'tokanA invalid').to.have.lengthOf(42);
-                expect(_tokanB, 'tokanB invalid').to.have.lengthOf(42);
+                expect(_tokanA, 'tokenA invalid').to.have.lengthOf(42);
+                expect(_tokanB, 'tokenB invalid').to.have.lengthOf(42);
                 (async () => {
                     const tokenA = await Fetcher.fetchTokenData(_chainId, _tokanA);
                     const tokenB = await Fetcher.fetchTokenData(_chainId, _tokanB);
