@@ -1,0 +1,45 @@
+
+## 安装Docker Compose
+# curl -L https://github.com/docker/compose/releases/download/1.24.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+# chmod +x /usr/local/bin/docker-compose
+# docker-compose --version
+# docker-compose up -d
+version: '2.4'
+networks:
+    br0:
+      external: true
+
+services:
+  microee.ethdix.app:
+    container_name: microee.ethdix.app
+    image: chunhui2001/alpine:3.9.tomcat8.5
+    hostname: microee.ethdix.app
+    mem_limit: 300m
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - 29111:29101
+    entrypoint: ["java", "-Djava.library.path=/usr/local/tomcat/native-jni-lib", "-jar", "/root/app.jar"]
+    volumes:
+      - ./dist/microee-ethdix-app-1.0-SNAPSHOT.jar:/root/app.jar:ro
+    restart: always
+    networks:
+        br0:
+          ipv4_address: 172.16.197.28
+  uniswap.sdk.dixx:
+    container_name: uniswap.sdk.dixx
+    image: chunhui2001/alpine:3.9.node_12.18.3
+    hostname: uniswap.sdk.dixx
+    mem_limit: 300m
+    ports:
+      - 3011:3000
+    entrypoint: ["/bin/sh", "-c", "while true; do echo 1 >/dev/null 2>/dev/null; sleep 1; done"]
+    #entrypoint: ["sh", "-c", "/app/run.sh"]
+    volumes:
+      - ./dist/uniswap-dixx:/app/uniswap-dixx:rw
+    restart: always
+    networks:
+        br0:
+          ipv4_address: 172.16.197.128
+
+
