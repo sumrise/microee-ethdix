@@ -2,6 +2,7 @@ import { CommonRoutesConfig } from '../../common/common.routes.config';
 import express from 'express';
 import debug from 'debug';
 import { expect } from 'chai';
+
 import { ChainId, Fetcher, Route, Pair, TokenAmount, TradeType, Trade, WETH, Percent } from '@uniswap/sdk'
 
 const loggerInfo: debug.IDebugger = debug('app-univ2-trade');
@@ -18,10 +19,12 @@ export class UniV2TradeRoutes extends CommonRoutesConfig {
                 res.status(200).send(`UniSwapV2 Trading Page.`);
             });
         this.app.route(`/univ2-trade/eth2TokenSwap`)
-            .get((req: express.Request, res: express.Response) => {
+            .post((req: express.Request, res: express.Response) => {
                 const _chainId = ChainId.MAINNET;
                 const _tokenAddr: string = req.query['tokenAddr'] as string; // 代币地址
                 const _slippageTolerance = new Percent('50', '10000'); // 50 bips 1 bip = 0.05
+                const _params = Object.assign({}, req.body);
+                loggerInfo(`_params: ${JSON.stringify(_params)}`);
                 expect(_tokenAddr, 'tokenAddr invalid').to.have.lengthOf(42);
                 const _wethAddr = WETH[_chainId];
                 (async () => {

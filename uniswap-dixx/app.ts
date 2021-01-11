@@ -3,7 +3,8 @@ import * as http from 'http';
 import * as bodyparser from 'body-parser';
 import cors from 'cors'
 import debug from 'debug';
-import logger from 'morgan';
+import morgan from 'morgan';
+import moment from 'moment-timezone';
 
 import { CommonRoutesConfig } from './common/common.routes.config';
 import { UniV2SDKRoutes } from './routers/univ2/univ2-sdk.routes.config';
@@ -18,8 +19,15 @@ const routes: Array<CommonRoutesConfig> = [];
 const loggerInfo: debug.IDebugger = debug('app');
 const loggerError: debug.IDebugger = debug('app-error');
 
-app.use(logger('combined'));
+morgan.token('date', () => {
+    return moment().tz('Asia/Shanghai').format();
+});
+
+morgan.format('myformat', '[:date] ":method :url" :status :res[content-length] - :response-time ms');
+
+app.use(morgan('combined'));
 app.use(bodyparser.json());
+app.use(bodyparser.urlencoded({ extended: true }));
 app.use(cors());
 
 routes.push(new UniV2SDKRoutes(app));

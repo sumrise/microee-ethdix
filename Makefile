@@ -9,8 +9,7 @@ prepared:
 dist: clear prepared
 	mvn -f pom.xml clean package
 	cp microee-ethdix-app/target/microee-ethdix-app-1.0-SNAPSHOT.jar dist/
-	cp -rf uniswap-dixx dist/
-	rm -rf dist/uniswap-dixx/node_modules
+	rsync -az --exclude 'node_modules' --exclude 'package-lock.json' uniswap-dixx dist/
 	mvn clean
 
 run: dist
