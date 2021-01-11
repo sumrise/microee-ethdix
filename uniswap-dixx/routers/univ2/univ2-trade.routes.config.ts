@@ -67,7 +67,7 @@ export class UniV2TradeRoutes extends CommonRoutesConfig {
                 const _router02Addr: string = req.query['router02Addr'] as string;
                 const _tradInfo = Object.assign({ privateKey: null, slippageTolerance: null, amountOutMin: null, path: [], to: '', deadline: null, value: null }, req.body);
                 const _privateKey = _tradInfo.privateKey;
-                loggerInfo(`_tradInfo: ${JSON.stringify(Object.assign(_tradInfo, { privateKey2: null }))}`);
+                loggerInfo(`_tradInfo: ${JSON.stringify(Object.assign(_tradInfo, { privateKey: null }))}`);
                 expect(_ethnode, 'ethnode invalid').to.length.gte(42);
                 expect(_router02Addr, 'router02Addr invalid').to.have.lengthOf(42);
                 expect(_privateKey, 'privateKey invalid').to.length.gte(42);
