@@ -37,12 +37,19 @@ app.get('/', (req: express.Request, res: express.Response) => {
     res.status(200).send(`Server running at http://localhost:${port}`)
 });
 
+// Handle 404
+app.use((req, res, next) => {
+    if(res.status(404)) {
+        res.status(200).json({ code: 404, message: 'Not Found' });
+    }
+});
+
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     ErrorHandler.handle(500, err, res);
 });
 
 process.on('unhandledRejection', (err: Error) => {
-    loggerError(`unhandledRejection: errorName=${err.name}, errorMessage=${err.message}`);
+    loggerError(`unhandledRejection: errorName=${err.name}, errorMessage=${err.message}, stack=${err.stack}`);
 });
 
 server.listen(port, () => {
