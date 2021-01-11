@@ -16,6 +16,9 @@ mvn archetype:generate -DgroupId=com.microee.ethdix.app -DartifactId=microee-eth
 ### ethdix 微服务 -- ethdix-rmi 远程调用
 mvn archetype:generate -DgroupId=com.microee.ethdix.rmi -DartifactId=microee-ethdix-rmi -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
+### ethdix 微服务 -- ethdix-interfaces 远程调用
+mvn archetype:generate -DgroupId=com.microee.ethdix.interfaces -DartifactId=microee-ethdix-interfaces -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
+
 
 ### 合约查询浏览器
 # blockchair：https://blockchair.com/zh/ethereum/erc-20

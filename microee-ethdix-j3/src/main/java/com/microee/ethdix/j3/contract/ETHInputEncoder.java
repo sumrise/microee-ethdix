@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
@@ -41,6 +41,7 @@ public final class ETHInputEncoder {
     
     // 0xa9059cbb0000000000000000000000009e7b1a22cf4d69efad71bac24a6a8518574f1fc40000000000000000000000000000000000000000000000000000008fe0b0b380
     // 获取以太坊代币转帐合约 input 参数
+    @SuppressWarnings("rawtypes")
     public static String getInputDataForTokenTransfer(String to, BigInteger amount) {
         // BigInteger val = amount.multiply(new BigDecimal("10").pow(decimal)).toBigInteger(); // 根据精度转成最小单位
         Function function = new Function(
@@ -88,6 +89,7 @@ public final class ETHInputEncoder {
     // returns (uint[] memory amounts);
     // 0xa9059cbb0000000000000000000000009e7b1a22cf4d69efad71bac24a6a8518574f1fc40000000000000000000000000000000000000000000000000000008fe0b0b380
     // UniSwap兑换: 获取 eth换代币 input 参数
+    @SuppressWarnings("rawtypes")
     public static String getInputDataForSwapExactETHForTokens(Long amountOutMin, String wethAddr, String tokenAddr, String toAddr) {
         Double deadline = (Math.floor(Instant.now().toEpochMilli() / 1000) + (60 * 20)); // 默认20分钟
         Function function = new Function(

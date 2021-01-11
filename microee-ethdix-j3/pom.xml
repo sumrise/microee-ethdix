@@ -113,6 +113,12 @@
             <artifactId>microee-commons</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <!-- apache commons utils -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -162,6 +168,7 @@
                                         <exclude>META-INF/LICENSE*</exclude>
                                         <exclude>META-INF/NOTICE*</exclude>
                                         <exclude>META-INF/MANIFEST*</exclude>
+                                        <exclude>META-INF/*.txt</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
