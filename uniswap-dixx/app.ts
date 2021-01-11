@@ -6,9 +6,8 @@ import debug from 'debug';
 import logger from 'morgan';
 
 import { CommonRoutesConfig } from './common/common.routes.config';
-import { UsersRoutes } from './routers/users/users.routes.config';
-import { UniV2sRoutes } from './routers/univ2/univ2.routes.config';
-import { UniV2SimplesRoutes } from './routers/univ2/univ2-simple.routes.config';
+import { UniV2SDKRoutes } from './routers/univ2/univ2-sdk.routes.config';
+import { UniV2TradeRoutes } from './routers/univ2/univ2-trade.routes.config';
 
 import { ErrorHandler } from './common/error';
 
@@ -23,9 +22,8 @@ app.use(logger('combined'));
 app.use(bodyparser.json());
 app.use(cors());
 
-routes.push(new UsersRoutes(app));
-routes.push(new UniV2sRoutes(app));
-routes.push(new UniV2SimplesRoutes(app));
+routes.push(new UniV2SDKRoutes(app));
+routes.push(new UniV2TradeRoutes(app));
 
 app.get('/', (req: express.Request, res: express.Response) => {
     res.status(200).send(`Server running at http://localhost:${port}`)
