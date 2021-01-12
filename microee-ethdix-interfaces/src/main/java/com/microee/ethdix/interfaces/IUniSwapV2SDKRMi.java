@@ -1,15 +1,22 @@
 package com.microee.ethdix.interfaces;
 
-import com.microee.plugin.response.R;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.microee.ethdix.oem.eth.entity.Token;
+import com.microee.plugin.response.R;
 
 // UniSwapV2 SDK RMi
 public interface IUniSwapV2SDKRMi {
 
+    
+    @RequestMapping(value = "/default-token-list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<List<Token>> defaultTokenList(
+            @RequestParam("chainId") short chainId, @RequestParam("symbol") String symbol);
+    
     @RequestMapping(value = "/token", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> token(@RequestParam("tokenAddr") String tokenAddr);
 

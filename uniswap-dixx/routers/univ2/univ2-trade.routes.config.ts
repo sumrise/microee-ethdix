@@ -65,12 +65,12 @@ export class UniV2TradeRoutes extends CommonRoutesConfig {
                 const _swapExactETHForTokensABI = 'function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable returns (uint[] memory amounts);';
                 const _ethnode: string = req.query['ethnode'] as string;
                 const _router02Addr: string = req.query['router02Addr'] as string;
-                const _tradInfo = Object.assign({ privateKey: null, slippageTolerance: null, amountOutMin: null, path: [], to: '', deadline: null, value: null }, req.body);
-                const _privateKey = _tradInfo.privateKey;
-                loggerInfo(`_tradInfo: ${JSON.stringify(Object.assign(_tradInfo, { privateKey: null }))}`);
-                expect(_ethnode, 'ethnode invalid').to.length.gte(42);
-                expect(_router02Addr, 'router02Addr invalid').to.have.lengthOf(42);
-                expect(_privateKey, 'privateKey invalid').to.length.gte(42);
+                const _privateKey : string = req.headers['private-key'] as string;
+                const _tradInfo = Object.assign({ slippageTolerance: null, amountOutMin: null, path: [], to: '', deadline: null, value: null }, req.body);
+                loggerInfo(`_tradInfo: ${JSON.stringify(_tradInfo)}`);
+                expect(_ethnode, 'ethnode 无效').to.length.gte(42);
+                expect(_router02Addr, 'router02Addr 无效').to.have.lengthOf(42);
+                expect(_privateKey, 'privateKey 无效').to.length.gte(42);
                 (async () => {
                     const _value = _tradInfo.value;
                     const account = new ethers.Wallet(_tradInfo.privateKey).connect(ethers.getDefaultProvider('mainnet', { infura: _ethnode }));

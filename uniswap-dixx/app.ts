@@ -9,6 +9,7 @@ import moment from 'moment-timezone';
 import { CommonRoutesConfig } from './common/common.routes.config';
 import { UniV2SDKRoutes } from './routers/univ2/univ2-sdk.routes.config';
 import { UniV2TradeRoutes } from './routers/univ2/univ2-trade.routes.config';
+import { UniV2TokenRoutes } from './routers/univ2/univ2-token.routes.config';
 
 import { ErrorHandler } from './common/error';
 
@@ -32,6 +33,7 @@ app.use(cors());
 
 routes.push(new UniV2SDKRoutes(app));
 routes.push(new UniV2TradeRoutes(app));
+routes.push(new UniV2TokenRoutes(app));
 
 app.get('/', (req: express.Request, res: express.Response) => {
     res.status(200).send(`Server running at http://localhost:${port}`)
