@@ -1,7 +1,7 @@
 
 
 clear:
-	rm -rf dist
+	rm -rf `find ./dist -maxdepth 1 ! -name uniswap-dixx ! -name dist` 
 
 prepared:
 	mkdir dist 2>/dev/null
