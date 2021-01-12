@@ -1,26 +1,23 @@
 package com.microee.ethdix.app.actions;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.web3j.abi.datatypes.Address;
+import org.web3j.crypto.Keys;
 import com.microee.ethdix.app.components.ETHContractAddressConf;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
-import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.plugin.response.R;
-import java.math.BigInteger;
 
 //@formatter:off
 /*
@@ -66,7 +63,7 @@ public class ERC20QueryRestful {
             @RequestParam(value = "ethnode", required = false) String ethnode,
             @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network,
             @RequestParam(value = "address") String address) {
-        Assertions.assertThat(address).withFailMessage("%s 必传", "address").isNotBlank();
+        Assertions.assertThat(Keys.toChecksumAddress(address).equalsIgnoreCase(address)).withFailMessage("%s 必传", "address").isTrue();
         return R.ok(web3JFactory.getJsonRpc(network, ethnode).getCode(address));
     }
 
