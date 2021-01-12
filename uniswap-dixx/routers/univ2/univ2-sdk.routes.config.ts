@@ -1,14 +1,10 @@
 import { CommonRoutesConfig } from '../../common/common.routes.config';
 import express from 'express';
-import debug from 'debug';
+import { getNetwork } from '@ethersproject/networks';
+import { getDefaultProvider } from '@ethersproject/providers';
 import { expect } from 'chai';
-import { simpleEncode } from 'ethereumjs-abi';
-import Web3 from 'web3';
 import { ChainId, Fetcher, Route, Pair, TokenAmount, TradeType, Trade, Price } from '@uniswap/sdk';
-
-import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.json';
-
-const loggerInfo: debug.IDebugger = debug('app-univ2-trade');
+import { ethers } from 'ethers';
 
 // https://www.youtube.com/watch?v=0Im5iaYoz1Y
 // https://uniswap.org/docs/v2/SDK/getting-started
@@ -24,7 +20,7 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 expect(_tokenAddr, 'tokenAddr 无效').to.have.lengthOf(42);
                 (async () => {
                     const token = await Fetcher.fetchTokenData(_chainId, _tokenAddr); // 根据代币地址获取erc20合约信息
-                    res.status(200).json({ code: 200, message: 'OK', data: token});
+                    res.status(200).json({ code: 200, message: 'OK', data: token });
                 })();
             });
         this.app.route(`/univ2-sdk/pair`)
@@ -38,23 +34,24 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 (async () => {
                     const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
                     const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
-                    const pair = new Pair(new TokenAmount(tokenA, '2000000000000000000'), new TokenAmount(tokenB, '1000000000000000000'));
-                    let result = { code: 200, message: 'OK', data: null };
+                    // const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    // const thePair = await Fetcher.fetchPairData(tokenA, tokenB, provider);
+                    const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
+                    const result: any = { code: 200, message: 'OK', data: null };
                     if (_method === 'reserve0') {
-                        Object.assign(result, { data: { reserve0: pair.reserve0 } });
+                        Object.assign(result, { data: { reserve0: thePair.reserve0.toSignificant(6) } });
                     } else if (_method === 'reserve1') {
-                        Object.assign(result, { data: { reserve1: pair.reserve1 } });
+                        Object.assign(result, { data: { reserve1: thePair.reserve1.toSignificant(6) } });
                     } else if (_method === 'token0Price') {
-                        Object.assign(result, { data: { token0Price: pair.token0Price } });
+                        Object.assign(result, { data: { token0Price: thePair.token0Price } });
                     } else if (_method === 'token1Price') {
-                        Object.assign(result, { data: { token1Price: pair.token1Price } });
+                        Object.assign(result, { data: { token1Price: thePair.token1Price } });
                     } else if (_method === 'token0') {
-                        Object.assign(result, { data: { token0: pair.token0 } });
+                        Object.assign(result, { data: { token0: thePair.token0 } });
                     } else if (_method === 'token1') {
-                        pair.getInputAmount(new TokenAmount(tokenA, '2000000000000000000'));
-                        Object.assign(result, { data: { token1: pair.token1 } });
+                        Object.assign(result, { data: { token1: thePair.token1 } });
                     } else {
-                        Object.assign(result, { data: pair });
+                        Object.assign(result, { data: thePair });
                     }
                     res.status(200).json(result);
                 })();
@@ -79,16 +76,25 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
                 const _tokenA: string = req.query['tokenA'] as string; // 代币地址A
                 const _tokenB: string = req.query['tokenB'] as string; // 代币地址B
+                const _of: string = req.query['of'] as string; // 当前查哪个token的价格
                 expect(_tokenA, 'tokenA 无效').to.have.lengthOf(42);
                 expect(_tokenB, 'tokenB 无效').to.have.lengthOf(42);
+                expect(_of, 'of 无效').to.oneOf(['tokenA', 'tokenB']);
                 (async () => {
                     const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
                     const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
-                    const pair = new Pair(new TokenAmount(tokenA, '8000000000000000000'), new TokenAmount(tokenB, '1000000000000000000'));
+                    const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
+                    // const address = Pair.getAddress(tokenA, tokenB)
+                    // const [reserves0, reserves1] = await new Contract(address, IUniswapV2Pair.abi, provider).getReserves()
+                    // const balances = tokenA.sortsBefore(tokenB) ? [reserves0, reserves1] : [reserves1, reserves0]
+                    // new Pair(new TokenAmount(tokenA, balances[0]), new TokenAmount(tokenB, balances[1]))
                     try {
-                        const priceA: Price  = pair.priceOf(tokenA);
-                        const priceB: Price  = pair.priceOf(tokenB);
-                        return res.status(200).json({ code: 200, message: 'OK', data: [ priceA.toSignificant(6), priceB.toSignificant(6) ] });
+                        const thePrice: Price = thePair.priceOf(_of === 'tokenA' ? tokenA : tokenB);
+                        const baseCurrency = thePrice.baseCurrency.symbol;
+                        const quoteCurrency = thePrice.quoteCurrency.symbol;
+                        console.log(JSON.stringify(thePrice.baseCurrency));
+                        console.log(JSON.stringify(thePrice.quoteCurrency));
+                        return res.status(200).json({ code: 200, message: 'OK', data: thePrice.toSignificant(6) });
                     } catch (err) {
                         next(err);
                     }
@@ -110,14 +116,14 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 (async () => {
                     const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
                     const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
-                    const pair = new Pair(new TokenAmount(tokenA, '2000000000000000000'), new TokenAmount(tokenB, '1000000000000000000'));
+                    const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
                     try {
                         let amountResult = null;
                         if (_tokenAInputAmount != null) {
-                            amountResult = pair.getOutputAmount(new TokenAmount(tokenA, _tokenAInputAmount))[0].toSignificant(6);
+                            amountResult = thePair.getOutputAmount(new TokenAmount(tokenA, _tokenAInputAmount))[0].toSignificant(6);
                         }
                         if (_tokenBInputAmount != null) {
-                            amountResult = pair.getOutputAmount(new TokenAmount(tokenB, _tokenBInputAmount))[0].toSignificant(6);
+                            amountResult = thePair.getOutputAmount(new TokenAmount(tokenB, _tokenBInputAmount))[0].toSignificant(6);
                         }
                         return res.status(200).json({ code: 200, message: 'OK', data: amountResult });
                     } catch (err) {
@@ -141,14 +147,14 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 (async () => {
                     const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
                     const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
-                    const pair = new Pair(new TokenAmount(tokenA, '2000000000000000000'), new TokenAmount(tokenB, '1000000000000000000'));
+                    const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
                     try {
                         let amountResult = null;
                         if (_tokenAOutputAmount != null) {
-                            amountResult = pair.getInputAmount(new TokenAmount(tokenA, _tokenAOutputAmount))[0].toSignificant(6);
+                            amountResult = thePair.getInputAmount(new TokenAmount(tokenA, _tokenAOutputAmount))[0].toSignificant(6);
                         }
                         if (_tokenBOutputAmount != null) {
-                            amountResult = pair.getInputAmount(new TokenAmount(tokenB, _tokenBOutputAmount))[0].toSignificant(6);
+                            amountResult = thePair.getInputAmount(new TokenAmount(tokenB, _tokenBOutputAmount))[0].toSignificant(6);
                         }
                         return res.status(200).json({ code: 200, message: 'OK', data: amountResult });
                     } catch (err) {
@@ -166,8 +172,8 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 (async () => {
                     const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
                     const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
-                    const HOT_NOT = new Pair(new TokenAmount(tokenA, '2000000000000000000'), new TokenAmount(tokenB, '1000000000000000000'));
-                    const route = new Route([HOT_NOT], tokenB);
+                    const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
+                    const route = new Route([thePair], tokenB);
                     let result = { code: 200, message: 'OK', data: route };
                     res.status(200).json(result);
                 })();
@@ -182,27 +188,12 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 (async () => {
                     const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
                     const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
-                    const pair = new Pair(new TokenAmount(tokenA, '2000000000000000000'), new TokenAmount(tokenB, '1000000000000000000'));
-                    const route = new Route([pair], tokenB);
+                    const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
+                    const route = new Route([thePair], tokenB);
                     const trade = new Trade(route, new TokenAmount(tokenB, '1000000000000000'), TradeType.EXACT_INPUT);
                     let result = { code: 200, message: 'OK', data: trade };
                     res.status(200).json(result);
                 })();
-            });
-        this.app.route(`/univ2-sdk/abi`)
-            .post((req: express.Request, res: express.Response) => {
-                const _addr: string = req.query['addr'] as string;
-                const _fname: string = req.query['fname'] as string;
-                //const _swapExactETHForTokensABI = 'function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable returns (uint[] memory amounts);';
-                const _swapExactETHForTokensABI = 'balanceOf(address):(uint256)';
-                expect(_addr, 'addr 无效').to.have.lengthOf(42);
-                expect(_fname, 'fname 无效').to.length.gte(5);
-                let encodedAbiHex = null;
-                if (_fname === 'swapExactETHForTokens') {
-                    encodedAbiHex = simpleEncode(_swapExactETHForTokensABI, _addr).toString('hex');
-                }
-                loggerInfo(`encoded ABI: ${encodedAbiHex}`);
-                res.status(200).json(encodedAbiHex);
             });
         return this.app;
     }

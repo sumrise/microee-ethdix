@@ -3,7 +3,7 @@ import express from 'express';
 import debug from 'debug';
 import { expect } from 'chai';
 
-import { ChainId, Fetcher, Route, Pair, TokenAmount, TradeType, Trade, WETH, Percent } from '@uniswap/sdk'
+import { ChainId, Fetcher, Route, Pair, TokenAmount, TradeType, Trade, WETH, Percent } from '@uniswap/sdk';
 import { ethers } from 'ethers';
 
 const loggerInfo: debug.IDebugger = debug('app-univ2-trade');
