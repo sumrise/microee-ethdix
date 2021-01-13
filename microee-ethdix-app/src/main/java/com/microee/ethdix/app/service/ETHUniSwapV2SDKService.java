@@ -30,22 +30,14 @@ public class ETHUniSwapV2SDKService {
         return univ2SDKClient.token(tokenAddr).getData();
     }
     
-    public Map<String, Object> pair(String tokenA, String tokenB) {
-        return univ2SDKClient.pair(tokenA, tokenB).getData();
+    public R<Map<String, Object>> pair(ChainId chainId, String ethnode, String tokenA, String tokenB, String method) {
+        R<Map<String, Object>> result = univ2SDKClient.pair(tokenA, tokenB, method);
+        return R.ok(result.getData()).message(this.getPairSymbol(chainId, ethnode, result.getMessage()));
     }
     
     public R<String> getPairAddress(ChainId chainId, String ethnode, String tokenA, String tokenB) {
         R<String> result = univ2SDKClient.getPairAddress(tokenA, tokenB);
-        String pairSymbol = result.getMessage();
-        String symbolA = pairSymbol.split("/")[0];
-        String symbolB = pairSymbol.split("/")[1];
-        if (RegexUtils.isAddress(symbolA)) {
-            symbolA = RemoteCallFunction.build(new ERC20ContractQuery(symbolA, web3JFactory.get(chainId, ethnode)).symbol()).call();
-        }
-        if (RegexUtils.isAddress(symbolB)) {
-            symbolB = RemoteCallFunction.build(new ERC20ContractQuery(symbolB, web3JFactory.get(chainId, ethnode)).symbol()).call();
-        }
-        return univ2SDKClient.getPairAddress(tokenA, tokenB).message(String.format("%s/%s", symbolA, symbolB));
+        return R.ok(result.getData()).message(this.getPairSymbol(chainId, ethnode, result.getMessage()));
     }
     
     public Map<String, Object> route(String tokenA, String tokenB) {
@@ -55,4 +47,20 @@ public class ETHUniSwapV2SDKService {
     public Map<String, Object> trade(String tokenA, String tokenB) {
         return univ2SDKClient.trade(tokenA, tokenB).getData();
     }
+    
+    public String getPairSymbol(ChainId chainId, String ethnode, String pairSymbol) {
+        if (!pairSymbol.contains("/")) {
+            return pairSymbol;
+        }
+        String symbolA = pairSymbol.split("/")[0];
+        String symbolB = pairSymbol.split("/")[1];
+        if (RegexUtils.isAddress(symbolA)) {
+            symbolA = RemoteCallFunction.build(new ERC20ContractQuery(symbolA, web3JFactory.get(chainId, ethnode)).symbol()).call();
+        }
+        if (RegexUtils.isAddress(symbolB)) {
+            symbolB = RemoteCallFunction.build(new ERC20ContractQuery(symbolB, web3JFactory.get(chainId, ethnode)).symbol()).call();
+        }
+        return String.format("%s/%s", symbolA, symbolB);
+    }
+    
 }

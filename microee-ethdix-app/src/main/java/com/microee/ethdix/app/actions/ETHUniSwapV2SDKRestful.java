@@ -28,9 +28,15 @@ public class ETHUniSwapV2SDKRestful {
 
     @RequestMapping(value = "/pair", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> pair(
+            @RequestParam(value = "ethnode", required = false) String ethnode,
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam("tokenA") String tokenA,
-            @RequestParam("tokenB") String tokenB) {
-        return R.ok(univ2SDKService.pair(tokenA, tokenB));
+            @RequestParam("tokenB") String tokenB, 
+            @RequestParam(value = "method", required=false) String method) {
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
+        Assertions.assertThat(RegexUtils.isAddress(tokenA)).withFailMessage("%s 有误", "tokenA").isTrue();
+        Assertions.assertThat(RegexUtils.isAddress(tokenB)).withFailMessage("%s 有误", "tokenB").isTrue();
+        return univ2SDKService.pair(ChainId.get(chainId), ethnode, tokenA, tokenB, method);
     }
 
     @RequestMapping(value = "/getPairAddress", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

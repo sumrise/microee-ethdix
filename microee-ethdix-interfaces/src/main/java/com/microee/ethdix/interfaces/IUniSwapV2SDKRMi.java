@@ -19,7 +19,7 @@ public interface IUniSwapV2SDKRMi {
     public R<Map<String, Object>> token(@RequestParam("tokenAddr") String tokenAddr);
 
     @RequestMapping(value = "/pair", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public R<Map<String, Object>> pair(@RequestParam("tokenA") String tokenA, @RequestParam("tokenB") String tokenB);
+    public R<Map<String, Object>> pair(@RequestParam("tokenA") String tokenA, @RequestParam("tokenB") String tokenB, @RequestParam(value = "method", required=false) String method);
 
     @RequestMapping(value = "/pair/getPairAddress", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getPairAddress(@RequestParam("tokenA") String tokenA, @RequestParam("tokenB") String tokenB);
