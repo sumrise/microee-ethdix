@@ -5,6 +5,7 @@ import { getDefaultProvider } from '@ethersproject/providers';
 import { expect } from 'chai';
 import { ChainId, Fetcher, Route, Pair, TokenAmount, TradeType, Trade, Price, Currency } from '@uniswap/sdk';
 import { ethers } from 'ethers';
+import { Eth } from 'web3-eth';
 
 import { tokens as DefaultTokenList } from '@uniswap/default-token-list/build/uniswap-default.tokenlist.json';
 
@@ -26,7 +27,7 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 })();
             });
         this.app.route(`/univ2-sdk/pair`)
-            .get((req: express.Request, res: express.Response) => {
+            .get((req: express.Request, res: express.Response, next: express.NextFunction) => {
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
                 const _tokenA: string = req.query['tokenA'] as string; // 代币地址A
                 const _tokenB: string = req.query['tokenB'] as string; // 代币地址B
@@ -40,7 +41,11 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                         // const provider = new ethers.providers.Web3Provider(window.ethereum);
                         // const thePair = await Fetcher.fetchPairData(tokenA, tokenB, provider);
                         const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
-                        const result: any = { code: 200, message: 'OK', data: null };
+                        const token0: any = DefaultTokenList.find(t => t.chainId == _chainId && (thePair.token0.address.toLowerCase() === t.address.toLowerCase()));
+                        const token1: any = DefaultTokenList.find(t => t.chainId == _chainId && (thePair.token1.address.toLowerCase() === t.address.toLowerCase()));
+                        const token0Symbol: string = token0 ? token0.symbol : thePair.token0.address;
+                        const token1Symbol: string = token1 ? token1.symbol : thePair.token1.address;
+                        const result: any = { code: 200, message: `${token0Symbol}/${token1Symbol}`, data: null };
                         if (_method === 'reserve0') {
                             Object.assign(result, { data: { reserve0: thePair.reserve0.toSignificant(6) } });
                         } else if (_method === 'reserve1') {
@@ -58,22 +63,28 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                         }
                         res.status(200).json(result);
                     } catch (err) {
-                        res.status(500).json({ code: 200, message: 'OK', data: null });
+                        next(err);
                     }
                 })();
             });
         this.app.route(`/univ2-sdk/pair/getPairAddress`)
-            .get((req: express.Request, res: express.Response) => {
+            .get((req: express.Request, res: express.Response, next: express.NextFunction) => {
                 const _chainId: ChainId = ChainId['MAINNET']; // 链id
                 const _tokenA: string = req.query['tokenA'] as string; // 代币地址A
                 const _tokenB: string = req.query['tokenB'] as string; // 代币地址B
                 expect(_tokenA, 'tokenA 无效').to.have.lengthOf(42);
                 expect(_tokenB, 'tokenB 无效').to.have.lengthOf(42);
                 (async () => {
-                    const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
-                    const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
-                    const result = { code: 200, message: 'OK', data: Pair.getAddress(tokenA, tokenB) };
-                    res.status(200).json(result);
+                    try {
+                        const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
+                        const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
+                        const token0: any = DefaultTokenList.find(t => t.chainId == _chainId && (tokenA.address.toLowerCase() === t.address.toLowerCase()));
+                        const token1: any = DefaultTokenList.find(t => t.chainId == _chainId && (tokenB.address.toLowerCase() === t.address.toLowerCase()));
+                        const tokenPair = tokenA.sortsBefore(tokenB) ? [token0 ? token0.symbol : tokenA.address, token1 ? token1.symbol : tokenB.address] : [token1 ? token1.symbol : tokenB.address, token0 ? token0.symbol : tokenA.address];
+                        res.status(200).json({ code: 200, message: `${tokenPair[0]}/${tokenPair[1]}`, data: Pair.getAddress(tokenA, tokenB) });
+                    } catch (err) {
+                        next(err);
+                    }
                 })();
             });
         // 查询当前交易对兑换价格
