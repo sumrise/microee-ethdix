@@ -51,9 +51,9 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                         } else if (_method === 'reserve1') {
                             Object.assign(result, { data: { reserve1: thePair.reserve1.toSignificant(6) } });
                         } else if (_method === 'token0Price') {
-                            Object.assign(result, { data: { token0Price: thePair.token0Price } });
+                            Object.assign(result, { data: { token0Price: thePair.token0Price.toSignificant(6) } });
                         } else if (_method === 'token1Price') {
-                            Object.assign(result, { data: { token1Price: thePair.token1Price } });
+                            Object.assign(result, { data: { token1Price: thePair.token1Price.toSignificant(6) } });
                         } else if (_method === 'token0') {
                             Object.assign(result, { data: { token0: thePair.token0 } });
                         } else if (_method === 'token1') {
