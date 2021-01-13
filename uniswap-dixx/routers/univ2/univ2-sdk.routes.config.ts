@@ -3,8 +3,10 @@ import express from 'express';
 import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { expect } from 'chai';
-import { ChainId, Fetcher, Route, Pair, TokenAmount, TradeType, Trade, Price } from '@uniswap/sdk';
+import { ChainId, Fetcher, Route, Pair, TokenAmount, TradeType, Trade, Price, Currency } from '@uniswap/sdk';
 import { ethers } from 'ethers';
+
+import { tokens as DefaultTokenList } from '@uniswap/default-token-list/build/uniswap-default.tokenlist.json';
 
 // https://www.youtube.com/watch?v=0Im5iaYoz1Y
 // https://uniswap.org/docs/v2/SDK/getting-started
@@ -32,28 +34,32 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 expect(_tokenA, 'tokenA 无效').to.have.lengthOf(42);
                 expect(_tokenB, 'tokenB 无效').to.have.lengthOf(42);
                 (async () => {
-                    const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
-                    const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
-                    // const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    // const thePair = await Fetcher.fetchPairData(tokenA, tokenB, provider);
-                    const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
-                    const result: any = { code: 200, message: 'OK', data: null };
-                    if (_method === 'reserve0') {
-                        Object.assign(result, { data: { reserve0: thePair.reserve0.toSignificant(6) } });
-                    } else if (_method === 'reserve1') {
-                        Object.assign(result, { data: { reserve1: thePair.reserve1.toSignificant(6) } });
-                    } else if (_method === 'token0Price') {
-                        Object.assign(result, { data: { token0Price: thePair.token0Price } });
-                    } else if (_method === 'token1Price') {
-                        Object.assign(result, { data: { token1Price: thePair.token1Price } });
-                    } else if (_method === 'token0') {
-                        Object.assign(result, { data: { token0: thePair.token0 } });
-                    } else if (_method === 'token1') {
-                        Object.assign(result, { data: { token1: thePair.token1 } });
-                    } else {
-                        Object.assign(result, { data: thePair });
+                    try {
+                        const tokenA = await Fetcher.fetchTokenData(_chainId, _tokenA);
+                        const tokenB = await Fetcher.fetchTokenData(_chainId, _tokenB);
+                        // const provider = new ethers.providers.Web3Provider(window.ethereum);
+                        // const thePair = await Fetcher.fetchPairData(tokenA, tokenB, provider);
+                        const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
+                        const result: any = { code: 200, message: 'OK', data: null };
+                        if (_method === 'reserve0') {
+                            Object.assign(result, { data: { reserve0: thePair.reserve0.toSignificant(6) } });
+                        } else if (_method === 'reserve1') {
+                            Object.assign(result, { data: { reserve1: thePair.reserve1.toSignificant(6) } });
+                        } else if (_method === 'token0Price') {
+                            Object.assign(result, { data: { token0Price: thePair.token0Price } });
+                        } else if (_method === 'token1Price') {
+                            Object.assign(result, { data: { token1Price: thePair.token1Price } });
+                        } else if (_method === 'token0') {
+                            Object.assign(result, { data: { token0: thePair.token0 } });
+                        } else if (_method === 'token1') {
+                            Object.assign(result, { data: { token1: thePair.token1 } });
+                        } else {
+                            Object.assign(result, { data: thePair });
+                        }
+                        res.status(200).json(result);
+                    } catch (err) {
+                        res.status(500).json({ code: 200, message: 'OK', data: null });
                     }
-                    res.status(200).json(result);
                 })();
             });
         this.app.route(`/univ2-sdk/pair/getPairAddress`)
@@ -90,11 +96,13 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                     // new Pair(new TokenAmount(tokenA, balances[0]), new TokenAmount(tokenB, balances[1]))
                     try {
                         const thePrice: Price = thePair.priceOf(_of === 'tokenA' ? tokenA : tokenB);
-                        const baseCurrency = thePrice.baseCurrency.symbol;
-                        const quoteCurrency = thePrice.quoteCurrency.symbol;
-                        console.log(JSON.stringify(thePrice.baseCurrency));
-                        console.log(JSON.stringify(thePrice.quoteCurrency));
-                        return res.status(200).json({ code: 200, message: 'OK', data: thePrice.toSignificant(6) });
+                        const baseCurrencyObject: any = JSON.parse(JSON.stringify(thePrice.baseCurrency));
+                        const quoteCurrencyObject: any = JSON.parse(JSON.stringify(thePrice.quoteCurrency));
+                        const baseCurrencyToken: any = DefaultTokenList.find(t => t.chainId == _chainId && (baseCurrencyObject.address.toLowerCase() === t.address.toLowerCase()));
+                        const quoteCurrencyToken: any = DefaultTokenList.find(t => t.chainId == _chainId && (quoteCurrencyObject.address.toLowerCase() === t.address.toLowerCase()));
+                        const baseCurrencyTokenSymbol: string = baseCurrencyToken ? baseCurrencyToken.symbol : baseCurrencyObject.address;
+                        const quoteCurrencyTokenSymbol: string = quoteCurrencyToken ? quoteCurrencyToken.symbol : baseCurrencyObject.address;
+                        return res.status(200).json({ code: 200, message: `${baseCurrencyTokenSymbol}/${quoteCurrencyTokenSymbol}`, data: thePrice.toSignificant(6) });
                     } catch (err) {
                         next(err);
                     }
