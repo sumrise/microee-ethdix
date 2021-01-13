@@ -4,6 +4,7 @@ import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.contract.ETHInputEncoder;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.j3.uniswap.UniswapV2Route02Contract;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,14 +101,15 @@ public class ETHInputRestful {
      */
     @RequestMapping(value = "/getInputDataForSwapExactETHForTokens", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getInputDataForSwapExactETHForTokens(
-            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId, // 网络类型: 主网或测试网
             @RequestParam(value = "router02Addr", required = false, defaultValue = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D") String router02Addr,
             @RequestParam("amountOutMin") Long amountOutMin, 
             @RequestParam("tokenAddr") String tokenAddr, 
             @RequestParam("toAddr") String toAddr, 
             @RequestParam("timeout") Long timeout 
     ) {
-        Address wethAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.get(network)).WETH()).call();
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
+        Address wethAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.get(ChainId.get(chainId))).WETH()).call();
         return R.ok(ETHInputEncoder.getInputDataForSwapExactETHForTokens(amountOutMin, wethAddr.getValue(), tokenAddr, toAddr));
     }
     

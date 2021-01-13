@@ -1,29 +1,25 @@
 package com.microee.ethdix.app.actions;
 
-import com.microee.ethdix.app.components.GasPriceNow;
-import com.microee.ethdix.app.components.Web3JFactory;
-import com.microee.ethdix.j3.contract.ERC20ContractQuery;
-import com.microee.ethdix.j3.contract.ETHInputEncoder;
-import com.microee.ethdix.j3.contract.RemoteCallFunction;
-import com.microee.plugin.response.R;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.assertj.core.api.Assertions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.microee.ethdix.app.components.GasPriceNow;
+import com.microee.ethdix.app.components.Web3JFactory;
+import com.microee.ethdix.j3.contract.ERC20ContractQuery;
+import com.microee.ethdix.j3.contract.ETHInputEncoder;
+import com.microee.ethdix.j3.contract.RemoteCallFunction;
+import com.microee.plugin.response.R;
 
 // 预估各种gas费
 @RestController
 @RequestMapping("/estimates")
 public class ETHEstimateGasRestful {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(ETHEstimateGasRestful.class);
     
     @Autowired
     private Web3JFactory web3JFactory;

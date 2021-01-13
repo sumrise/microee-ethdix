@@ -4,6 +4,7 @@ import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.Constrants;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.j3.uniswap.UniswapV1FactoryContract;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.response.R;
 import java.util.ArrayList;
 import java.util.List;
@@ -390,26 +391,26 @@ public class ETHUniSwapV1Restful {
     // 查询代币交换合约地址
     @RequestMapping(value = "/getExchangeAddr", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getExchangeAddr(
-            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId, // 网络类型: 主网或测试网
             @RequestParam(value = "uniswapV1FactoryAddr", required = false, defaultValue = "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95") String uniswapV1FactoryAddr,
             @RequestParam(value = "tokenAddr", required = true) String tokenAddr
     ) {
-        Assertions.assertThat(network).withFailMessage("`network` 必传").isNotBlank();
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(tokenAddr).withFailMessage("`tokenAddr` 必传").isNotBlank();
-        String exchangeAddr = new RemoteCallFunction<>(new UniswapV1FactoryContract(uniswapV1FactoryAddr, web3JFactory.get(network)).getExchangeAddr(tokenAddr)).call();
+        String exchangeAddr = new RemoteCallFunction<>(new UniswapV1FactoryContract(uniswapV1FactoryAddr, web3JFactory.get(ChainId.get(chainId))).getExchangeAddr(tokenAddr)).call();
         return R.ok(Constrants.EMPTY_ADDRESS.equalsIgnoreCase(exchangeAddr) ? null : exchangeAddr);
     }
 
     // 根据交换合约地址查询代币地址
     @RequestMapping(value = "/getTokenAddress", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getTokenAddress(
-            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId, // 网络类型: 主网或测试网
             @RequestParam(value = "uniswapV1FactoryAddr", required = false, defaultValue = "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95") String uniswapV1FactoryAddr,
             @RequestParam(value = "exchangeAddr", required = true) String exchangeAddr
     ) {
-        Assertions.assertThat(network).withFailMessage("`network` 必传").isNotBlank();
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(exchangeAddr).withFailMessage("`exchangeAddr` 必传").isNotBlank();
-        String tokenAddr = new RemoteCallFunction<>(new UniswapV1FactoryContract(uniswapV1FactoryAddr, web3JFactory.get(network)).getToken(exchangeAddr)).call();
+        String tokenAddr = new RemoteCallFunction<>(new UniswapV1FactoryContract(uniswapV1FactoryAddr, web3JFactory.get(ChainId.get(chainId))).getToken(exchangeAddr)).call();
         return R.ok(Constrants.EMPTY_ADDRESS.equalsIgnoreCase(tokenAddr) ? null : tokenAddr);
     }
     

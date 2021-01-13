@@ -17,6 +17,7 @@ import com.microee.ethdix.j3.contract.ERC20ContractQuery;
 import com.microee.ethdix.j3.contract.ETHInputEncoder;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.j3.rpc.JsonRPC;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.response.R;
 import java.math.BigDecimal;
 
@@ -31,10 +32,10 @@ public class ETHTransferRestful {
     // 根据网络类型随机返回一个节点地址
     @RequestMapping(value = "/getETHNode", method = RequestMethod.GET, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getETHNode(
-            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network // 网络类型: 主网或测试网
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId // 网络类型: 主网或测试网
     ) {
-        Assertions.assertThat(network).withFailMessage("`network` 必传").isNotBlank();
-        return R.ok(web3JFactory.getEthNode(network));
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
+        return R.ok(web3JFactory.getEthNode(ChainId.get(chainId)));
     }
 
     // 返回链id

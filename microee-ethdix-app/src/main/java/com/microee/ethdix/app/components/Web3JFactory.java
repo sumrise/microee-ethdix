@@ -10,6 +10,7 @@ import com.microee.ethdix.app.props.ETHNetworkProperties;
 import com.microee.ethdix.j3.factory.Web3jOfInstanceFactory;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.ethdix.j3.rpc.JsonRPC.UsedCount;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.response.R;
 import com.microee.plugin.response.exception.RestException;
 
@@ -30,18 +31,15 @@ public class Web3JFactory {
     private final ConcurrentMap<String, Web3j> map = new ConcurrentHashMap<>();
 
     // mainnet, Ropsten, Rinkeby, Görli, Kovan
-    public Web3j get(String network) {
-        if (network.startsWith("http")) {
-            throw new RestException(R.FAILED, "非法参数,误把节点地址当成网络类型传递!");
-        }
-        return get(network, null);
+    public Web3j get(ChainId chainId) {
+        return get(chainId, null);
     }
 
-    public Web3j get(String network, String ethnode) {
+    public Web3j get(ChainId chainId, String ethnode) {
         if (ethnode != null) {
             return build(ethnode);
         }
-        return build(this.getEthNode(network));
+        return build(this.getEthNode(chainId));
     }
 
     public Web3j getByEthNode(String ethnode) {
@@ -56,35 +54,35 @@ public class Web3JFactory {
         return map.get(ethnode.toLowerCase());
     }
 
-    public String getEthNode(String network) {
-        if (network.startsWith("http")) {
-            throw new RestException(R.FAILED, "非法参数,误把节点地址当成网络类型传递!");
-        }
-        if (network.equals("mainnet")) {
+    public String getEthNode(ChainId chainId) {
+        if (ChainId.MAINNET.equals(chainId)) {
             return UsedCount.getEthNode(ethNetworkProperties.mainnet());
         }
-        return UsedCount.getEthNode(ethNetworkProperties.ropsten());
+        if (ChainId.ROPSTEN.equals(chainId)) {
+            return UsedCount.getEthNode(ethNetworkProperties.ropsten());
+        }
+        throw new RestException(R.SERVER_ERROR, "不支持的链id");
     }
 
     public JsonRPC getJsonRpcByEthNode(String ethnode) {
         return new JsonRPC(ethnode);
     }
 
-    public JsonRPC getJsonRpc(String network) {
-        return this.getJsonRpc(network, null);
+    public JsonRPC getJsonRpc(ChainId chainId) {
+        return this.getJsonRpc(chainId, null);
     }
 
-    public JsonRPC getJsonRpc(String network, String ethnode) {
+    public JsonRPC getJsonRpc(ChainId chainId, String ethnode) {
         if (ethnode != null) {
             return new JsonRPC(ethnode);
         }
-        if (network.startsWith("http")) {
-            throw new RestException(R.FAILED, "非法参数,误把节点地址当成网络类型传递!");
-        }
-        if (network.equals("mainnet")) {
+        if (ChainId.MAINNET.equals(chainId)) {
             return jsonRPCClientMainnet;
         }
-        return jsonRPCClientRopsten;
+        if (ChainId.ROPSTEN.equals(chainId)) {
+            return jsonRPCClientRopsten;
+        }
+        throw new RestException(R.SERVER_ERROR, "不支持的链id");
     }
 
 }

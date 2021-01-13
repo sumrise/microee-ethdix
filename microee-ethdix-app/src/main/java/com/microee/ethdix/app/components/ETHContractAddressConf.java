@@ -2,7 +2,7 @@ package com.microee.ethdix.app.components;
 
 
 import org.springframework.stereotype.Component;
-
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.response.R;
 import com.microee.plugin.response.exception.RestException;
 
@@ -24,8 +24,8 @@ public class ETHContractAddressConf {
     private static final String DAI_CONTRACT_ADDR_FOR_MAINNET = "0x6b175474e89094c44da98b954eedeac495271d0f";
     private static final String DAI_CONTRACT_ADDR_FOR_ROPSTEN = null;
 
-    public String getContractAddress(String network, String currency) {
-        if (network.equals("mainnet")) {
+    public String getContractAddress(ChainId chainId, String currency) {
+        if (ChainId.MAINNET.equals(chainId)) {
             if (currency.equalsIgnoreCase("usdt")) {
                 return USDT_CONTRACT_ADDR_FOR_MAINNET;
             }
@@ -41,8 +41,8 @@ public class ETHContractAddressConf {
             if (currency.equalsIgnoreCase("dai")) {
                 return DAI_CONTRACT_ADDR_FOR_MAINNET;
             }
-        }
-        if (network.equals("ropsten")) {
+            throw new RestException(R.FAILED, "不支持的币种或没有配置合约地址");
+        } else if (ChainId.ROPSTEN.equals(chainId)) {
             if (currency.equalsIgnoreCase("usdt")) {
                 return USDT_CONTRACT_ADDR_FOR_ROPSTEN;
             }
@@ -58,18 +58,19 @@ public class ETHContractAddressConf {
             if (currency.equalsIgnoreCase("dai")) {
                 return DAI_CONTRACT_ADDR_FOR_ROPSTEN;
             }
+            throw new RestException(R.FAILED, "不支持的币种或没有配置合约地址");
         }
-        throw new RestException(R.FAILED, "不支持的币种或没有配置合约地址");
+        throw new RestException(R.SERVER_ERROR, "不支持的链id");
     }
 
-    public String getNestOracleContractAddress(String network) {
-        if (network.equals("mainnet")) {
+    public String getNestOracleContractAddress(ChainId chainId) {
+        if (ChainId.MAINNET.equals(chainId)) {
             return NEST_ORACLE_PRICING_CONTRACT_ADDR_FOR_MAINNET;
         }
-        if (network.equals("ropsten")) {
+        if (ChainId.ROPSTEN.equals(chainId)) {
             return NEST_ORACLE_PRICING_CONTRACT_ADDR_FOR_ROPSTEN;
         }
-        return null;
+        throw new RestException(R.SERVER_ERROR, "不支持的链id");
     }
 
 }

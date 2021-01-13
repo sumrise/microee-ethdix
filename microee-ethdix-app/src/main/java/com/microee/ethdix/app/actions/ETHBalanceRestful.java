@@ -13,6 +13,7 @@ import com.microee.ethdix.app.components.ETHContractAddressConf;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
 import com.microee.ethdix.j3.rpc.JsonRPC;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.response.R;
 
 @RestController
@@ -47,19 +48,19 @@ public class ETHBalanceRestful {
             @RequestHeader(value = "username", required = false) String username,
             @RequestHeader(value = "password", required = false) String password,
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
-            @RequestParam(value = "network", required = false, defaultValue = "mainnet") String network, // 网络类型: 主网或测试网
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId, // 网络类型: 主网或测试网
             @RequestParam(value = "currency") String currency, // 币种
             @RequestParam(value = "accountAddress") String accountAddress) throws Exception {
-        Assertions.assertThat((ethnode == null || ethnode.isEmpty()) && (network == null || network.isEmpty())).withFailMessage("ethnode OR network 二选1").isFalse();
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(currency).withFailMessage("%s 必传", "currency").isNotBlank();
         Assertions.assertThat(accountAddress).withFailMessage("%s 必传", "accountAddress").isNotBlank();
         if (currency.equalsIgnoreCase("eth")) {
-            JsonRPC jsonRpc = ethnode != null && username != null && password != null ? new JsonRPC(ethnode, username, password) : web3JFactory.getJsonRpc(network);
+            JsonRPC jsonRpc = ethnode != null && username != null && password != null ? new JsonRPC(ethnode, username, password) : web3JFactory.getJsonRpc(ChainId.get(chainId));
             Long balance = jsonRpc.getQueryEthBalance(accountAddress);
             return R.ok( balance == 0 ? 0.0 : balance / Math.pow(10, 18));
         }
-        String contractAddress = contractAddressConf.getContractAddress(network, currency);
-        ERC20ContractQuery erc20Contract = new ERC20ContractQuery(contractAddress, web3JFactory.get(network, ethnode));
+        String contractAddress = contractAddressConf.getContractAddress(ChainId.get(chainId), currency);
+        ERC20ContractQuery erc20Contract = new ERC20ContractQuery(contractAddress, web3JFactory.get(ChainId.get(chainId), ethnode));
         Long balance = erc20Contract.balanceOf(accountAddress).send().longValue();
         return R.ok(balance == 0 ? 0.0 : balance / Math.pow(10, erc20Contract.decimals().send().longValue()));
     }

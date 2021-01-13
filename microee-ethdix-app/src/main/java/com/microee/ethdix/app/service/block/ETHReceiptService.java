@@ -1,23 +1,24 @@
-package com.microee.ethdix.app.service;
+package com.microee.ethdix.app.service.block;
 
-import com.microee.ethdix.app.components.Web3JFactory;
 import java.math.BigInteger;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.app.props.ETHNetworkProperties;
 import com.microee.ethdix.j3.Constrants;
 import com.microee.ethdix.oem.eth.EthTransactionReceipt;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.stacks.mongodb.support.Mongo;
 
 @Service
-public class ETHBlockTxReceiptService {
+public class ETHReceiptService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ETHBlockTxReceiptService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ETHReceiptService.class);
 
-    public static final String COLLECTION_NAME = "eth_trans_receipts";
+    public static final String COLLECTION_NAME = "eth_receipts";
 
     @Autowired
     private Mongo mongo;
@@ -26,19 +27,19 @@ public class ETHBlockTxReceiptService {
     private Web3JFactory web3JFactory;
     
     @Autowired
-    private ETHBlockTransService ethBlockTransService;
+    private ETHTransService ethBlockTransService;
 
     @Autowired
     private ETHNetworkProperties ethNetworkProperties;
 
     // 查询并保存交易回执
-    public EthTransactionReceipt getTransactionReceipt(String ethnode, String network, Long blockNumber, String txHash) {
+    public EthTransactionReceipt getTransactionReceipt(String ethnode, ChainId chainId, Long blockNumber, String txHash) {
         EthTransactionReceipt result = null;
         if (blockNumber != null) {
             result = mongo.queryByStringId(ethNetworkProperties.getCollectionName(COLLECTION_NAME, blockNumber), txHash, EthTransactionReceipt.class);
         }
         if (result == null) {
-            result = web3JFactory.getJsonRpc(network, ethnode).getTransactionReceipt(txHash);
+            result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionReceipt(txHash);
             if ((ethnode == null || ethnode.isEmpty()) && result != null) {
                 if (result.getBlockNumber() != null) {
                     mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_NAME, blockNumber), result, txHash);
@@ -46,14 +47,14 @@ public class ETHBlockTxReceiptService {
             }
         }
         if (blockNumber != null) {
-            ethBlockTransService.ethGetTransaction(ethnode, network, blockNumber, txHash);
+            ethBlockTransService.ethGetTransaction(ethnode, chainId, blockNumber, txHash);
         }
         return result;
     }
 
     // 根据交易哈希查询交易所在区块编号
-    public Long getBlockNumberByTransHash(String ethnode, String network, String txHash) {
-        EthTransactionReceipt result = web3JFactory.getJsonRpc(network, ethnode).getTransactionReceipt(txHash);
+    public Long getBlockNumberByTransHash(String ethnode, ChainId chainId, String txHash) {
+        EthTransactionReceipt result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionReceipt(txHash);
         if (result != null) {
             return Long.parseLong(result.getBlockNumber().substring(2), 16);
         }

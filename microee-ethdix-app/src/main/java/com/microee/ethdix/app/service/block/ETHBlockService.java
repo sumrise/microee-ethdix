@@ -1,26 +1,24 @@
-package com.microee.ethdix.app.service;
+package com.microee.ethdix.app.service.block;
 
-import com.microee.ethdix.app.components.Web3JFactory;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.app.props.ETHNetworkProperties;
-import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.ethdix.oem.eth.EthRawBlock;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.thread.ThreadPoolFactoryLow;
 import com.microee.stacks.mongodb.support.Mongo;
 
 @Service
 public class ETHBlockService {
 
-    private static ThreadPoolFactoryLow threadPool
-            = ThreadPoolFactoryLow.newInstance("ethblock-查询区块交易回执线程池");
+    private static ThreadPoolFactoryLow threadPool = ThreadPoolFactoryLow.newInstance("ethblock-查询区块交易回执线程池");
 
     // db.eth_blocks.createIndex( { _id: -1 }, { background: true } )
     public static final String COLLECTION_BLOCKS = "eth_blocks";
@@ -32,25 +30,25 @@ public class ETHBlockService {
     private Mongo mongo;
 
     @Autowired
-    private ETHBlockTxReceiptService txReceiptService;
+    private ETHReceiptService txReceiptService;
 
     @Autowired
-    private ETHBlockTransService ethTransService;
+    private ETHTransService ethTransService;
 
     @Autowired
     private Web3JFactory web3JFactory;
 
     // 查询并保存区块
-    public EthRawBlock ethGetBlockByNumber(String ethnode, String network, Long blockNumber) {
+    public EthRawBlock ethGetBlockByNumber(String ethnode, ChainId chainId, Long blockNumber) {
         if (blockNumber != null && blockNumber < 0) {
             return null;
         }
         EthRawBlock result = mongo.queryById(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), blockNumber, EthRawBlock.class);
         if (result == null) {
-            result = web3JFactory.getJsonRpc(network, ethnode).getBlockByNumber(blockNumber);
+            result = web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
             if ((ethnode == null || ethnode.isEmpty()) && result != null) {
-                // mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber, "transactions"); // 交易信息保存到另一个表
-                mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber); // 交易信息保存到另一个表
+                mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber, "transactions"); // 交易信息保存到另一个表
+                // mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber); 
                 ethTransService.saveTransactions(blockNumber, result.getTransactions());
             }
         }
@@ -58,15 +56,13 @@ public class ETHBlockService {
             // 懒加载交易回执
             List<EthRawTransaction> trans = result.getTransactions();
             if (trans != null && trans.size() > 0) {
-                List<String> currentTransHashList
-                        = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
-                List<String> transHashList
-                        = mongo.notIn(ETHBlockTxReceiptService.COLLECTION_NAME, currentTransHashList);
+                List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
+                List<String> transHashList = mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
                 if (transHashList.size() > 0) {
                     threadPool.pool().submit(() -> {
                         for (int i = 0; i < transHashList.size(); i++) {
                             final String currentTranHash = transHashList.get(i);
-                            txReceiptService.getTransactionReceipt(ethnode, network, blockNumber, currentTranHash);
+                            txReceiptService.getTransactionReceipt(ethnode, chainId, blockNumber, currentTranHash);
                         }
                     });
                 }

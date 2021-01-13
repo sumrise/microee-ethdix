@@ -19,6 +19,7 @@ import com.microee.ethdix.j3.ContractAssists;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
 import com.microee.ethdix.j3.contract.NestOfferPriceContract;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.response.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,30 +44,30 @@ public class NowPriceRestful {
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<BigDecimal> pricing(
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
-            @RequestParam(value = "network", required = false) String network, // 以太坊网络类型
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId, // 以太坊网络类型
             @RequestParam(value = "tokenAddress", required = false) String tokenAddress, // 以太坊代币合约地址
             @RequestParam(value = "tokenName", required = false) String tokenName) // 代币名字
             throws Exception {
-        Assertions.assertThat((ethnode == null || ethnode.isEmpty()) && (network == null || network.isEmpty())).withFailMessage("ethnode OR network 二选1").isFalse();
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat((tokenAddress == null || tokenAddress.isEmpty()) && (tokenName == null || tokenName.isEmpty())).withFailMessage("tokenAddress OR tokenName 二选1").isFalse();
         if (!(tokenName == null || tokenName.trim().isEmpty()) && !(tokenAddress == null || tokenAddress.trim().isEmpty())) {
             // 验证合约名字和合约地址是否匹配
-            String newTokenName = ((String) new RemoteCallFunction<>(new ERC20ContractQuery(tokenAddress, web3JFactory.get(network, ethnode)).symbol()).call()).toLowerCase();
+            String newTokenName = ((String) new RemoteCallFunction<>(new ERC20ContractQuery(tokenAddress, web3JFactory.get(ChainId.get(chainId), ethnode)).symbol()).call()).toLowerCase();
             if (!newTokenName.equalsIgnoreCase(tokenName)) {
                 return R.failed(R.ILLEGAL, "合约名字和合约地址不匹配");
             }
         }
         if (tokenName == null || tokenName.trim().isEmpty()) {
-            tokenName = new ERC20ContractQuery(tokenAddress, web3JFactory.get(network, ethnode)).symbol().send().toLowerCase();
+            tokenName = new ERC20ContractQuery(tokenAddress, web3JFactory.get(ChainId.get(chainId), ethnode)).symbol().send().toLowerCase();
         }
         if (tokenAddress == null || tokenAddress.trim().isEmpty()) {
-            tokenAddress = ethContractAddressConf.getContractAddress(network, tokenName);
+            tokenAddress = ethContractAddressConf.getContractAddress(ChainId.get(chainId), tokenName); 
         }
-        NestOfferPriceContract nestOfferPriceContract = new NestOfferPriceContract(ethContractAddressConf.getNestOracleContractAddress(network), web3JFactory.get(network, ethnode)); // 预言机
+        NestOfferPriceContract nestOfferPriceContract = new NestOfferPriceContract(ethContractAddressConf.getNestOracleContractAddress(ChainId.get(chainId)), web3JFactory.get(ChainId.get(chainId), ethnode)); // 预言机
         Tuple2<BigInteger, BigInteger> latestPrice = nestOfferPriceContract.checkPriceNow(tokenAddress).sendAsync().get();
         BigInteger tokenAmount = latestPrice.getValue1();
         BigInteger erc20Amount = latestPrice.getValue2();
-        int tokenDecimalNumber = ((BigInteger) new RemoteCallFunction<>(new ERC20ContractQuery(tokenAddress, web3JFactory.get(network, ethnode)).decimals()).call()).intValue();
+        int tokenDecimalNumber = ((BigInteger) new RemoteCallFunction<>(new ERC20ContractQuery(tokenAddress, web3JFactory.get(ChainId.get(chainId), ethnode)).decimals()).call()).intValue();
         BigDecimal ethDecimal = new BigDecimal("1000000000000000000");
         BigDecimal tokenDecimal = BigDecimal.valueOf(1 * Math.pow(10, tokenDecimalNumber));
         LOGGER.info("currency={}, tokenAddress={}, tokenDecimalNumber={}, tokenDecimal={}", tokenName, tokenAddress, tokenDecimalNumber, tokenDecimal.toPlainString());

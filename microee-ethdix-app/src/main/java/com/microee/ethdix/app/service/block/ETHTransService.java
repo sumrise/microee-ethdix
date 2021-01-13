@@ -1,4 +1,4 @@
-package com.microee.ethdix.app.service;
+package com.microee.ethdix.app.service.block;
 
 import com.microee.ethdix.app.components.Web3JFactory;
 import java.util.ArrayList;
@@ -11,14 +11,15 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import com.microee.ethdix.app.props.ETHNetworkProperties;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.stacks.mongodb.support.Mongo;
 
 @Service
-public class ETHBlockTransService {
+public class ETHTransService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ETHBlockTransService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ETHTransService.class);
 
-    public static final String COLLECTION_TRANS = "eth_blocks_trans";
+    public static final String COLLECTION_TRANS = "eth_trans";
 
     @Autowired
     private Web3JFactory web3JFactory;
@@ -30,10 +31,10 @@ public class ETHBlockTransService {
     private Mongo mongo;
 
     // 查询并保存交易基本信息
-    public EthRawTransaction ethGetTransaction(String ethnode, String network, Long blockNumber, String transHash) {
+    public EthRawTransaction ethGetTransaction(String ethnode, ChainId chainId, Long blockNumber, String transHash) {
         EthRawTransaction result = mongo.queryByStringId(ethNetworkProperties.getCollectionName(COLLECTION_TRANS, blockNumber), transHash, EthRawTransaction.class);
         if (result == null) {
-            result = web3JFactory.getJsonRpc(network, ethnode).getTransactionByHash(transHash);
+            result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionByHash(transHash);
             if ((ethnode == null || ethnode.isEmpty()) && result != null) {
                 if (result.getBlockNumber() != null) {
                     mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_TRANS, blockNumber), result, transHash);
@@ -62,7 +63,7 @@ public class ETHBlockTransService {
         Query query = Query.query(Criteria.where("to").is(hashAddress));
         List<String> collectionList = ethNetworkProperties.getCollectionNamesByBlockNumber(null);
         List<EthRawTransaction> resultList = new ArrayList<>();
-        collectionList.stream().map(collectionKey -> ethNetworkProperties.getCollectionName(ETHBlockTransService.COLLECTION_TRANS, collectionKey)).map(collectionName -> {
+        collectionList.stream().map(collectionKey -> ethNetworkProperties.getCollectionName(ETHTransService.COLLECTION_TRANS, collectionKey)).map(collectionName -> {
             Boolean collectionExists = mongo.collectionExists(collectionName);
             LOGGER.info("collectionExists={}", collectionExists);
             List<EthRawTransaction> currentList = mongo.queryList(collectionName, query, EthRawTransaction.class);
@@ -78,7 +79,7 @@ public class ETHBlockTransService {
         Query query = Query.query(Criteria.where("from").is(hashAddress));
         List<String> collectionList = ethNetworkProperties.getCollectionNamesByBlockNumber(null);
         List<EthRawTransaction> resultList = new ArrayList<>();
-        collectionList.stream().map(collectionKey -> ethNetworkProperties.getCollectionName(ETHBlockTransService.COLLECTION_TRANS, collectionKey)).map(collectionName -> {
+        collectionList.stream().map(collectionKey -> ethNetworkProperties.getCollectionName(ETHTransService.COLLECTION_TRANS, collectionKey)).map(collectionName -> {
             Boolean collectionExists = mongo.collectionExists(collectionName);
             LOGGER.info("collectionExists={}", collectionExists);
             List<EthRawTransaction> currentList = mongo.queryList(collectionName, query, EthRawTransaction.class);

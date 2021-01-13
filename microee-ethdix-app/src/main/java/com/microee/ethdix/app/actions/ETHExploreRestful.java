@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.microee.ethdix.app.service.ETHBlockTxReceiptService;
-import com.microee.ethdix.app.service.ETHBlockTransService;
+import com.microee.ethdix.app.service.block.ETHTransService;
+import com.microee.ethdix.app.service.block.ETHReceiptService;
 import com.microee.ethdix.j3.Constrants;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.EthTransactionReceipt;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.ethdix.oem.eth.enums.ETHContractType;
 import com.microee.plugin.response.R;
 
@@ -28,21 +28,22 @@ public class ETHExploreRestful {
     private static final Logger LOGGER = LoggerFactory.getLogger(ETHBlockRestful.class);
 
     @Autowired
-    private ETHBlockTxReceiptService txReceiptService;
+    private ETHReceiptService txReceiptService;
 
     @Autowired
-    private ETHBlockTransService ethBlockTransService;
+    private ETHTransService ethBlockTransService;
 
     // ### 获取交易基本信息
     @RequestMapping(value = "/eth-getTransaction", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<EthRawTransaction> ethGetTransaction(
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
-            @RequestParam(value = "network", required = false) String network, // 网络类型: 主网或测试网
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId, // 网络类型: 主网或测试网
             @RequestParam("blockNumber") Long blockNumber, 
             @RequestParam("transHash") String transHash) {
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(transHash).withFailMessage("%s 必传", "transHash").isNotBlank();
-        EthRawTransaction trans = ethBlockTransService.ethGetTransaction(ethnode, network, blockNumber, transHash); 
+        EthRawTransaction trans = ethBlockTransService.ethGetTransaction(ethnode, ChainId.get(chainId), blockNumber, transHash); 
         if (trans == null) {
             return R.ok(null);
         }
@@ -60,11 +61,12 @@ public class ETHExploreRestful {
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getTransDecoder(
             @RequestParam(value = "ethnode", required = false) String ethnode,
-            @RequestParam(value = "network", required = false) String network,
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam("blockNumber") Long blockNumber, 
             @RequestParam("transHash") String transHash) {
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(transHash).withFailMessage("%s 必传", "transHash").isNotBlank();
-        EthTransactionReceipt transReceipt = this.txReceiptService.getTransactionReceipt(ethnode, network, blockNumber, transHash); // 取得交易回执
+        EthTransactionReceipt transReceipt = this.txReceiptService.getTransactionReceipt(ethnode, ChainId.get(chainId), blockNumber, transHash); // 取得交易回执
         List<EthTransactionReceipt.ReceiptLog> receiptReceiptLogs = transReceipt.getLogs(); // 取得交易日志 
         if (receiptReceiptLogs == null || receiptReceiptLogs.isEmpty()) {
             LOGGER.warn("当前交易回执没有交易日志: trans-receipt-hash={}", transHash);
