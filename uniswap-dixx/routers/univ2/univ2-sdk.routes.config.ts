@@ -3,7 +3,7 @@ import express from 'express';
 import { getNetwork } from '@ethersproject/networks';
 import { getDefaultProvider } from '@ethersproject/providers';
 import { expect } from 'chai';
-import { ChainId, Fetcher, Route, Pair, TokenAmount, TradeType, Trade, Price, Currency } from '@uniswap/sdk';
+import { ChainId, Fetcher, Route, Pair, TokenAmount, TradeType, Trade, Price } from '@uniswap/sdk';
 import { ethers } from 'ethers';
 import { Eth } from 'web3-eth';
 
