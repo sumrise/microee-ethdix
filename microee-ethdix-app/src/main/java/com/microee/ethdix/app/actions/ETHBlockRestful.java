@@ -73,6 +73,8 @@ public class ETHBlockRestful {
     public R<List<Long>> ethBreakBlockNumber(
             @RequestParam(value = "start") Long start,
             @RequestParam(value = "end") Long end) {
+        Assertions.assertThat(start).withFailMessage("%s 有误", "chainId").isNotNull().isGreaterThanOrEqualTo(0l);
+        Assertions.assertThat(end).withFailMessage("%s 有误", "end").isNotNull().isGreaterThan(start);
         String collectionName = ethBlockShard.getCollection(ETHBlockService.COLLECTION_BLOCKS, start);
         return R.ok(blockService.ethBreakBlockNumber(collectionName, start, end)).message(collectionName);
     }

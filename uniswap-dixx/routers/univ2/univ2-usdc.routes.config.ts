@@ -6,8 +6,9 @@ import web3 from 'web3';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Interface, FunctionFragment } from '@ethersproject/abi'
 import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.json';
-import { ChainId, Currency, currencyEquals, JSBI, Price, WETH, Token, ETHER, Pair } from '@uniswap/sdk'
-import { isAddress } from 'ethers/lib/utils';
+import { ChainId, Currency, currencyEquals, JSBI, Price, WETH, Token, ETHER, Pair, Fetcher } from '@uniswap/sdk'
+
+import { wrappedCurrency } from '../../univ2-resolves/UniV2Resolve';
 
 type MethodArg = string | number | BigNumber;
 type MethodArgs = Array<MethodArg | MethodArg[]>;
@@ -16,15 +17,12 @@ type OptionalMethodInputs = Array<MethodArg | MethodArg[] | undefined> | undefin
 const loggerInfo: debug.IDebugger = debug('app-univ2-usdc');
 const PAIR_INTERFACE = new Interface(IUniswapV2PairABI)
 
-function wrappedCurrency(currency: Currency | undefined, chainId: ChainId | undefined): Token | undefined {
-    return chainId && currency === ETHER ? WETH[chainId] : currency instanceof Token ? currency : undefined
-}
 
 function wrappedPairs(chainId: ChainId, currencies: [Currency | undefined, Currency | undefined][]) {
     const tokens = currencies.map(([currencyA, currencyB]) => [wrappedCurrency(currencyA, chainId), wrappedCurrency(currencyB, chainId)]);
     const pairAddresses = tokens.map(([tokenA, tokenB]) => tokenA && tokenB && !tokenA.equals(tokenB) ? Pair.getAddress(tokenA, tokenB) : undefined);
     
-    const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
+    // const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
     // const results = useMultipleContractSingleData(pairAddresses, PAIR_INTERFACE, 'getReserves');
     return pairAddresses;
 }
