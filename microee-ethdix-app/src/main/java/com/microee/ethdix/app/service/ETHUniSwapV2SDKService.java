@@ -39,6 +39,21 @@ public class ETHUniSwapV2SDKService {
         R<String> result = univ2SDKClient.getPairAddress(tokenA, tokenB);
         return R.ok(result.getData()).message(this.getPairSymbol(chainId, ethnode, result.getMessage()));
     }
+
+    public R<String> priceOf(ChainId chainId, String ethnode, String tokenA, String tokenB, String of) {
+        R<String> result = univ2SDKClient.priceOf(tokenA, tokenB, of); 
+        return R.ok(result.getData()).message(this.getPairSymbol(chainId, ethnode, result.getMessage()));
+    }
+
+    public String getOutputAmount(ChainId chainId, String ethnode, String tokenA, String tokenB,
+            String tokenAInputAmount, String tokenBInputAmount) {
+        return univ2SDKClient.getOutputAmount(tokenA, tokenB, tokenAInputAmount, tokenBInputAmount).getData(); 
+    }
+
+    public String getInputAmount(ChainId chainId, String ethnode, String tokenA, String tokenB,
+            String tokenAOutputAmount, String tokenBOutputAmount) {
+        return univ2SDKClient.getInputAmount(tokenA, tokenB, tokenAOutputAmount, tokenBOutputAmount).getData(); 
+    }
     
     public Map<String, Object> route(String tokenA, String tokenB) {
         return univ2SDKClient.route(tokenA, tokenB).getData();
