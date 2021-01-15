@@ -103,6 +103,10 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                     }
                 })();
             });
+
+        // 确切输入
+        // 如果您想发送确切数量的输入令牌以换取尽可能多的输出令牌，则需要使用 getAmountsOut。
+        // 等效的SDK函数为 getOutputAmount 或 minimumAmountOut 用于滑点计算。
         // 根据输入数量计算输出数量
         this.app.route(`/univ2-sdk/pair/getOutputAmount`)
             .get((req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -133,6 +137,10 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                     }
                 })();
             });
+
+        // 精确输出
+        // 如果您希望为尽可能少的输入令牌接收确切数量的输出令牌，则可以使用 getAmountsIn。
+        // 等效的 SDK 函数为 getInputAmount 或 maximumAmountIn，用于滑点计算。
         // 根据输出数量计算输入数量
         this.app.route(`/univ2-sdk/pair/getInputAmount`)
             .get((req: express.Request, res: express.Response, next: express.NextFunction) => {

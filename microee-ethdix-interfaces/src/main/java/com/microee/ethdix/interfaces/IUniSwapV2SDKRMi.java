@@ -2,7 +2,9 @@ package com.microee.ethdix.interfaces;
 
 import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +20,9 @@ public interface IUniSwapV2SDKRMi {
     @RequestMapping(value = "/token", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> token(@RequestParam("tokenAddr") String tokenAddr);
 
+    @RequestMapping(value = "/usdcPrice", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<String> usdcPrice(@RequestBody JSONObject param);
+    
     @RequestMapping(value = "/pair", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> pair(@RequestParam("tokenA") String tokenA, @RequestParam("tokenB") String tokenB, @RequestParam(value = "method", required=false) String method);
 

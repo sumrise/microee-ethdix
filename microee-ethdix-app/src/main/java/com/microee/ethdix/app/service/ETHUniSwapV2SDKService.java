@@ -2,6 +2,7 @@ package com.microee.ethdix.app.service;
 
 import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.microee.ethdix.app.components.Web3JFactory;
@@ -28,6 +29,11 @@ public class ETHUniSwapV2SDKService {
     
     public Map<String, Object> token(String tokenAddr) {
         return univ2SDKClient.token(tokenAddr).getData();
+    }
+
+    public R<String> usdcPrice(String address, Integer decimals) {
+         R<String> result = univ2SDKClient.usdcPrice(new JSONObject().put("address", address).put("decimals", decimals));  
+         return R.ok(result.getData()).message(this.getPairSymbol(ChainId.MAINNET, null, result.getMessage()));
     }
     
     public R<Map<String, Object>> pair(ChainId chainId, String ethnode, String tokenA, String tokenB, String method) {

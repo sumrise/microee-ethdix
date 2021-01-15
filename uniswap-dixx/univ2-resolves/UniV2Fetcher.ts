@@ -11,9 +11,13 @@ import { tokens as DefaultTokenList } from '@uniswap/default-token-list/build/un
 export async function getPairDataWithSymbol(chainId: ChainId, tokenA: Token, tokenB: Token) : Promise<[Pair, string]> {
     // const provider = new ethers.providers.Web3Provider(window.ethereum);
     // const thePair = await Fetcher.fetchPairData(tokenA, tokenB, provider);
-    const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
-    const [s1, s2] = getPairSymbolByAddress(chainId, thePair.token0.address, thePair.token1.address);
-    return [thePair, `${s1}/${s2}`];
+    try {
+        const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
+        const [s1, s2] = getPairSymbolByAddress(chainId, thePair.token0.address, thePair.token1.address);
+        return [thePair, `${s1}/${s2}`];
+    } catch (err) {
+        throw new Error(`\`${tokenA.symbol}/${tokenB.symbol}\`查询PariData失败`);
+    }
 }
 
 export async function getTokenDataWithPairSymbol(chainId: ChainId, tokenA: string, tokenB: string) : Promise<[Token, Token, string]> {
