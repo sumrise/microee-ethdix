@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.microee.ethdix.app.components.ETHBlockShard;
 import com.microee.ethdix.app.components.Web3JFactory;
-import com.microee.ethdix.app.props.ETHNetworkProperties;
 import com.microee.ethdix.app.service.block.ETHBlockService;
 import com.microee.ethdix.app.service.block.ETHReceiptService;
 import com.microee.ethdix.j3.rpc.JsonRPC;
@@ -37,7 +37,7 @@ public class ETHBlockRestful {
     private ETHReceiptService txReceiptService;
 
     @Autowired
-    private ETHNetworkProperties ethNetworkProperties;
+    private ETHBlockShard ethBlockShard;
 
     // ### 查询节点使用量
     @RequestMapping(value = "/used-count", method = RequestMethod.GET,
@@ -73,7 +73,7 @@ public class ETHBlockRestful {
     public R<List<Long>> ethBreakBlockNumber(
             @RequestParam(value = "start") Long start,
             @RequestParam(value = "end") Long end) {
-        String collectionName = ethNetworkProperties.getCollectionName(ETHBlockService.COLLECTION_BLOCKS, start);
+        String collectionName = ethBlockShard.getCollection(ETHBlockService.COLLECTION_BLOCKS, start);
         return R.ok(blockService.ethBreakBlockNumber(collectionName, start, end)).message(collectionName);
     }
 

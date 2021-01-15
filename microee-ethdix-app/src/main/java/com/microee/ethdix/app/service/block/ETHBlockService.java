@@ -7,8 +7,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.microee.ethdix.app.components.ETHBlockShard;
 import com.microee.ethdix.app.components.Web3JFactory;
-import com.microee.ethdix.app.props.ETHNetworkProperties;
 import com.microee.ethdix.oem.eth.EthRawBlock;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.enums.ChainId;
@@ -24,8 +24,8 @@ public class ETHBlockService {
     public static final String COLLECTION_BLOCKS = "eth_blocks";
 
     @Autowired
-    private ETHNetworkProperties ethNetworkProperties;
-
+    private ETHBlockShard ethBlockShard;
+    
     @Autowired
     private Mongo mongo;
 
@@ -43,11 +43,12 @@ public class ETHBlockService {
         if (blockNumber != null && blockNumber < 0) {
             return null;
         }
-        EthRawBlock result = mongo.queryById(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), blockNumber, EthRawBlock.class);
+        String blockCollectionName = ethBlockShard.getCollection(COLLECTION_BLOCKS, blockNumber);
+        EthRawBlock result = mongo.queryById(blockCollectionName, blockNumber, EthRawBlock.class);
         if (result == null) {
             result = web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
             if ((ethnode == null || ethnode.isEmpty()) && result != null) {
-                mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber, "transactions"); // 交易信息保存到另一个表
+                mongo.save(blockCollectionName, result, blockNumber, "transactions"); // 交易信息保存到另一个表
                 // mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber); 
                 ethTransService.saveTransactions(blockNumber, result.getTransactions());
             }

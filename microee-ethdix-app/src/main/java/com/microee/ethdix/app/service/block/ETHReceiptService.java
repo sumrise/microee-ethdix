@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.microee.ethdix.app.components.ETHBlockShard;
 import com.microee.ethdix.app.components.Web3JFactory;
-import com.microee.ethdix.app.props.ETHNetworkProperties;
 import com.microee.ethdix.j3.Constrants;
 import com.microee.ethdix.oem.eth.EthTransactionReceipt;
 import com.microee.ethdix.oem.eth.enums.ChainId;
@@ -21,6 +21,9 @@ public class ETHReceiptService {
     public static final String COLLECTION_NAME = "eth_receipts";
 
     @Autowired
+    private ETHBlockShard ethBlockShard;
+    
+    @Autowired
     private Mongo mongo;
 
     @Autowired
@@ -29,20 +32,18 @@ public class ETHReceiptService {
     @Autowired
     private ETHTransService ethBlockTransService;
 
-    @Autowired
-    private ETHNetworkProperties ethNetworkProperties;
-
     // 查询并保存交易回执
     public EthTransactionReceipt getTransactionReceipt(String ethnode, ChainId chainId, Long blockNumber, String txHash) {
         EthTransactionReceipt result = null;
+        String receiptCollectionName = ethBlockShard.getCollection(COLLECTION_NAME, blockNumber);
         if (blockNumber != null) {
-            result = mongo.queryByStringId(ethNetworkProperties.getCollectionName(COLLECTION_NAME, blockNumber), txHash, EthTransactionReceipt.class);
+            result = mongo.queryByStringId(receiptCollectionName, txHash, EthTransactionReceipt.class);
         }
         if (result == null) {
             result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionReceipt(txHash);
             if ((ethnode == null || ethnode.isEmpty()) && result != null) {
                 if (result.getBlockNumber() != null) {
-                    mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_NAME, blockNumber), result, txHash);
+                    mongo.save(receiptCollectionName, result, txHash);
                 }
             }
         }
