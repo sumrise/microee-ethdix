@@ -1,14 +1,143 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>com.microee.ethdix.web</groupId>
-  <artifactId>microee-ethdix-web</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>microee-ethdix-web</name>
-  <url>http://maven.apache.org</url>
-  <dependencies>
+    <modelVersion>4.0.0</modelVersion>
 
-  </dependencies>
+    <groupId>com.microee.ethdix.web</groupId>
+    <artifactId>microee-ethdix-web</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>microee-ethdix-web</name>
+    <url>http://maven.apache.org</url>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.12.RELEASE</version>
+        <relativePath /> <!-- lookup parent from repository -->
+    </parent>
+
+    <properties>
+        <start-class>com.microee.ethdix.web.App</start-class>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <maven-jar-plugin.version>3.0.0</maven-jar-plugin.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <spring-cloud.version>Edgware.SR3</spring-cloud.version>
+        <curator.version>4.1.0</curator.version>
+        <!-- 如果子项目使用 thymeleaf 模版必须加该定义 -->
+        <!-- <thymeleaf-layout-dialect.version>2.2.2</thymeleaf-layout-dialect.version> -->
+        <thymeleaf-layout-dialect.version>2.3.0</thymeleaf-layout-dialect.version>
+        <thymeleaf.version>3.0.8.RELEASE</thymeleaf.version>
+        <thymeleaf-extras-springsecurity4.version>3.0.2.RELEASE</thymeleaf-extras-springsecurity4.version>
+        <okhttp.version>4.6.0</okhttp.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>logging-interceptor</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- For web UI -->
+        <dependency>
+            <groupId>com.microee.stacks.web</groupId>
+            <artifactId>microee-web</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!-- micro starter -->
+        <dependency>
+            <groupId>com.microee.stacks.starter</groupId>
+            <artifactId>microee-starter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!-- redis -->
+        <dependency>
+            <groupId>com.microee.stacks.redis</groupId>
+            <artifactId>microee-redis</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!-- For Thread -->
+        <dependency>
+            <groupId>com.microee.plugin.thread</groupId>
+            <artifactId>microee-thread</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!-- for http client -->
+        <dependency>
+            <groupId>com.microee.plugin.http</groupId>
+            <artifactId>microee-http</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!-- For Utils function -->
+        <dependency>
+            <groupId>com.microee.plugin.commons</groupId>
+            <artifactId>microee-commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microee.plugin.jodad</groupId>
+            <artifactId>microee-jodad</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- 此处加 plugin 会导致无法继承 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <!-- 要将源码放上去，需要加入这个插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <!-- 绑定 source 插件到 Maven 的生命周期, 并在生命周期后执行绑定的 source 的 goal -->
+                <executions>
+                    <execution>
+                        <!-- 绑定 source 插件到 Maven 的生命周期 -->
+                        <phase>compile</phase>
+                        <!-- 在生命周期后执行绑定的 source 插件的 goals -->
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

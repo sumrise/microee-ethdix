@@ -1,0 +1,10 @@
+server:
+  port: 19106
+  tomcat:
+    basedir: ${java.io.tmpdir}/@project.name@_${server.port}
+    
+spring:
+  profiles:
+    active: local
+  application:
+    name: microee-ethdix-web

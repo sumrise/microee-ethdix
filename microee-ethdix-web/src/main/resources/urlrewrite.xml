@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 4.0//EN"
+        "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
+<urlrewrite>
+    <rule>
+        <from>^/manifest.json$</from>
+        <to>/assets/manifest.json</to>
+    </rule>
+    <rule>
+        <from>^/logo192.png$</from>
+        <to>/assets/logo192.png</to>
+    </rule>
+    <rule>
+        <from>^/logo512.png$</from>
+        <to>/assets/logo512.png</to>
+    </rule>
+    <!-- <rule> -->
+    <!-- <from>^/favicon.ico$</from> -->
+    <!-- <to>/assets/favicon.ico</to> -->
+    <!-- </rule> -->
+    <!-- 栏目首页 -->
+    <!-- <rule> -->
+    <!-- <from>^/((access-token)|(accessToken))(\s?)$</from> -->
+    <!-- <to>/authentication</to> -->
+    <!-- </rule> -->
+    <!-- 栏目首页 -->
+    <rule>
+        <from>^/col/(\w+)\.html$</from>
+        <to>/col/$1/</to>
+    </rule>
+    <!-- 栏目列表页，注意html后面没有加$，因为后面还有若干参数 -->
+    <rule>
+        <from>^/col/list/(\w+)/(\w+)\.html</from>
+        <to>/col/list/$1/$2/</to>
+    </rule>
+    <!-- 文章详情页 -->
+    <rule>
+        <from>^/art/(\w+)\.html$</from>
+        <to>/art/$1/</to>
+    </rule>
+    <!-- 静态网页 -->
+    <rule>
+        <from>^/static/(\w+)\.html$</from>
+        <to>/static/$1/</to>
+    </rule>
+</urlrewrite>
