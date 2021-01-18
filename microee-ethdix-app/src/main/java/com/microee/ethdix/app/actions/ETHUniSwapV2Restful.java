@@ -123,7 +123,7 @@ public class ETHUniSwapV2Restful {
         // We use this slippage tolerance to calculate the minumum amount of DAI we must receive before our trade reverts, thanks to minimumAmountOut. 
         // The value is the amount of ETH that must be included as the msg.value in our transaction.
         // const amountOutMin = trade.minimumAmountOut(slippageTolerance).raw
-        Double slippageTolerance = 0.2d;
+        // Double slippageTolerance = 0.2d;
         Long amountOutMin = null;//(amount * slippageTolerance);
         Address wethAddr = RemoteCallFunction.build(new UniswapV2Route02Contract(router02Addr, web3JFactory.getByEthNode(ethnode)).WETH()).call();
         String inputData = ETHInputEncoder.getInputDataForSwapExactETHForTokens(amountOutMin, wethAddr.getValue(), contractAddr, toAddr);

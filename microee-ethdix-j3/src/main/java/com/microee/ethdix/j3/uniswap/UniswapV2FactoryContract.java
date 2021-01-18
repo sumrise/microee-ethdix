@@ -10,8 +10,6 @@ import org.web3j.protocol.core.RemoteCall;
 import org.web3j.tx.Contract;
 import org.web3j.tx.ReadonlyTransactionManager;
 import com.microee.ethdix.j3.Constrants;
-import com.microee.plugin.response.R;
-import com.microee.plugin.response.exception.RestException;
 
 public class UniswapV2FactoryContract extends Contract {
 
