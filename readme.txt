@@ -1,23 +1,26 @@
 ### ethdix 微服务 -- ethdix parent
 $ mvn archetype:generate -DgroupId=com.microee.ethdix -DartifactId=microee-ethdix -DarchetypeArtifactId=pom-root -DinteractiveMode=false -DarchetypeGroupId=org.codehaus.mojo.archetypes -DarchetypeVersion=RELEASE -DarchetypeCatalog=local
 
+### ethdix 微服务 -- ethdix-j3 对 web3j 的封装
+mvn archetype:generate -DgroupId=com.microee.ethdix.j3 -DartifactId=microee-ethdix-j3 -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
+
 ### ethdix 微服务 -- ethdix-loop 区块扫描
 mvn archetype:generate -DgroupId=com.microee.ethdix.loop -DartifactId=microee-ethdix-loop -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
-### ethdix 微服务 -- ethdix-oem 领域模型
+### ethdix 微服务 -- ethdix-oem 领域模型, entity/数据库实体类, model/DababaseObject, ViewObject, ParamObject
 mvn archetype:generate -DgroupId=com.microee.ethdix.oem -DartifactId=microee-ethdix-oem -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
-### ethdix 微服务 -- ethdix-j3 合约解析
-mvn archetype:generate -DgroupId=com.microee.ethdix.j3 -DartifactId=microee-ethdix-j3 -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
-
-### ethdix 微服务 -- ethdix-app 对外接口
-mvn archetype:generate -DgroupId=com.microee.ethdix.app -DartifactId=microee-ethdix-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
+### ethdix 微服务 -- ethdix-interfaces 远程调用
+mvn archetype:generate -DgroupId=com.microee.ethdix.interfaces -DartifactId=microee-ethdix-interfaces -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
 ### ethdix 微服务 -- ethdix-rmi 远程调用
 mvn archetype:generate -DgroupId=com.microee.ethdix.rmi -DartifactId=microee-ethdix-rmi -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
-### ethdix 微服务 -- ethdix-interfaces 远程调用
-mvn archetype:generate -DgroupId=com.microee.ethdix.interfaces -DartifactId=microee-ethdix-interfaces -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
+### ethdix 微服务 -- ethdix-app 服务接口聚合
+mvn archetype:generate -DgroupId=com.microee.ethdix.app -DartifactId=microee-ethdix-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
+
+### ethdix 微服务 -- ethdix-web 对外门户, 兑换，区块浏览，钱包
+mvn archetype:generate -DgroupId=com.microee.ethdix.web -DartifactId=microee-ethdix-web -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
 
 ### 合约查询浏览器
