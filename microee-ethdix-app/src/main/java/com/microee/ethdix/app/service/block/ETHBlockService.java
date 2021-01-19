@@ -101,14 +101,19 @@ public class ETHBlockService {
 
     // 当前区块是否是孤块
     public Boolean ethBlockLonely(String ethnode, ChainId chainId, EthRawBlock block) {
-        String parentHash = block.getParentHash();
-        EthRawBlock parentBlock = this.ethGetBlockByHash(ethnode, chainId, parentHash);
-        Long parentBlockNumber = Long.parseLong(parentBlock.getNumber().substring(2), 16);
         Long currentBlockNumber = Long.parseLong(block.getNumber().substring(2), 16);
-        if (parentBlockNumber + 1 == currentBlockNumber) {
+        EthRawBlock parentBlock = this.ethGetBlockByNumber(ethnode, chainId, currentBlockNumber - 1, false);
+        if (parentBlock.getHash().equalsIgnoreCase(block.getParentHash())) {
             return false;
         }
-        return true ;
+        return true;
+        //String parentHash = block.getParentHash();
+        //EthRawBlock parentBlock = this.ethGetBlockByHash(ethnode, chainId, parentHash);
+        // Long parentBlockNumber = Long.parseLong(parentBlock.getNumber().substring(2), 16);
+        // if (parentBlockNumber + 1 == currentBlockNumber) {
+        //     return false;
+        // }
+        // return true ;
     }
 
 }
