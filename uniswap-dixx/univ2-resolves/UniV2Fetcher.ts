@@ -38,5 +38,9 @@ export function getPairSymbolByAddress(chainId: ChainId, tokenA: string, tokenB 
 }
 
 export function getTokenObjectByAddress(chainId: ChainId, tokenAddress: string) : any | undefined {
-    return DefaultTokenList.find(t => t.chainId == chainId && (tokenAddress.toLowerCase() === t.address.toLowerCase()));
+    const _token: any = DefaultTokenList.find(t => t.chainId == chainId && (tokenAddress.toLowerCase() === t.address.toLowerCase()));
+    if (!_token) {
+        // 查链
+    }
+    return _token;
 }
