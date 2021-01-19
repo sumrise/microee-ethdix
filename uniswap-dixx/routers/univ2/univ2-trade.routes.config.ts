@@ -47,10 +47,14 @@ export class UniV2TradeRoutes extends CommonRoutesConfig {
             .post((req: express.Request, res: express.Response, next: express.NextFunction) => {
                 const _chainId = ChainId.MAINNET;
                 const _tokenAddr: string = req.query['tokenAddr'] as string; // 代币地址
-                const _debugger: boolean = req.query['debug'] ? true : false; // 代币地址
-                const _params = Object.assign({}, req.body);
-                loggerInfo(`_params: ${JSON.stringify(_params)}`);
-                expect(_tokenAddr, 'tokenAddr invalid').to.have.lengthOf(42);
+                const _ethInputAmount: string = req.body.ethInputAmount as string;
+                const _slippageToleranceInput: number[] = req.body.slippageTolerance as number[]; // new Percent('50', '10000') // 50 bips 1 bip = 0.05
+                expect(web3.utils.isAddress(_tokenAddr), '_tokenAddr not invalid').to.be.true;
+                expect(_ethInputAmount, 'ethInputAmount shoud not be empty').to.length.gt(0);
+                expect(_ethInputAmount, 'ethInputAmount shoud not equals 0').to.not.equal('0');
+                expect(_slippageToleranceInput, 'slippageTolerance shoud length of 2').to.have.lengthOf(2);
+                expect(_slippageToleranceInput[0], 'slippageTolerance[0] not invalid').to.be.gt(1);
+                expect(_slippageToleranceInput[1], 'slippageTolerance[1] shoud be > slippageTolerance[0]').to.be.gt(_slippageToleranceInput[0]);
                 const _wethAddr = WETH[_chainId];
                 (async () => {
                     try {
@@ -58,39 +62,33 @@ export class UniV2TradeRoutes extends CommonRoutesConfig {
                         const pairWithSymbol = await getPairDataWithSymbol(_chainId, token, _wethAddr);
                         const pair = pairWithSymbol[0];
                         const route = new Route([pair], _wethAddr);
-                        const trade = new Trade(route, new TokenAmount(_wethAddr, '100000000000000000'), TradeType.EXACT_INPUT);
-                        const _slippageTolerance = new Percent('50', '10000'); // 50 bips 1 bip = 0.05
+                        const _tokenAmountString = parseUnits(_ethInputAmount, _wethAddr.decimals).toString();
+                        const trade = new Trade(route, new TokenAmount(_wethAddr, _tokenAmountString), TradeType.EXACT_INPUT);
+                        const _slippageTolerance = new Percent(_slippageToleranceInput[0].toString(), _slippageToleranceInput[1].toString()); 
                         const tradInfo = {
-                            slippageTolerance: _slippageTolerance,
-                            amountOutMin: trade.minimumAmountOut(_slippageTolerance),
-                            // amountOutMin: trade.minimumAmountOut(_slippageTolerance).raw,
+                            slippageTolerance: _slippageTolerance.toSignificant(6),
+                            amountOutMin: trade.minimumAmountOut(_slippageTolerance).toSignificant(6),
                             path: [_wethAddr.address, token.address],
                             to: '',
                             deadline: Math.floor(new Date().getTime() / 1000) + 60 * 20, // 20 分钟
-                            value: trade.inputAmount,
-                            // value: trade.inputAmount.raw
+                            value: trade.inputAmount.toSignificant(6)
                         };
                         const message = `兑换-ETH2TokenSwap: 
                                         chainId=${_chainId},
-                                        slippageTolerance=${_slippageTolerance.toSignificant(6)}, 
-                                        amountOutMin=${tradInfo.amountOutMin.toSignificant(6)}, 
+                                        slippageTolerance=${tradInfo.slippageTolerance}, 
+                                        amountOutMin=${tradInfo.amountOutMin}, 
                                         path:[${route.path[0].symbol || route.path[0].address}, ${route.path[1].symbol || route.path[1].address}],
                                         to: ${tradInfo.to},
                                         deadline: ${tradInfo.deadline},
-                                        value: ${tradInfo.value.toSignificant(6)},
+                                        value: ${tradInfo.value},
+                                        value2: ${_tokenAmountString},
                                         liquidityToken=${pair.liquidityToken.symbol}, 
                                         route.midPrice=${route.midPrice.toSignificant(6)}, 
                                         route.midPrice.invert=${route.midPrice.invert().toSignificant(6)},
                                         trade.executionPrice=${trade.executionPrice.toSignificant(6)},
                                         trade.nextMidPrice=${trade.nextMidPrice.toSignificant(6)}`.replace(/(\r\n|\n|\r)/gm, "").replace(/(\s+)/gm, " ");
                         loggerInfo(message);
-                        const tradInfoVo = Object.assign(tradInfo, !_debugger ? null :
-                            {
-                                slippageTolerance: tradInfo.slippageTolerance.toSignificant(6),
-                                amountOutMin: tradInfo.amountOutMin.toSignificant(6),
-                                value: tradInfo.value.toSignificant(6),
-                                debuger: { pair: pair, route: route, trade: trade }
-                            });
+                        const tradInfoVo = Object.assign(tradInfo);
                         res.status(200).json({ code: 200, message: message, data: tradInfoVo });
                     } catch (err) {
                         next(err);
@@ -152,6 +150,7 @@ export class UniV2TradeRoutes extends CommonRoutesConfig {
                         if (err.message.indexOf('invalid hexlify value') !== -1) {
                             if (err.message.indexOf(_privateKey) !== -1) {
                                 res.status(200).json({ code: 400, message: `${_message}', errorMessage=私钥有误'`, data: null });
+                                return;
                             }
                         }
                         next(err);
