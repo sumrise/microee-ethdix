@@ -1,18 +1,10 @@
-
-import { getNetwork } from '@ethersproject/networks';
-import { getDefaultProvider } from '@ethersproject/providers';
-import { ChainId, Token, Fetcher, Pair } from '@uniswap/sdk'
-
-import debug from 'debug';
-const loggerInfo: debug.IDebugger = debug('app-univ2-fetcher');
-
+import { ChainId, Token, Fetcher, Pair } from '@uniswap/sdk';
 import { tokens as DefaultTokenList } from '@uniswap/default-token-list/build/uniswap-default.tokenlist.json';
+import { getJsonRpcProvider } from '../connectors/MyJsonRpcProvider'; 
 
 export async function getPairDataWithSymbol(chainId: ChainId, tokenA: Token, tokenB: Token) : Promise<[Pair, string]> {
-    // const provider = new ethers.providers.Web3Provider(window.ethereum);
-    // const thePair = await Fetcher.fetchPairData(tokenA, tokenB, provider);
     try {
-        const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getDefaultProvider(getNetwork(tokenA.chainId)));
+        const thePair = await Fetcher.fetchPairData(tokenA, tokenB, getJsonRpcProvider(chainId));
         const [s1, s2] = getPairSymbolByAddress(chainId, thePair.token0.address, thePair.token1.address);
         return [thePair, `${s1}/${s2}`];
     } catch (err) {
@@ -34,7 +26,7 @@ export async function getTokenDataByAddress(chainId: ChainId, tokenA: string, to
 }
 
 export async function getTokenDataByAddr(chainId: ChainId, tokenAddress: string) : Promise<Token> {
-    return await Fetcher.fetchTokenData(chainId, tokenAddress);
+    return await Fetcher.fetchTokenData(chainId, tokenAddress, getJsonRpcProvider(chainId));
 }
 
 export function getPairSymbolByAddress(chainId: ChainId, tokenA: string, tokenB : string) : [string, string] {
