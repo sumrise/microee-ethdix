@@ -168,15 +168,16 @@ public class ETHBlockRestful {
         if (txHash != null) {
             tx = web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).getTransactionByHash(txHash);
             if (tx != null) {
-                if (blockNumber != null) {
-                    Long findedBlockNumber = Long.parseLong(tx.getBlockNumber().substring(2), 16);
-                    if (blockNumber != findedBlockNumber) {
-                        throw new RestException(R.ILLEGAL, "区块编号和交易哈希不匹配.");
-                    }
-                    blockNumber = findedBlockNumber;
+                Long findedBlockNumber = Long.parseLong(tx.getBlockNumber().substring(2), 16);
+                if (blockNumber != null && blockNumber != findedBlockNumber) {
+                    throw new RestException(R.ILLEGAL, "区块编号和交易哈希不匹配`"+ findedBlockNumber +"`.");
                 }
+                blockNumber = findedBlockNumber;
                 _txHash = tx.getHash();
             }
+        }
+        if (blockNumber == null) {
+            return R.ok(null);
         }
         EthRawBlock block = this.blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber, false);
         if (this.blockService.ethBlockLonely(ethnode, ChainId.get(chainId), block)) {
