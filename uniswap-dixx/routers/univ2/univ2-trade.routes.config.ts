@@ -7,7 +7,7 @@ import { ethers } from 'ethers';
 import { parseUnits } from '@ethersproject/units';
 import web3 from 'web3';
 
-import { getTokenDataByAddr, getPairDataWithSymbol } from '../../univ2-resolves/UniV2Fetcher';
+import { getTokenDataByAddr, getPairDataWithSymbol, getTokenObjectByAddress } from '../../univ2-resolves/UniV2Fetcher';
 
 const loggerInfo: debug.IDebugger = debug('app-univ2-trade');
 
@@ -124,17 +124,22 @@ export class UniV2TradeRoutes extends CommonRoutesConfig {
                 expect(_ethInputAmount, 'ethInputAmount shoud not equals 0').to.not.equal('0');
                 expect(_path, 'path shoud length of 2').to.have.lengthOf(2);
                 expect(_gas, 'gas not invalid').to.be.gt(1);
+                expect(_deadline, 'deadline not invalid').to.be.gt(1);
                 expect(web3.utils.isAddress(_router02Addr), 'router02Addr not invalid').to.be.true;
                 expect(web3.utils.isAddress(_tokenAddr), 'tokenAddr not invalid').to.be.true;
                 expect(web3.utils.isAddress(_path[0]), 'path[0] not invalid').to.be.true;
                 expect(web3.utils.isAddress(_path[1]), 'path[1] not invalid').to.be.true;
+                let _message = null;
                 (async () => {
                     try {
+                        const _tokenObject = getTokenObjectByAddress(_chainId, _tokenAddr);
                         const _token: Token = await getTokenDataByAddr(_chainId, _tokenAddr);
                         const amountOutMin: CurrencyAmount = new TokenAmount(_token, JSBI.BigInt(parseUnits(_amountOutMin, _token.decimals).toString()));
                         const ethInputAmount: CurrencyAmount = CurrencyAmount.ether(JSBI.BigInt(parseUnits(_ethInputAmount, _token.decimals).toString()));
                         const _gasPrice = parseUnits(_gas.toString(), 9).toString();
-                        loggerInfo(`_tradInfo: amountOutMin=${amountOutMin.toSignificant(6)}, path=${_path}, deadline=${_deadline}, value=${ethInputAmount.toSignificant(6)}, gasPrice=${_gasPrice}`);
+                        const _symbol = `${_tokenObject.symbol}/ETH`;
+                        _message = `_tradInfo: symbol=${_symbol}, amountOutMin=${amountOutMin.toSignificant(6)}, path=${_path}, deadline=${_deadline}, value=${ethInputAmount.toSignificant(6)}, gasPrice=${_gasPrice}`;
+                        loggerInfo(_message);
                         const _account = new ethers.Wallet(_privateKey).connect(ethers.getDefaultProvider('mainnet', { infura: _ethnode }));
                         const _uniswapv2 = new ethers.Contract(_router02Addr, [_swapExactETHForTokensABI], _account);
                         const _calldata: any = { ethInputAmount, gasPrice: JSBI.BigInt(_gasPrice) };
@@ -142,8 +147,13 @@ export class UniV2TradeRoutes extends CommonRoutesConfig {
                         loggerInfo(`Transaction Hash: ${tx.hash}`);
                         const recepit = await tx.wait();
                         loggerInfo(`Transaction was mined in block: ${recepit.blockNumber}`);
-                        res.status(200).json(recepit);
+                        res.status(200).json({ code: 200, message: _message, data: recepit });
                     } catch (err) {
+                        if (err.message.indexOf('invalid hexlify value') !== -1) {
+                            if (err.message.indexOf(_privateKey) !== -1) {
+                                res.status(200).json({ code: 400, message: `${_message}', errorMessage=私钥有误'`, data: null });
+                            }
+                        }
                         next(err);
                     }
                 })();
