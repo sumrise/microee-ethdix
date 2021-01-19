@@ -71,14 +71,17 @@ public class ETHBlockRestful {
     @RequestMapping(value = "/eth-breakBlockNumber", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<List<Long>> ethBreakBlockNumber(
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "start") Long start,
             @RequestParam(value = "end") Long end) {
-        Assertions.assertThat(start).withFailMessage("%s 有误", "chainId").isNotNull().isGreaterThanOrEqualTo(0l);
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
+        Assertions.assertThat(start).withFailMessage("%s 有误", "start").isNotNull().isGreaterThanOrEqualTo(0l);
         Assertions.assertThat(end).withFailMessage("%s 有误", "end").isNotNull().isGreaterThan(start);
-        String collectionName = ethBlockShard.getCollection(ETHBlockService.COLLECTION_BLOCKS, start);
+        String collectionName = ethBlockShard.getCollection(ChainId.get(chainId), ETHBlockService.COLLECTION_BLOCKS, start);
         return R.ok(blockService.ethBreakBlockNumber(collectionName, start, end)).message(collectionName);
     }
 
+    // 一个包含0个交易的区块: https://etherscan.io/block/11683188 
     // ### 根据高度获取区块, 通过以太坊浏览器查看该区块: https://etherscan.io/block/{blockNumber}
     @RequestMapping(value = "/eth-getBlockByNumber", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -86,13 +89,14 @@ public class ETHBlockRestful {
             @RequestParam(value = "ethnode", required = false) String ethnode,
             @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "blockNumber", required = true) Long blockNumber,
+            @RequestParam(value = "fanout", required = false, defaultValue = "false") Boolean fanout, // true: 直接查链, false: 从数据库查
             @RequestParam(value = "decode", required = false, defaultValue = "false") Boolean decode) {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
-        EthRawBlock currentBlock = blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber);
+        EthRawBlock currentBlock = blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber, fanout);
         if (decode) {
 
         }
-        return R.ok(currentBlock);
+        return R.ok(currentBlock).message("该区块包含" + currentBlock.getTransactions().size() + "笔交易");
     }
 
     // ### 根据交易哈希查询交易所在区块编号
@@ -112,12 +116,14 @@ public class ETHBlockRestful {
     public R<EthRawBlock> ethGetBlockByHexNumber(
             @RequestParam(value = "ethnode", required = false) String ethnode,
             @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
-            @RequestParam(value = "blockHexNumber", required = true) String blockHexNumber) {
+            @RequestParam(value = "blockHexNumber", required = true) String blockHexNumber,
+            @RequestParam(value = "fanout", required = false, defaultValue = "false") Boolean fanout // true: 直接查链, false: 从数据库查
+    ) {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(blockHexNumber).withFailMessage("%s 必传", "blockHexNumber").isNotBlank();
         Assertions.assertThat(blockHexNumber).withFailMessage("%s 格式有误,必须是16进制数", blockHexNumber).startsWith("0x");
         Long blockNumber = Long.parseLong(blockHexNumber.substring(2), 16);
-        return R.ok(blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber)).message("该区块的高度是`" + blockNumber + "`");
+        return R.ok(blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber, fanout)).message("该区块的高度是`" + blockNumber + "`");
     }
 
     // ### 根据交易哈希获取交易回执
@@ -158,7 +164,7 @@ public class ETHBlockRestful {
     }
 
     // 获取交易基本信息
-    // signedTransactionData
+    // 一笔失败的交易: https://etherscan.io/tx/0xcf620d5e212c66b58597ee1c87fcefe53c6e1f72150db8d368df3fb0dd8a0083
     @RequestMapping(value = "/eth-getTransactionByHash", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<EthRawTransaction> getTransactionByHash(
             @RequestParam(value = "ethnode", required = false) String ethnode,

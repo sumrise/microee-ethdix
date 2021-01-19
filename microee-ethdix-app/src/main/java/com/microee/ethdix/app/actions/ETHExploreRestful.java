@@ -43,7 +43,7 @@ public class ETHExploreRestful {
             @RequestParam("transHash") String transHash) {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(transHash).withFailMessage("%s 必传", "transHash").isNotBlank();
-        EthRawTransaction trans = ethBlockTransService.ethGetTransaction(ethnode, ChainId.get(chainId), blockNumber, transHash); 
+        EthRawTransaction trans = ethBlockTransService.ethGetTransaction(ethnode, ChainId.get(chainId), blockNumber, transHash);  
         if (trans == null) {
             return R.ok(null);
         }

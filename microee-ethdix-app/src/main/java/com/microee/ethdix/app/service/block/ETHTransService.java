@@ -14,7 +14,7 @@ import com.microee.stacks.mongodb.support.Mongo;
 @Service
 public class ETHTransService {
 
-    public static final String COLLECTION_TRANS = "eth_trans";
+    public static final String COLLECTION_TRANS = "trans";
 
     @Autowired
     private Web3JFactory web3JFactory;
@@ -27,7 +27,7 @@ public class ETHTransService {
     
     // 查询并保存交易基本信息
     public EthRawTransaction ethGetTransaction(String ethnode, ChainId chainId, Long blockNumber, String transHash) {
-        String transCollectionName = ethBlockShard.getCollection(COLLECTION_TRANS, blockNumber);
+        String transCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_TRANS, blockNumber);
         EthRawTransaction result = mongo.queryByStringId(transCollectionName, transHash, EthRawTransaction.class);
         if (result == null) {
             result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionByHash(transHash);
@@ -41,16 +41,16 @@ public class ETHTransService {
     }
 
     // 根据区块编号查询该区块上的所有交易
-    public List<EthRawTransaction> getTransactionsByBlockNumber(String ethNode, Long blockNumber) {
-        String transCollectionName = ethBlockShard.getCollection(COLLECTION_TRANS, blockNumber);
+    public List<EthRawTransaction> getTransactionsByBlockNumber(String ethNode, ChainId chainId, Long blockNumber) {
+        String transCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_TRANS, blockNumber);
         Query query = Query.query(Criteria.where("blockNumber").is("0x" + Long.toHexString(blockNumber)));
         return mongo.queryList(transCollectionName, query, EthRawTransaction.class);
     }
 
     // 保存区块上的所有交易记录
-    public boolean saveTransactions(Long blockNumber, List<EthRawTransaction> transactions) {
+    public boolean saveTransactions(ChainId chainId, Long blockNumber, List<EthRawTransaction> transactions) {
         if (transactions != null && transactions.size() > 0) {
-            String transCollectionName = ethBlockShard.getCollection(COLLECTION_TRANS, blockNumber);
+            String transCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_TRANS, blockNumber);
             mongo.saveList(transCollectionName, "hash", transactions);
         }
         return true;

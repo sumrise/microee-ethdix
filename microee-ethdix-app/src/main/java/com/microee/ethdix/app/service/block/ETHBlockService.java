@@ -18,14 +18,15 @@ import com.microee.stacks.mongodb.support.Mongo;
 @Service
 public class ETHBlockService {
 
-    private static ThreadPoolFactoryLow threadPool = ThreadPoolFactoryLow.newInstance("ethblock-查询区块交易回执线程池");
+    private static ThreadPoolFactoryLow threadPool =
+            ThreadPoolFactoryLow.newInstance("ethblock-查询区块交易回执线程池");
 
     // db.eth_blocks.createIndex( { _id: -1 }, { background: true } )
-    public static final String COLLECTION_BLOCKS = "eth_blocks";
+    public static final String COLLECTION_BLOCKS = "blocks";
 
     @Autowired
     private ETHBlockShard ethBlockShard;
-    
+
     @Autowired
     private Mongo mongo;
 
@@ -39,40 +40,40 @@ public class ETHBlockService {
     private Web3JFactory web3JFactory;
 
     // 查询并保存区块
-    public EthRawBlock ethGetBlockByNumber(String ethnode, ChainId chainId, Long blockNumber) {
+    public EthRawBlock ethGetBlockByNumber(String ethnode, ChainId chainId, Long blockNumber,
+            boolean fanout) {
         if (blockNumber != null && blockNumber < 0) {
             return null;
         }
-        String blockCollectionName = ethBlockShard.getCollection(COLLECTION_BLOCKS, blockNumber);
-        EthRawBlock result = mongo.queryById(blockCollectionName, blockNumber, EthRawBlock.class);
-        if (result == null) {
-            result = web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
-            if ((ethnode == null || ethnode.isEmpty()) && result != null) {
-                mongo.save(blockCollectionName, result, blockNumber, "transactions"); // 交易信息保存到另一个表
-                // mongo.save(ethNetworkProperties.getCollectionName(COLLECTION_BLOCKS, blockNumber), result, blockNumber); 
-                ethTransService.saveTransactions(blockNumber, result.getTransactions());
+        String blockCollectionName =
+                ethBlockShard.getCollection(chainId, COLLECTION_BLOCKS, blockNumber);
+        if (!fanout) {
+            // 从数据库查
+            EthRawBlock cachedResult = mongo.queryById(blockCollectionName, blockNumber, EthRawBlock.class);
+            if (cachedResult != null) {
+                cachedResult.setTransactions(ethTransService.getTransactionsByBlockNumber(ethnode, chainId, blockNumber));
+                return cachedResult;
             }
         }
-        if ((ethnode == null || ethnode.isEmpty()) && result != null) {
-            // 懒加载交易回执
-            List<EthRawTransaction> trans = result.getTransactions();
-            if (trans != null && trans.size() > 0) {
-                List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
-                List<String> transHashList = mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
-                if (transHashList.size() > 0) {
-                    threadPool.pool().submit(() -> {
-                        for (int i = 0; i < transHashList.size(); i++) {
-                            final String currentTranHash = transHashList.get(i);
-                            txReceiptService.getTransactionReceipt(ethnode, chainId, blockNumber, currentTranHash);
-                        }
-                    });
-                }
+        // 数据库没查到，查链
+        EthRawBlock fanoutResult = web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
+        mongo.save(blockCollectionName, fanoutResult, blockNumber, "transactions"); // 交易信息保存到另一个表
+        ethTransService.saveTransactions(chainId, blockNumber, fanoutResult.getTransactions());
+        // 懒加载交易回执
+        List<EthRawTransaction> trans = fanoutResult.getTransactions();
+        if (trans != null && trans.size() > 0) {
+            List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
+            List<String> transHashList = mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
+            if (transHashList.size() > 0) {
+                threadPool.pool().submit(() -> {
+                    for (int i = 0; i < transHashList.size(); i++) {
+                        final String currentTranHash = transHashList.get(i);
+                        txReceiptService.getTransactionReceipt(ethnode, chainId, blockNumber, currentTranHash);
+                    }
+                });
             }
         }
-        if (result != null) {
-            result.setTransactions(ethTransService.getTransactionsByBlockNumber(ethnode, blockNumber));
-        }
-        return result;
+        return fanoutResult;
     }
 
     // 找出不连续的区块id

@@ -18,7 +18,7 @@ public class ETHReceiptService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ETHReceiptService.class);
 
-    public static final String COLLECTION_NAME = "eth_receipts";
+    public static final String COLLECTION_NAME = "receipts";
 
     @Autowired
     private ETHBlockShard ethBlockShard;
@@ -28,27 +28,19 @@ public class ETHReceiptService {
 
     @Autowired
     private Web3JFactory web3JFactory;
-    
-    @Autowired
-    private ETHTransService ethBlockTransService;
 
     // 查询并保存交易回执
     public EthTransactionReceipt getTransactionReceipt(String ethnode, ChainId chainId, Long blockNumber, String txHash) {
         EthTransactionReceipt result = null;
-        String receiptCollectionName = ethBlockShard.getCollection(COLLECTION_NAME, blockNumber);
+        String receiptCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_NAME, blockNumber);
         if (blockNumber != null) {
             result = mongo.queryByStringId(receiptCollectionName, txHash, EthTransactionReceipt.class);
         }
         if (result == null) {
             result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionReceipt(txHash);
-            if ((ethnode == null || ethnode.isEmpty()) && result != null) {
-                if (result.getBlockNumber() != null) {
-                    mongo.save(receiptCollectionName, result, txHash);
-                }
+            if (result != null && result.getBlockNumber() != null) {
+                mongo.save(receiptCollectionName, result, txHash);
             }
-        }
-        if (blockNumber != null) {
-            ethBlockTransService.ethGetTransaction(ethnode, chainId, blockNumber, txHash);
         }
         return result;
     }

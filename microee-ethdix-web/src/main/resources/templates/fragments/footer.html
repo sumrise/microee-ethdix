@@ -1,0 +1,10 @@
+<div th:fragment="footer" class="footer"
+	xmlns:th="http://www.w3.org/1999/xhtml">
+	<span>Footer</span>,
+	<span>
+		<span
+			th:text="${#dates.format(#dates.createNow(), 'dd MMM yyyy HH:mm')}"
+			th:remove="tag"></span>
+	</span>,
+	<span th:text="${_version}"></span>
+</div>
