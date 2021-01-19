@@ -12,6 +12,8 @@ import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.oem.eth.EthRawBlock;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.enums.ChainId;
+import com.microee.plugin.response.R;
+import com.microee.plugin.response.exception.RestException;
 import com.microee.plugin.thread.ThreadPoolFactoryLow;
 import com.microee.stacks.mongodb.support.Mongo;
 
@@ -40,14 +42,12 @@ public class ETHBlockService {
     private Web3JFactory web3JFactory;
 
     // 查询并保存区块
-    public EthRawBlock ethGetBlockByNumber(String ethnode, ChainId chainId, Long blockNumber,
-            boolean fanout) {
+    public EthRawBlock ethGetBlockByNumber(String ethnode, ChainId chainId, Long blockNumber, boolean fanout) {
         if (blockNumber != null && blockNumber < 0) {
             return null;
         }
-        String blockCollectionName =
-                ethBlockShard.getCollection(chainId, COLLECTION_BLOCKS, blockNumber);
-        if (!fanout) {
+        String blockCollectionName = blockNumber == null ? null : ethBlockShard.getCollection(chainId, COLLECTION_BLOCKS, blockNumber);
+        if (blockCollectionName != null && !fanout) {
             // 从数据库查
             EthRawBlock cachedResult = mongo.queryById(blockCollectionName, blockNumber, EthRawBlock.class);
             if (cachedResult != null) {
@@ -57,23 +57,30 @@ public class ETHBlockService {
         }
         // 数据库没查到，查链
         EthRawBlock fanoutResult = web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
-        mongo.save(blockCollectionName, fanoutResult, blockNumber, "transactions"); // 交易信息保存到另一个表
-        ethTransService.saveTransactions(chainId, blockNumber, fanoutResult.getTransactions());
-        // 懒加载交易回执
-        List<EthRawTransaction> trans = fanoutResult.getTransactions();
-        if (trans != null && trans.size() > 0) {
-            List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
-            List<String> transHashList = mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
-            if (transHashList.size() > 0) {
-                threadPool.pool().submit(() -> {
-                    for (int i = 0; i < transHashList.size(); i++) {
-                        final String currentTranHash = transHashList.get(i);
-                        txReceiptService.getTransactionReceipt(ethnode, chainId, blockNumber, currentTranHash);
-                    }
-                });
+        if (blockCollectionName != null) {
+            mongo.save(blockCollectionName, fanoutResult, blockNumber, "transactions"); // 交易信息保存到另一个表
+            ethTransService.saveTransactions(chainId, blockNumber, fanoutResult.getTransactions());
+            // 懒加载交易回执
+            List<EthRawTransaction> trans = fanoutResult.getTransactions();
+            if (trans != null && trans.size() > 0) {
+                List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
+                List<String> transHashList = mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
+                if (transHashList.size() > 0) {
+                    threadPool.pool().submit(() -> {
+                        for (int i = 0; i < transHashList.size(); i++) {
+                            final String currentTranHash = transHashList.get(i);
+                            txReceiptService.getTransactionReceipt(ethnode, chainId, blockNumber, currentTranHash);
+                        }
+                    });
+                }
             }
         }
         return fanoutResult;
+    }
+
+    // 根据区块哈希取得区块编号
+    public EthRawBlock ethGetBlockByHash(String ethnode, ChainId chainId, String blockHash) {
+        return web3JFactory.getJsonRpc(chainId, ethnode).getBlockByHash(blockHash);
     }
 
     // 找出不连续的区块id
@@ -90,6 +97,18 @@ public class ETHBlockService {
         });
         result.sort((l1, l2) -> l1.compareTo(l2));
         return result;
+    }
+
+    // 当前区块是否是孤块
+    public Boolean ethBlockLonely(String ethnode, ChainId chainId, EthRawBlock block) {
+        String parentHash = block.getParentHash();
+        EthRawBlock parentBlock = this.ethGetBlockByHash(ethnode, chainId, parentHash);
+        Long parentBlockNumber = Long.parseLong(parentBlock.getNumber().substring(2), 16);
+        Long currentBlockNumber = Long.parseLong(block.getNumber().substring(2), 16);
+        if (parentBlockNumber + 1 == currentBlockNumber) {
+            return false;
+        }
+        return true ;
     }
 
 }

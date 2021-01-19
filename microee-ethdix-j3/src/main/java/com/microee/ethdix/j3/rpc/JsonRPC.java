@@ -373,6 +373,13 @@ public class JsonRPC {
         return this.post(methodName, params, new TypeReference<JsonRpcResponse<EthRawBlock>>() { }).getResult();
     }
 
+    // 根据区块哈希取得区块
+    public EthRawBlock getBlockByHash(String bockHash) {
+        String methodName = "eth_getBlockByHash";
+        Object params = new Object[]{ bockHash, true };
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<EthRawBlock>>() { }).getResult();
+    }
+
     public <T> T post(String method, Object params, TypeReference<T> typeRef) {
         HttpClientResult httpResult = this.httpClient.postJsonBody(UsedCount.getEthNode(this.ethnodes), authHeaders, JsonRpcRequest.json(method, params));
         if (httpResult == null) {

@@ -19,7 +19,9 @@ import com.microee.ethdix.oem.eth.EthRawBlock;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.EthTransactionReceipt;
 import com.microee.ethdix.oem.eth.enums.ChainId;
+import com.microee.plugin.commons.RegexUtils;
 import com.microee.plugin.response.R;
+import com.microee.plugin.response.exception.RestException;
 
 // 以太坊区块相关接口
 // 接口文档 https://infura.io/docs/ethereum/json-rpc
@@ -81,7 +83,9 @@ public class ETHBlockRestful {
         return R.ok(blockService.ethBreakBlockNumber(collectionName, start, end)).message(collectionName);
     }
 
+    // 因为区块编号有索引，所以仅提供通过区块编号查询区块
     // 一个包含0个交易的区块: https://etherscan.io/block/11683188 
+    // 一个包含0个交易的区块: https://etherscan.io/block/11684296 
     // ### 根据高度获取区块, 通过以太坊浏览器查看该区块: https://etherscan.io/block/{blockNumber}
     @RequestMapping(value = "/eth-getBlockByNumber", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -99,6 +103,8 @@ public class ETHBlockRestful {
         return R.ok(currentBlock).message("该区块包含" + currentBlock.getTransactions().size() + "笔交易");
     }
 
+    // 一个包含0个交易的区块: https://etherscan.io/block/11683188 
+    // 一个包含0个交易的区块: https://etherscan.io/block/11684296 
     // ### 根据交易哈希查询交易所在区块编号
     @RequestMapping(value = "/eth-getBlockNumberByTransHash", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -108,7 +114,11 @@ public class ETHBlockRestful {
             @RequestParam(value = "transHash", required = true) String transHash) {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(transHash).withFailMessage("%s 必传", "transHash").isNotBlank();
-        return R.ok(this.txReceiptService.getBlockNumberByTransHash(ethnode, ChainId.get(chainId), transHash));
+        Long blockNumber = this.txReceiptService.getBlockNumberByTransHash(ethnode, ChainId.get(chainId), transHash);
+        if (blockNumber == null) {
+            return R.ok(-1l).message("该交易无回执,无法查询高度.");
+        }
+        return R.ok(blockNumber);
     }
 
     // ### 根据高度获取区块
@@ -142,6 +152,8 @@ public class ETHBlockRestful {
         return R.ok(recept);
     }
 
+    // 一个包含0个交易的区块: https://etherscan.io/block/11683188 
+    // 一个包含0个交易的区块: https://etherscan.io/block/11684296 
     // 返回-1代表无效的交易哈希或孤块
     // ### 根据交易哈希查询交易确认数
     @RequestMapping(value = "/eth-getTransConfirm", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -149,18 +161,47 @@ public class ETHBlockRestful {
             @RequestParam(value = "ethnode", required = false) String ethnode,
             @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "blockNumber", required = false) Long blockNumber,
-            @RequestParam(value = "transHash", required = true) String transHash) {
+            @RequestParam(value = "txHash", required = false) String txHash) {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
-        Assertions.assertThat(transHash).withFailMessage("%s 必传", "transHash").isNotBlank();
-        EthTransactionReceipt transReceipt = this.txReceiptService.getTransactionReceipt(ethnode, ChainId.get(chainId), blockNumber, transHash);
-        if (transReceipt == null) {
-            return R.ok(-1l).message("该交易不存在");
+        EthRawTransaction tx = null;
+        String _txHash = null;
+        if (txHash != null) {
+            tx = web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).getTransactionByHash(txHash);
+            if (tx != null) {
+                if (blockNumber != null) {
+                    Long findedBlockNumber = Long.parseLong(tx.getBlockNumber().substring(2), 16);
+                    if (blockNumber != findedBlockNumber) {
+                        throw new RestException(R.ILLEGAL, "区块编号和交易哈希不匹配.");
+                    }
+                    blockNumber = findedBlockNumber;
+                }
+                _txHash = tx.getHash();
+            }
         }
-        // 确认是否是孤块, 如果父级别区块能找到说明不是孤块
-        // TODO
+        EthRawBlock block = this.blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber, false);
+        if (this.blockService.ethBlockLonely(ethnode, ChainId.get(chainId), block)) {
+            // 孤块
+            return R.ok(-1l).message("孤块.");
+        }
         // 确认数等于总高度-减去当前区块高度
-        Long currentBlockHeight = Long.parseLong(transReceipt.getBlockNumber().substring(2), 16);
-        return R.ok(web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).blockNumber() - currentBlockHeight);
+        return R.ok(web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).blockNumber() - blockNumber).message(_txHash);
+    }
+
+    // 当前区块是否是孤块
+    @RequestMapping(value = "/eth-BlockLonely", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<Boolean> ethBlockLonely(
+            @RequestParam(value = "ethnode", required = false) String ethnode,
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
+            @RequestParam(value = "blockNumber", required = false) Long blockNumber) {
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
+        if (blockNumber == -1) {
+            throw new RestException(R.ILLEGAL, "区块编号有误");
+        }
+        EthRawBlock block = this.blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber, false);
+        if (block == null) {
+            throw new RestException(R.FAILED, "无效的区块编号");
+        }
+        return R.ok(this.blockService.ethBlockLonely(ethnode, ChainId.get(chainId), block));
     }
 
     // 获取交易基本信息
@@ -169,10 +210,11 @@ public class ETHBlockRestful {
     public R<EthRawTransaction> getTransactionByHash(
             @RequestParam(value = "ethnode", required = false) String ethnode,
             @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
-            @RequestParam(value = "transHash", required = true) String transHash // 交易哈希
+            @RequestParam(value = "txHash", required = true) String txHash // 交易哈希
     ) {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
-        return R.ok(web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).getTransactionByHash(transHash));
+        Assertions.assertThat(RegexUtils.isHash(txHash, 66)).withFailMessage("%s 有误", "txHash").isNotNull();
+        return R.ok(web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).getTransactionByHash(txHash));
     }
 
 }

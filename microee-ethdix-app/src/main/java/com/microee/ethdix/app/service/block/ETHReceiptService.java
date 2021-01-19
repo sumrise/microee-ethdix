@@ -32,14 +32,16 @@ public class ETHReceiptService {
     // 查询并保存交易回执
     public EthTransactionReceipt getTransactionReceipt(String ethnode, ChainId chainId, Long blockNumber, String txHash) {
         EthTransactionReceipt result = null;
-        String receiptCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_NAME, blockNumber);
+        String receiptCollectionName = blockNumber == null ? null : ethBlockShard.getCollection(chainId, COLLECTION_NAME, blockNumber);
         if (blockNumber != null) {
             result = mongo.queryByStringId(receiptCollectionName, txHash, EthTransactionReceipt.class);
         }
         if (result == null) {
             result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionReceipt(txHash);
             if (result != null && result.getBlockNumber() != null) {
-                mongo.save(receiptCollectionName, result, txHash);
+                if (receiptCollectionName != null) {
+                    mongo.save(receiptCollectionName, result, txHash);
+                }
             }
         }
         return result;
