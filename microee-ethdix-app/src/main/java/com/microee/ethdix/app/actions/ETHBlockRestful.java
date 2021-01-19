@@ -202,7 +202,7 @@ public class ETHBlockRestful {
         if (block == null) {
             throw new RestException(R.FAILED, "无效的区块编号");
         }
-        return R.ok(this.blockService.ethBlockLonely(ethnode, ChainId.get(chainId), block));
+        return R.ok(this.blockService.ethBlockLonely(ethnode, ChainId.get(chainId), block)).message(block.getHash());
     }
 
     // 获取交易基本信息
