@@ -20,8 +20,12 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                 const _tokenAddr: string = req.query['tokenAddr'] as string; // 代币地址
                 expect(_tokenAddr, 'tokenAddr 无效').to.have.lengthOf(42);
                 (async () => {
-                    const token = await getTokenDataByAddr(_chainId, _tokenAddr); // 根据代币地址获取erc20合约信息
-                    res.status(200).json({ code: 200, message: 'OK', data: token });
+                    try {
+                        const token = await getTokenDataByAddr(_chainId, _tokenAddr); // 根据代币地址获取erc20合约信息
+                        res.status(200).json({ code: 200, message: 'OK', data: token });
+                    } catch (err) {
+                        next(err);
+                    }
                 })();
             });
         this.app.route(`/univ2-sdk/pair`)
