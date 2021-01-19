@@ -170,7 +170,7 @@ public class ETHBlockRestful {
             if (tx != null) {
                 Long findedBlockNumber = Long.parseLong(tx.getBlockNumber().substring(2), 16);
                 if (blockNumber != null && blockNumber != findedBlockNumber) {
-                    throw new RestException(R.ILLEGAL, "区块编号和交易哈希不匹配`"+ findedBlockNumber +"`.");
+                    throw new RestException(R.ILLEGAL, "区块编号和交易哈希不匹配:"+ findedBlockNumber +".");
                 }
                 blockNumber = findedBlockNumber;
                 _txHash = tx.getHash();
