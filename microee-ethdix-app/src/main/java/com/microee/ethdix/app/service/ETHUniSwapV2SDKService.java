@@ -11,6 +11,7 @@ import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.oem.eth.entity.Token;
 import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.ethdix.rmi.UniSwapV2SDKClient;
+import com.microee.ethdix.rmi.UniSwapV2SwapParamClient;
 import com.microee.plugin.commons.RegexUtils;
 import com.microee.plugin.response.R;
 
@@ -23,6 +24,14 @@ public class ETHUniSwapV2SDKService {
     @Autowired
     private UniSwapV2SDKClient univ2SDKClient;
 
+    @Autowired
+    private UniSwapV2SwapParamClient univ2SwapParamClient;
+
+    // 根据输入数据计算 UniSwapV2 兑换参数
+    public Map<String, Object> getEth2TokenParams(ChainId chainId, String tokenAddr, String ethAmount, int slippageTolerance) {
+         return univ2SwapParamClient.eth2token(tokenAddr, new JSONObject().put("ethInputAmount", ethAmount).put("slippageTolerance", slippageTolerance)).getData();
+    }
+    
     public List<Token> defaultTokenList(short chainId, String symbol) {
         return univ2SDKClient.defaultTokenList(chainId, symbol).getData();
     }
