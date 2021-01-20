@@ -69,7 +69,7 @@ public final class ETHInputEncoder {
     //[0]:  00000000000000000000000000000000000000000000000000000000009d0e0e
     //[1]:  0000000000000000000000000000000000000000000000000000000000000080
     //[2]:  000000000000000000000000493ba3316c2e246d55edf81427d833631eff9a10    // 用户地址
-    //[3]:  000000000000000000000000000000000000000000000000000000005ff46720
+    //[3]:  000000000000000000000000000000000000000000000000000000005ff46720    // deadline
     //[4]:  0000000000000000000000000000000000000000000000000000000000000002
     //[5]:  000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2    // WETH代币合约地址
     //[6]:  000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7    // USDT代币合约地址
@@ -80,7 +80,7 @@ public final class ETHInputEncoder {
     //1	path            address[]   0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2   // WETH代币合约地址
     //                              0xdAC17F958D2ee523a2206206994597C13D831ec7   // USDT代币合约地址
     //2	to              address     0x493bA3316C2E246d55EDf81427D833631EFf9A10   // 用户地址
-    //3	deadline	uint256     1609852704
+    //3	deadline	    uint256     1609852704
     
     // https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/UniswapV2Router02.sol
     // function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
@@ -89,14 +89,17 @@ public final class ETHInputEncoder {
     // returns (uint[] memory amounts);
     // 0xa9059cbb0000000000000000000000009e7b1a22cf4d69efad71bac24a6a8518574f1fc40000000000000000000000000000000000000000000000000000008fe0b0b380
     // UniSwap兑换: 获取 eth换代币 input 参数
-    @SuppressWarnings("rawtypes")
-    public static String getInputDataForSwapExactETHForTokens(Long amountOutMin, String wethAddr, String tokenAddr, String toAddr) {
-        Double deadline = (Math.floor(Instant.now().toEpochMilli() / 1000) + (60 * 20)); // 默认20分钟
-        Function function = new Function(
-                "swapExactETHForTokens",
-                Arrays.asList(new Uint256(amountOutMin), new Address(wethAddr), new Address(tokenAddr), new Address(toAddr), new Uint256(deadline.longValue())),
-                Collections.singletonList(new TypeReference<Type>() { }));
-        return FunctionEncoder.encode(function).replace("0xa399e043", "0x7ff36ab5");
+    public static String getInputDataForSwapExactETHForTokens(BigInteger amountOutMin, String wethAddr, String tokenAddr, String toAddr, int deadlineMins) {
+        Double deadline = (Math.floor(Instant.now().toEpochMilli() / 1000) + (60 * deadlineMins));
+        String methodId = "0x7ff36ab5";
+        String p1 = StringUtils.leftPad(Long.toHexString(amountOutMin.longValue()), 64, "0"); // amountOutMin
+        String p2 = "0000000000000000000000000000000000000000000000000000000000000080";
+        String p3 = "000000000000000000000000" + toAddr.substring(2); // 用户地址
+        String p4 = StringUtils.leftPad(Long.toHexString(deadline.longValue()), 64, "0") ; // deadline
+        String p5 = "0000000000000000000000000000000000000000000000000000000000000002"; // 路径长度
+        String p6 = "000000000000000000000000" + wethAddr.substring(2); // WETH代币合约地址
+        String p7 = "000000000000000000000000" + tokenAddr.substring(2); // 代币合约地址
+        return String.format("%s%s%s%s%s%s%s%s", methodId, p1, p2, p3, p4, p5, p6, p7);
     }
     
 }
