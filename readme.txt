@@ -7,7 +7,7 @@ mvn archetype:generate -DgroupId=com.microee.ethdix.j3 -DartifactId=microee-ethd
 ### ethdix 微服务 -- ethdix-loop 区块扫描
 mvn archetype:generate -DgroupId=com.microee.ethdix.loop -DartifactId=microee-ethdix-loop -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
-### ethdix 微服务 -- ethdix-oem 领域模型, entity/数据库实体类, model/DababaseObject, ViewObject, ParamObject
+### ethdix 微服务 -- ethdix-oem 领域模型, entity/数据库实体类, model/DababaseObject, vo/ViewObject, po/ParamObject, bo/BusinessObject
 mvn archetype:generate -DgroupId=com.microee.ethdix.oem -DartifactId=microee-ethdix-oem -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
 ### ethdix 微服务 -- ethdix-interfaces 远程调用
