@@ -37,6 +37,7 @@ export class Univ2SwapParamsRoutes extends CommonRoutesConfig {
                         const token = await getTokenDataByAddr(_chainId, _tokenAddr); // 根据代币地址获取erc20合约信息
                         const pairWithSymbol = await getPairDataWithSymbol(_chainId, token, _wethAddr);
                         const pair = pairWithSymbol[0];
+                        const symbol = pairWithSymbol[1];
                         const route = new Route([pair], _wethAddr);
                         const _tokenAmountString = parseUnits(_ethInputAmount, _wethAddr.decimals).toString();
                         const trade = new Trade(route, new TokenAmount(_wethAddr, _tokenAmountString), TradeType.EXACT_INPUT);
@@ -51,10 +52,11 @@ export class Univ2SwapParamsRoutes extends CommonRoutesConfig {
                                         chainId=${_chainId},
                                         slippageTolerance=${_slippageTolerance.toSignificant(6)}, 
                                         amountOutMin=${tradInfo.amountOutMin}, 
-                                        path:[${route.path[0].symbol || route.path[0].address}, ${route.path[1].symbol || route.path[1].address}],
+                                        symbol=${symbol},
+                                        path:[${route.path[0].address}, ${route.path[1].address}],
                                         to: ${tradInfo.to},
-                                        value: ${tradInfo.value},
-                                        value2: ${_tokenAmountString},
+                                        valueAmount: ${tradInfo.value},
+                                        valueJsbiBigInt: ${_tokenAmountString},
                                         liquidityToken=${pair.liquidityToken.symbol}, 
                                         route.midPrice=${route.midPrice.toSignificant(6)}, 
                                         route.midPrice.invert=${route.midPrice.invert().toSignificant(6)},

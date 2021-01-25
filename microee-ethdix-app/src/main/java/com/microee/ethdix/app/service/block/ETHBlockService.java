@@ -12,8 +12,6 @@ import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.oem.eth.EthRawBlock;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.enums.ChainId;
-import com.microee.plugin.response.R;
-import com.microee.plugin.response.exception.RestException;
 import com.microee.plugin.thread.ThreadPoolFactoryLow;
 import com.microee.stacks.mongodb.support.Mongo;
 
@@ -57,7 +55,7 @@ public class ETHBlockService {
         }
         // 数据库没查到，查链
         EthRawBlock fanoutResult = web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
-        if (blockCollectionName != null) {
+        if (blockCollectionName != null && fanoutResult != null) {
             mongo.save(blockCollectionName, fanoutResult, blockNumber, "transactions"); // 交易信息保存到另一个表
             ethTransService.saveTransactions(chainId, blockNumber, fanoutResult.getTransactions());
             // 懒加载交易回执

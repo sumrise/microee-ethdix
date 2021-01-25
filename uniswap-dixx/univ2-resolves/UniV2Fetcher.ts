@@ -1,6 +1,7 @@
-import { ChainId, Token, Fetcher, Pair } from '@uniswap/sdk';
+import {ChainId, Token, Fetcher, Pair, TokenAmount, JSBI} from '@uniswap/sdk';
 import { tokens as DefaultTokenList } from '@uniswap/default-token-list/build/uniswap-default.tokenlist.json';
-import { getJsonRpcProvider } from '../connectors/MyJsonRpcProvider'; 
+import { getJsonRpcProvider } from '../connectors/MyJsonRpcProvider';
+import { parseUnits } from '@ethersproject/units';
 
 export async function getPairDataWithSymbol(chainId: ChainId, tokenA: Token, tokenB: Token) : Promise<[Pair, string]> {
     try {
@@ -43,4 +44,10 @@ export function getTokenObjectByAddress(chainId: ChainId, tokenAddress: string) 
         // 查链
     }
     return _token;
+}
+
+export async function toTokenAmount(chainId: ChainId, tokenAddress: string, tokenAmount: string): Promise<TokenAmount> {
+    const _token: Token = await getTokenDataByAddr(chainId, tokenAddress);
+    const typedValueParsed = parseUnits(tokenAmount, _token.decimals).toString();
+    return new TokenAmount(_token, JSBI.BigInt(typedValueParsed));
 }
