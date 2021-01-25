@@ -32,7 +32,7 @@ services:
     hostname: uniswap.sdk.dixx
     mem_limit: 300m
     ports:
-      - 3011:3000
+      - 3011:3001
     #entrypoint: ["/bin/sh", "-c", "while true; do echo 1 >/dev/null 2>/dev/null; sleep 1; done"]
     entrypoint: ["sh", "-c", "/app/uniswap-dixx/run.sh"]
     volumes:

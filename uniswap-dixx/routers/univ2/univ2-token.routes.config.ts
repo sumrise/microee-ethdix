@@ -1,6 +1,6 @@
 import { CommonRoutesConfig } from '../../common/common.routes.config';
 import express from 'express';
-import { tokens as DefaultTokenList } from '@uniswap/default-token-list/build/uniswap-default.tokenlist.json';
+import { defaultTokenList } from '../../univ2-resolves/UniV2Fetcher';
 
 export class UniV2TokenRoutes extends CommonRoutesConfig {
     constructor(app: express.Application) {
@@ -13,7 +13,7 @@ export class UniV2TokenRoutes extends CommonRoutesConfig {
                 const _chainId: number = req.query['chainId'] as any; // 链id see ChainId
                 const _symbol: string = req.query['symbol'] as any; 
                 const symbolNotFilter = _symbol === null || typeof _symbol === 'undefined' || _symbol === '';
-                res.status(200).json({ code: 200, message: 'OK', data: DefaultTokenList.filter(t => t.chainId == _chainId && (symbolNotFilter || t.symbol.toLowerCase() === _symbol.toLowerCase()))});
+                res.status(200).json({ code: 200, message: 'OK', data: defaultTokenList().filter(t => t.chainId == _chainId && (symbolNotFilter || t.symbol.toLowerCase() === _symbol.toLowerCase()))});
             });
         return this.app;
     }

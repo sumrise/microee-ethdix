@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
-import com.microee.ethdix.app.props.ETHNetworkProperties;
+import com.microee.ethdix.app.props.ETHConfigurationProperties;
 import com.microee.ethdix.j3.factory.Web3jOfInstanceFactory;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.ethdix.j3.rpc.JsonRPC.UsedCount;
@@ -18,7 +18,7 @@ import com.microee.plugin.response.exception.RestException;
 public class Web3JFactory {
 
     @Autowired
-    private ETHNetworkProperties ethNetworkProperties;
+    private ETHConfigurationProperties ethNetworkProperties;
 
     @Autowired
     @Qualifier("jsonRPCClientMainnet")

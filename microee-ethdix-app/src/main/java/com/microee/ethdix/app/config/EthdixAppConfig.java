@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.microee.ethdix.app.listeners.ETHBlockListener;
-import com.microee.ethdix.app.props.ETHNetworkProperties;
+import com.microee.ethdix.app.props.ETHConfigurationProperties;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 
 @Configuration
@@ -18,7 +18,7 @@ public class EthdixAppConfig implements ApplicationListener<ApplicationEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(EthdixAppConfig.class);
     
     @Autowired
-    private ETHNetworkProperties ethNetworkProperties;
+    private ETHConfigurationProperties ethNetworkProperties;
 
     @Autowired
     private ETHBlockListener ethBlockListener;

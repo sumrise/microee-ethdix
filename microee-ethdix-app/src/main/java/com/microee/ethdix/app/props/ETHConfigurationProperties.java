@@ -3,17 +3,19 @@ package com.microee.ethdix.app.props;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import com.microee.ethdix.oem.eth.entity.Token;
 
 @Configuration
 @ConfigurationProperties(prefix = "eth")
-public class ETHNetworkProperties {
+public class ETHConfigurationProperties {
 
     private List<String> mainnetNodes;
     private List<String> ropstenNodes;
     private String mainnetWss;
     private String ropstenWss;
+    private List<Token> extenialTokens;
     
-    public ETHNetworkProperties() {
+    public ETHConfigurationProperties() {
         
     }
 
@@ -56,6 +58,14 @@ public class ETHNetworkProperties {
 	public void setRopstenWss(String ropstenWss) {
 		this.ropstenWss = ropstenWss;
 	}
+
+    public List<Token> getExtenialTokens() {
+        return extenialTokens;
+    }
+
+    public void setExtenialTokens(List<Token> extenialTokens) {
+        this.extenialTokens = extenialTokens;
+    }
 
     
 }

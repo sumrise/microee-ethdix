@@ -1,5 +1,6 @@
 import {ChainId, Token, Fetcher, Pair, TokenAmount, JSBI} from '@uniswap/sdk';
 import { tokens as DefaultTokenList } from '@uniswap/default-token-list/build/uniswap-default.tokenlist.json';
+import { tokens as ExtenialTokenList } from './uniswap-extenial.tokenlist.json';
 import { getJsonRpcProvider } from '../connectors/MyJsonRpcProvider';
 import { parseUnits } from '@ethersproject/units';
 
@@ -39,7 +40,7 @@ export function getPairSymbolByAddress(chainId: ChainId, tokenA: string, tokenB 
 }
 
 export function getTokenObjectByAddress(chainId: ChainId, tokenAddress: string) : any | undefined {
-    const _token: any = DefaultTokenList.find(t => t.chainId == chainId && (tokenAddress.toLowerCase() === t.address.toLowerCase()));
+    const _token: any = defaultTokenList().find(t => t.chainId == chainId && (tokenAddress.toLowerCase() === t.address.toLowerCase()));
     if (!_token) {
         // 查链
     }
@@ -50,4 +51,31 @@ export async function toTokenAmount(chainId: ChainId, tokenAddress: string, toke
     const _token: Token = await getTokenDataByAddr(chainId, tokenAddress);
     const typedValueParsed = parseUnits(tokenAmount, _token.decimals).toString();
     return new TokenAmount(_token, JSBI.BigInt(typedValueParsed));
+}
+
+export function defaultTokenList() {
+    const result = [];
+    function find(a: any, tokenList: [any]): any | undefined {
+        for (let token of tokenList) {
+            if (a.address.toLowerCase() === token.address.toLowerCase() && a.chainId === token.chainId) {
+                return a;
+            }
+        }
+        return null;
+    }
+    for (let defaulttoken of DefaultTokenList) {
+        const extenialToken = find(defaulttoken, ExtenialTokenList as [any]);
+        if (extenialToken) {
+            result.push(Object.assign(defaulttoken, extenialToken));
+        } else {
+            result.push(defaulttoken);
+        }
+    }
+    for (let extenialToken of ExtenialTokenList) {
+        const defaultToken = find(extenialToken, DefaultTokenList as [any]);
+        if (!defaultToken) {
+            result.push(extenialToken);
+        }
+    }
+    return result;
 }
