@@ -99,6 +99,8 @@ export class UniV2SDKRoutes extends CommonRoutesConfig {
                         loggerInfo(`${tokenA.address}-${tokenB.address}`);
                         const [ thePair ]: [Pair, string] = await getPairDataWithSymbol(_chainId, tokenA, tokenB);
                         const thePrice: Price = thePair.priceOf(_of === 'tokenA' ? tokenA : tokenB);
+                        // hbtc/usdt 可以需要迂回交易
+                        // TODO
                         const baseCurrencyObject: any = JSON.parse(JSON.stringify(thePrice.baseCurrency));
                         const quoteCurrencyObject: any = JSON.parse(JSON.stringify(thePrice.quoteCurrency));
                         const [baseSymbol, quoteSymbol] = getPairSymbolByAddress(_chainId, baseCurrencyObject.address, quoteCurrencyObject.address);
