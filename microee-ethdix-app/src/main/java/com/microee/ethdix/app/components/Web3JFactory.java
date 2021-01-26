@@ -1,7 +1,9 @@
 package com.microee.ethdix.app.components;
 
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -47,11 +49,11 @@ public class Web3JFactory {
     }
 
     private synchronized Web3j build(String ethnode) {
-        if (map.containsKey(ethnode.toLowerCase())) {
-            return map.get(ethnode.toLowerCase());
+        if (map.containsKey(ethnode.toLowerCase(Locale.getDefault()))) {
+            return map.get(ethnode.toLowerCase(Locale.getDefault()));
         }
-        map.put(ethnode.toLowerCase(), new Web3jOfInstanceFactory(ethnode).j3());
-        return map.get(ethnode.toLowerCase());
+        map.put(ethnode.toLowerCase(Locale.getDefault()), new Web3jOfInstanceFactory(ethnode).j3());
+        return map.get(ethnode.toLowerCase(Locale.getDefault()));
     }
 
     public String getEthNode(ChainId chainId) {
@@ -72,6 +74,7 @@ public class Web3JFactory {
         return this.getJsonRpc(chainId, null);
     }
 
+    @NotNull
     public JsonRPC getJsonRpc(ChainId chainId, String ethnode) {
         if (ethnode != null) {
             return new JsonRPC(ethnode);

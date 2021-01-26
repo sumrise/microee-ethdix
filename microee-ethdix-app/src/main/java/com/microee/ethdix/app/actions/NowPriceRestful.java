@@ -3,7 +3,7 @@ package com.microee.ethdix.app.actions;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-
+import java.util.Locale;
 import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -52,13 +52,13 @@ public class NowPriceRestful {
         Assertions.assertThat((tokenAddress == null || tokenAddress.isEmpty()) && (tokenName == null || tokenName.isEmpty())).withFailMessage("tokenAddress OR tokenName 二选1").isFalse();
         if (!(tokenName == null || tokenName.trim().isEmpty()) && !(tokenAddress == null || tokenAddress.trim().isEmpty())) {
             // 验证合约名字和合约地址是否匹配
-            String newTokenName = ((String) new RemoteCallFunction<>(new ERC20ContractQuery(tokenAddress, web3JFactory.get(ChainId.get(chainId), ethnode)).symbol()).call()).toLowerCase();
+            String newTokenName = ((String) new RemoteCallFunction<>(new ERC20ContractQuery(tokenAddress, web3JFactory.get(ChainId.get(chainId), ethnode)).symbol()).call()).toLowerCase(Locale.getDefault());
             if (!newTokenName.equalsIgnoreCase(tokenName)) {
                 return R.failed(R.ILLEGAL, "合约名字和合约地址不匹配");
             }
         }
         if (tokenName == null || tokenName.trim().isEmpty()) {
-            tokenName = new ERC20ContractQuery(tokenAddress, web3JFactory.get(ChainId.get(chainId), ethnode)).symbol().send().toLowerCase();
+            tokenName = new ERC20ContractQuery(tokenAddress, web3JFactory.get(ChainId.get(chainId), ethnode)).symbol().send().toLowerCase(Locale.getDefault());
         }
         if (tokenAddress == null || tokenAddress.trim().isEmpty()) {
             tokenAddress = ethContractAddressConf.getContractAddress(ChainId.get(chainId), tokenName); 

@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.microee.ethdix.j3.rpc.JsonRPC.TypeOf;
 import com.microee.ethdix.oem.eth.EthRawBlock;
 import com.microee.plugin.http.assets.HttpAssets;
 import com.microee.plugin.http.assets.HttpWebsocketHandler;
@@ -61,7 +61,7 @@ public class ETHWebsocketMessageHandler implements HttpWebsocketHandler {
     public void onMessageStringHandler(WebSocket webSocket, String text) {
         if (text.contains("number") && text.contains("parentHash") && text.contains("transactionsRoot")) {
             JSONObject textJSONObject = new JSONObject(text);
-            EthRawBlock newBlock = HttpAssets.parseJson(textJSONObject.getJSONObject("params").getJSONObject("result").toString(), new TypeReference<EthRawBlock>() {});
+            EthRawBlock newBlock = HttpAssets.parseJson(textJSONObject.getJSONObject("params").getJSONObject("result").toString(), new TypeOf<EthRawBlock>().get());
             Long timestamp = Long.parseLong(newBlock.getTimestamp().substring(2), 16) * 1000;
             Long blockNumber = Long.parseLong(newBlock.getNumber().substring(2), 16);
             if (this.ethMessageListener != null) {

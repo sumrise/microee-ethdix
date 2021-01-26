@@ -90,7 +90,7 @@ public final class ETHInputEncoder {
     // 0xa9059cbb0000000000000000000000009e7b1a22cf4d69efad71bac24a6a8518574f1fc40000000000000000000000000000000000000000000000000000008fe0b0b380
     // UniSwap兑换: 获取 eth换代币 input 参数
     public static String getInputDataForSwapExactETHForTokens(BigInteger amountOutMin, String wethAddr, String tokenAddr, String toAddr, int deadlineMins) {
-        Double deadline = (Math.floor(Instant.now().toEpochMilli() / 1000) + (60 * deadlineMins));
+        Double deadline = (Math.floor(Instant.now().toEpochMilli() / (double)1000) + (60 * deadlineMins));
         String methodId = "0x7ff36ab5";
         String p1 = StringUtils.leftPad(Long.toHexString(amountOutMin.longValue()), 64, "0"); // amountOutMin
         String p2 = "0000000000000000000000000000000000000000000000000000000000000080";

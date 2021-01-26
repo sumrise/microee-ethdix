@@ -10,6 +10,7 @@ import org.web3j.protocol.core.RemoteCall;
 import org.web3j.tx.Contract;
 import org.web3j.tx.ReadonlyTransactionManager;
 import com.microee.ethdix.j3.Constrants;
+import com.microee.ethdix.j3.contract.ERC20ContractQuery.TypeOf;
 
 public class UniswapV2FactoryContract extends Contract {
 
@@ -25,7 +26,7 @@ public class UniswapV2FactoryContract extends Contract {
     public RemoteCall<String> getPairAddress(String tokenA, String tokenB) {
         final Function function = new Function("getPair",
                 Arrays.<Type>asList(new Address(tokenA), new Address(tokenB)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
+                Arrays.<TypeReference<?>>asList(new TypeOf<Address>().get()));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
     
@@ -34,7 +35,7 @@ public class UniswapV2FactoryContract extends Contract {
     public RemoteCall<String> getExchangeAddr(String tokenAddr) {
         final Function function = new Function("getExchange",
                 Arrays.<Type>asList(new Address(tokenAddr)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
+                Arrays.<TypeReference<?>>asList(new TypeOf<Address>().get()));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
@@ -43,7 +44,7 @@ public class UniswapV2FactoryContract extends Contract {
     public RemoteCall<String> getToken(String exchangeAddr) {
         final Function function = new Function("getToken",
                 Arrays.<Type>asList(new Address(exchangeAddr)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
+                Arrays.<TypeReference<?>>asList(new TypeOf<Address>().get()));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
     

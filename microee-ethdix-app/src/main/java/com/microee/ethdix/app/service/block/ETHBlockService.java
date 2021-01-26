@@ -18,8 +18,7 @@ import com.microee.stacks.mongodb.support.Mongo;
 @Service
 public class ETHBlockService {
 
-    private static ThreadPoolFactoryLow threadPool =
-            ThreadPoolFactoryLow.newInstance("ethblock-查询区块交易回执线程池");
+    private static ThreadPoolFactoryLow threadPool = ThreadPoolFactoryLow.newInstance("ethblock-查询区块交易回执线程池");
 
     // db.eth_blocks.createIndex( { _id: -1 }, { background: true } )
     public static final String COLLECTION_BLOCKS = "blocks";
@@ -54,7 +53,7 @@ public class ETHBlockService {
             }
         }
         // 数据库没查到，查链
-        EthRawBlock fanoutResult = web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
+        EthRawBlock fanoutResult = blockNumber == null ? null : web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
         if (blockCollectionName != null && fanoutResult != null) {
             mongo.save(blockCollectionName, fanoutResult, blockNumber, "transactions"); // 交易信息保存到另一个表
             ethTransService.saveTransactions(chainId, blockNumber, fanoutResult.getTransactions());
@@ -64,7 +63,7 @@ public class ETHBlockService {
                 List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
                 List<String> transHashList = mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
                 if (transHashList.size() > 0) {
-                    threadPool.pool().submit(() -> {
+                    threadPool.submit(() -> {
                         for (int i = 0; i < transHashList.size(); i++) {
                             final String currentTranHash = transHashList.get(i);
                             txReceiptService.getTransactionReceipt(ethnode, chainId, blockNumber, currentTranHash);
@@ -105,13 +104,6 @@ public class ETHBlockService {
             return false;
         }
         return true;
-        //String parentHash = block.getParentHash();
-        //EthRawBlock parentBlock = this.ethGetBlockByHash(ethnode, chainId, parentHash);
-        // Long parentBlockNumber = Long.parseLong(parentBlock.getNumber().substring(2), 16);
-        // if (parentBlockNumber + 1 == currentBlockNumber) {
-        //     return false;
-        // }
-        // return true ;
     }
 
 }

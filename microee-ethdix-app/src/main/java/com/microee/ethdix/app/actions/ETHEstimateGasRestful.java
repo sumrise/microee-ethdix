@@ -29,12 +29,10 @@ public class ETHEstimateGasRestful {
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<GasPriceNow> gasPricing() {
         GasPriceNow result = GasPriceNow.get();
-        if (result != null) {
-            result.setRapid((result.getRapid() / Math.pow(10, 9)));
-            result.setFast((result.getFast() / Math.pow(10, 9)));
-            result.setSlow((result.getSlow() / Math.pow(10, 9)));
-            result.setStandard((result.getStandard() / Math.pow(10, 9)));
-        }
+        result.setRapid((result.getRapid() / Math.pow(10, 9)));
+        result.setFast((result.getFast() / Math.pow(10, 9)));
+        result.setSlow((result.getSlow() / Math.pow(10, 9)));
+        result.setStandard((result.getStandard() / Math.pow(10, 9)));
         return R.ok(result);
     }
 

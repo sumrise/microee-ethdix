@@ -97,9 +97,9 @@ public class ETHBlockRestful {
             @RequestParam(value = "decode", required = false, defaultValue = "false") Boolean decode) {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         EthRawBlock currentBlock = blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber, fanout);
-        if (decode) {
-
-        }
+        //if (decode) {
+            // TODO
+        //}
         return R.ok(currentBlock).message("该区块包含" + currentBlock.getTransactions().size() + "笔交易");
     }
 
@@ -169,7 +169,7 @@ public class ETHBlockRestful {
             tx = web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).getTransactionByHash(txHash);
             if (tx != null) {
                 Long findedBlockNumber = Long.parseLong(tx.getBlockNumber().substring(2), 16);
-                if (blockNumber != null && blockNumber != findedBlockNumber) {
+                if (blockNumber != null && blockNumber.compareTo(findedBlockNumber) != 0) {
                     throw new RestException(R.ILLEGAL, "区块编号和交易哈希不匹配:"+ findedBlockNumber +".");
                 }
                 blockNumber = findedBlockNumber;

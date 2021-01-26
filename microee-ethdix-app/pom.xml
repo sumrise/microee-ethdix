@@ -204,6 +204,71 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- findbugs -->
+            <!-- mvn -f microee-plugin/microee-http/pom.xml clean install 
+                findbugs:gui -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>3.0.5</version>
+                <configuration>
+                    <!-- <pluginList>myDetectors.jar, yourDetectors.jar</pluginList> -->
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                    <outputDirectory>${project.build.directory}/findbugs</outputDirectory>
+                    <xmlOutput>true</xmlOutput>
+                    <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+                    <xmlOutputDirectory>target/findbugs</xmlOutputDirectory>
+                    <failOnError>false</failOnError>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- findbugs html -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <transformationSets>
+                        <transformationSet>
+                            <dir>${project.build.directory}/findbugs</dir>
+                            <outputDir>${project.build.directory}/findbugs</outputDir>
+                            <stylesheet>fancy-hist.xsl</stylesheet>
+                            <!--<stylesheet>default.xsl</stylesheet> -->
+                            <!--<stylesheet>plain.xsl</stylesheet> -->
+                            <!--<stylesheet>fancy.xsl</stylesheet> -->
+                            <!--<stylesheet>summary.xsl</stylesheet> -->
+                            <fileMappers>
+                                <fileMapper
+                                    implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                    <targetExtension>.html</targetExtension>
+                                </fileMapper>
+                            </fileMappers>
+                        </transformationSet>
+                    </transformationSets>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>findbugs</artifactId>
+                        <version>2.0.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -1,5 +1,6 @@
 package com.microee.ethdix.app.components;
 
+import java.util.Locale;
 import org.springframework.stereotype.Component;
 import com.microee.ethdix.oem.eth.enums.ChainId;
 
@@ -16,7 +17,7 @@ public class ETHBlockShard {
             long start = i == 0 ? 0 : _SIZE * i + 1;
             long end = i == 0 ? _SIZE : start + _SIZE - 1;
             if (blockNumber >= start && blockNumber <= end) {
-                return String.format("%s%s_%s_%s-%s", _PREFIX, chainId.name.toLowerCase(), name, String.format("%0" + _LEFT_COUNT + "d", start), String.format("%0" + _LEFT_COUNT + "d", end));
+                return String.format("%s%s_%s_%s-%s", _PREFIX, chainId.name.toLowerCase(Locale.getDefault()), name, String.format("%0" + _LEFT_COUNT + "d", start), String.format("%0" + _LEFT_COUNT + "d", end));
             }
         }
         return null;

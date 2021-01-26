@@ -83,7 +83,8 @@ public class ContractAssists {
             List<Type> types
                     = FunctionReturnDecoder.decode(rawData, function.getOutputParameters());
             value = types.get(0).getValue().toString();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         if (value.isEmpty()) {
