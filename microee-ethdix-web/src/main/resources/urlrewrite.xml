@@ -3,6 +3,10 @@
         "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
 <urlrewrite>
     <rule>
+        <from>^/favicon.ico$</from>
+        <to>/assets/favicon.ico</to>
+    </rule>
+    <rule>
         <from>^/manifest.json$</from>
         <to>/assets/manifest.json</to>
     </rule>
