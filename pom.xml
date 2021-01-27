@@ -16,5 +16,6 @@
         <module>microee-ethdix-rmi</module>
         <module>microee-ethdix-interfaces</module>
         <module>microee-ethdix-web</module>
+        <module>uniswap-dixx-rmi</module>
     </modules>
 </project>

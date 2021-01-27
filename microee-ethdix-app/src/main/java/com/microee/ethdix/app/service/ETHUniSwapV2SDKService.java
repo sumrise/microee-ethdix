@@ -11,10 +11,10 @@ import com.microee.ethdix.j3.contract.ERC20ContractQuery;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.oem.eth.entity.Token;
 import com.microee.ethdix.oem.eth.enums.ChainId;
-import com.microee.ethdix.rmi.UniSwapV2SDKClient;
-import com.microee.ethdix.rmi.UniSwapV2SwapParamClient;
 import com.microee.plugin.commons.RegexUtils;
 import com.microee.plugin.response.R;
+import com.uniswap.dixx.rmi.UniSwapV2SDKClient;
+import com.uniswap.dixx.rmi.UniSwapV2SwapParamClient;
 
 @Service
 public class ETHUniSwapV2SDKService {

@@ -163,9 +163,10 @@
             <artifactId>microee-ethdix-oem</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <!-- nodejs express 服务 -->
         <dependency>
-            <groupId>com.microee.ethdix.rmi</groupId>
-            <artifactId>microee-ethdix-rmi</artifactId>
+            <groupId>com.uniswap.dixx.rmi</groupId>
+            <artifactId>uniswap-dixx-rmi</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>

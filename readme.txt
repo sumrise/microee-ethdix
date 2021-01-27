@@ -16,6 +16,9 @@ mvn archetype:generate -DgroupId=com.microee.ethdix.interfaces -DartifactId=micr
 ### ethdix 微服务 -- ethdix-rmi 远程调用
 mvn archetype:generate -DgroupId=com.microee.ethdix.rmi -DartifactId=microee-ethdix-rmi -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
+### ethdix 微服务 -- uniswap-dixx-rmi [nodejs express 服务]
+mvn archetype:generate -DgroupId=com.uniswap.dixx.rmi -DartifactId=uniswap-dixx-rmi -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
+
 ### ethdix 微服务 -- ethdix-app 服务接口聚合
 mvn archetype:generate -DgroupId=com.microee.ethdix.app -DartifactId=microee-ethdix-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false -DarchetypeCatalog=local
 
