@@ -123,7 +123,7 @@ public class ERC20ContractQuery extends Contract {
     @SuppressWarnings("rawtypes")
     public RemoteCall<String> name() {
         final Function function = new Function("name", Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Utf8String>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
@@ -138,7 +138,7 @@ public class ERC20ContractQuery extends Contract {
     @SuppressWarnings("rawtypes")
     public RemoteCall<BigInteger> totalSupply() {
         final Function function = new Function("totalSupply", Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Uint256>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
@@ -154,14 +154,14 @@ public class ERC20ContractQuery extends Contract {
     @SuppressWarnings("rawtypes")
     public RemoteCall<BigInteger> INITIAL_SUPPLY() {
         final Function function = new Function("INITIAL_SUPPLY", Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Uint256>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
     @SuppressWarnings("rawtypes")
     public RemoteCall<BigInteger> decimals() {
         final Function function = new Function("decimals", Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Uint8>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint8>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
@@ -178,14 +178,14 @@ public class ERC20ContractQuery extends Contract {
     public RemoteCall<BigInteger> balanceOf(String _owner) {
         final Function function =
                 new Function("balanceOf", Arrays.<Type>asList(new Address(_owner)),
-                        Arrays.<TypeReference<?>>asList(new TypeOf<Uint256>().get()));
+                        Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
     @SuppressWarnings("rawtypes")
     public RemoteCall<String> symbol() {
         final Function function = new Function("symbol", Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Utf8String>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {}));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
@@ -210,7 +210,7 @@ public class ERC20ContractQuery extends Contract {
     public RemoteCall<BigInteger> allowance(String _owner, String _spender) {
         final Function function = new Function("allowance",
                 Arrays.<Type>asList(new Address(_owner), new Address(_spender)),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Uint256>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
@@ -238,12 +238,5 @@ public class ERC20ContractQuery extends Contract {
 //        public String to;
 //        public BigInteger value;
 //    }
-
-    @SuppressWarnings("rawtypes")
-    public static class TypeOf<T extends org.web3j.abi.datatypes.Type> {
-        public TypeReference<T> get() {
-            return new TypeReference<T>() {};
-        }
-    }
 
 }

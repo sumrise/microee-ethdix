@@ -21,7 +21,6 @@ import org.web3j.tx.Contract;
 import org.web3j.tx.ReadonlyTransactionManager;
 import org.web3j.tx.TransactionManager;
 import com.microee.ethdix.j3.Constrants;
-import com.microee.ethdix.j3.contract.ERC20ContractQuery.TypeOf;
 
 // https://github.com/NEST-Protocol/NEST-oracle-V3
 // checkPriceNow
@@ -110,7 +109,7 @@ public class NestOfferPriceContract extends Contract {
     public RemoteCall<Tuple2<BigInteger, BigInteger>> checkPriceCostProportion() {
         final Function function = new Function("checkPriceCostProportion",
                 Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Uint256>().get(), new TypeOf<Uint256>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}, new TypeReference<Uint256>() {}));
         return new RemoteCall<Tuple2<BigInteger, BigInteger>>(
                 new Callable<Tuple2<BigInteger, BigInteger>>() {
                     @Override
@@ -127,7 +126,7 @@ public class NestOfferPriceContract extends Contract {
     public RemoteCall<Tuple2<BigInteger, BigInteger>> checkPriceNow(String tokenAddress) {
         final Function function = new Function("checkPriceNow",
                 Arrays.<Type>asList(new Address(tokenAddress)),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Uint256>().get(), new TypeOf<Uint256>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}, new TypeReference<Uint256>() {}));
         return new RemoteCall<Tuple2<BigInteger, BigInteger>>(
                 new Callable<Tuple2<BigInteger, BigInteger>>() {
                     @Override
@@ -144,7 +143,7 @@ public class NestOfferPriceContract extends Contract {
     public RemoteCall<BigInteger> checkPriceCost() {
         final Function function = new Function("checkPriceCost",
                 Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Uint256>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
@@ -175,7 +174,7 @@ public class NestOfferPriceContract extends Contract {
         final Function function = new Function("checkPriceForBlock",
                 Arrays.<Type>asList(new Address(tokenAddress),
                 new Uint256(blockNum)),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Uint256>().get(), new TypeOf<Uint256>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}, new TypeReference<Uint256>() {}));
         return new RemoteCall<Tuple2<BigInteger, BigInteger>>(
                 new Callable<Tuple2<BigInteger, BigInteger>>() {
                     @Override
@@ -229,7 +228,7 @@ public class NestOfferPriceContract extends Contract {
     public RemoteCall<Boolean> checkBlackList(String add) {
         final Function function = new Function("checkBlackList",
                 Arrays.<Type>asList(new Address(add)),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Bool>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Bool>() {}));
         return executeRemoteCallSingleValueReturn(function, Boolean.class);
     }
 

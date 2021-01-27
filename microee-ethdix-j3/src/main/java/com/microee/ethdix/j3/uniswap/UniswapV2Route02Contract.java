@@ -10,7 +10,6 @@ import org.web3j.protocol.core.RemoteCall;
 import org.web3j.tx.Contract;
 import org.web3j.tx.ReadonlyTransactionManager;
 import com.microee.ethdix.j3.Constrants;
-import com.microee.ethdix.j3.contract.ERC20ContractQuery.TypeOf;
 
 public class UniswapV2Route02Contract extends Contract {
     
@@ -26,7 +25,7 @@ public class UniswapV2Route02Contract extends Contract {
     public RemoteCall<Address> factoryAddr() {
         final Function function = new Function("factory",
                 Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Address>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
         return executeRemoteCallSingleValueReturn(function, Address.class);
     }
 
@@ -35,7 +34,7 @@ public class UniswapV2Route02Contract extends Contract {
     public RemoteCall<Address> WETH() {
         final Function function = new Function("WETH",
                 Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Address>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
         return executeRemoteCallSingleValueReturn(function, Address.class);
     }
 

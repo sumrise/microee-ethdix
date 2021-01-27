@@ -10,7 +10,6 @@ import org.web3j.protocol.core.RemoteCall;
 import org.web3j.tx.Contract;
 import org.web3j.tx.ReadonlyTransactionManager;
 import com.microee.ethdix.j3.Constrants;
-import com.microee.ethdix.j3.contract.ERC20ContractQuery.TypeOf;
 
 // 支持交易对的合约查询
 public class PairContractQuery extends Contract {
@@ -27,7 +26,7 @@ public class PairContractQuery extends Contract {
     public RemoteCall<String> getPairAddress(String tokenAddr) {
         final Function function = new Function("getPair",
                 Arrays.<Type>asList(new Address(tokenAddr)),
-                Arrays.<TypeReference<?>>asList(new TypeOf<Address>().get()));
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
     
