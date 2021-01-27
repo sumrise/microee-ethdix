@@ -106,7 +106,7 @@ public class JsonRPC {
     public Long getChainId() {
         String methodName = "eth_chainId";
         String chainId =
-                this.post(methodName, new Object[] {}, new TypeOf<JsonRpcResponse<String>>().get()).getResult();
+                this.post(methodName, new Object[] {}, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
         return Long.parseLong(chainId.substring(2));
     }
 
@@ -118,7 +118,7 @@ public class JsonRPC {
     public String[] accounts() {
         String methodName = "eth_accounts";
         Object params = new Object[] {};
-        return this.post(methodName, params, new TypeOf<JsonRpcResponse<String[]>>().get()).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<String[]>>() {}).getResult();
     }
 
     /**
@@ -131,7 +131,7 @@ public class JsonRPC {
     public String getCode(String address) {
         String methodName = "eth_getCode";
         Object params = new Object[] {address, "latest"};
-        return this.post(methodName, params, new TypeOf<JsonRpcResponse<String>>().get()).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
     }
 
     //@formatter:off
@@ -253,7 +253,7 @@ public class JsonRPC {
         Object params = new Object[] {Helper.mapOf(KV.of("from", from), KV.of("to", to),
                 KV.of("gasPrice", "0x" + Long.toHexString(gasPrice)),
                 KV.of("value", value == null ? null : "0x" + Long.toHexString(value)))};
-        String balance = this.post(methodName, params, new TypeOf<JsonRpcResponse<String>>().get()).getResult();
+        String balance = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
         return Long.parseLong(balance.substring(2), 16);
     }
 
@@ -271,7 +271,7 @@ public class JsonRPC {
         Object params = new Object[] {Helper.mapOf(KV.of("from", from), KV.of("to", to),
                 KV.of("gasPrice", "0x" + Long.toHexString(gasPrice)), KV.of("value", "0x0"),
                 KV.of("data", data))};
-        String balance = this.post(methodName, params, new TypeOf<JsonRpcResponse<String>>().get()).getResult();
+        String balance = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
         return Long.parseLong(balance.substring(2), 16);
     }
 
@@ -305,7 +305,7 @@ public class JsonRPC {
         String methodName = "eth_sendRawTransaction";
         Object params = new Object[] {signedTransactionData};
         try {
-            return this.post(methodName, params, new TypeOf<JsonRpcResponse<String>>().get()).getResult();
+            return this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
         } catch (Exception e) {
             logger.error("发送交易异常: signedTransactionData={}, errorMessage={}", signedTransactionData, e.getMessage(), e);
             throw new RuntimeException(e);
@@ -321,7 +321,7 @@ public class JsonRPC {
     public EthRawTransaction getTransactionByHash(String hash) {
         String methodName = "eth_getTransactionByHash";
         Object params = new Object[] {hash};
-        return this.post(methodName, params, new TypeOf<JsonRpcResponse<EthRawTransaction>>().get()).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<EthRawTransaction>>() {}).getResult();
     }
 
     /**
@@ -333,7 +333,7 @@ public class JsonRPC {
     public Long getTransactionCount(String accountAddress) {
         String methodName = "eth_getTransactionCount";
         Object params = new Object[] {accountAddress, "latest"};
-        String transactionCountString = this.post(methodName, params, new TypeOf<JsonRpcResponse<String>>().get()).getResult();
+        String transactionCountString = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
         if (transactionCountString.length() > 2) {
             return Long.parseLong(transactionCountString.substring(2), 16);
         }
@@ -349,14 +349,14 @@ public class JsonRPC {
     public EthTransactionReceipt getTransactionReceipt(String hash) {
         String methodName = "eth_getTransactionReceipt";
         Object params = new Object[] {hash};
-        return this.post(methodName, params, new TypeOf<JsonRpcResponse<EthTransactionReceipt>>().get()).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<EthTransactionReceipt>>() {}).getResult();
     }
 
     // 获取当前块高
     public long blockNumber() {
         String methodName = "eth_blockNumber";
         Object params = new Object[] {};
-        String result = this.post(methodName, params, new TypeOf<JsonRpcResponse<String>>().get()).getResult();
+        String result = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
         if (result == null || result.isEmpty()) {
             return 0l;
         }
@@ -373,7 +373,7 @@ public class JsonRPC {
     public Long getQueryEthBalance(String accountAddress) {
         String methodName = "eth_getBalance";
         Object params = new Object[] {accountAddress, "latest"};
-        String balance = this.post(methodName, params, new TypeOf<JsonRpcResponse<String>>().get()).getResult();
+        String balance = this.post(methodName, params, new TypeReference<JsonRpcResponse<String>>() {}).getResult();
         return Long.parseLong(balance.substring(2), 16);
     }
 
@@ -381,14 +381,14 @@ public class JsonRPC {
     public EthRawBlock getBlockByHexNumber(String hexLong) {
         String methodName = "eth_getBlockByNumber";
         Object params = new Object[] {hexLong, true};
-        return this.post(methodName, params, new TypeOf<JsonRpcResponse<EthRawBlock>>().get()).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<EthRawBlock>>() {}).getResult();
     }
 
     // 根据区块哈希取得区块
     public EthRawBlock getBlockByHash(String bockHash) {
         String methodName = "eth_getBlockByHash";
         Object params = new Object[] {bockHash, true};
-        return this.post(methodName, params, new TypeOf<JsonRpcResponse<EthRawBlock>>().get()).getResult();
+        return this.post(methodName, params, new TypeReference<JsonRpcResponse<EthRawBlock>>() {}).getResult();
     }
 
     public <T> T post(String method, Object params, TypeReference<T> typeRef) {
@@ -620,12 +620,6 @@ public class JsonRPC {
             this.message = message;
         }
 
-    }
-
-    public static class TypeOf<T> {
-        public TypeReference<T> get() {
-            return new TypeReference<T>() {};
-        }
     }
 
 }

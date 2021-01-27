@@ -10,7 +10,6 @@ import org.web3j.protocol.core.RemoteCall;
 import org.web3j.tx.Contract;
 import org.web3j.tx.ReadonlyTransactionManager;
 import com.microee.ethdix.j3.Constrants;
-import com.microee.ethdix.j3.rpc.JsonRPC.TypeOf;
 
 public class UniswapV1FactoryContract extends Contract {
 
