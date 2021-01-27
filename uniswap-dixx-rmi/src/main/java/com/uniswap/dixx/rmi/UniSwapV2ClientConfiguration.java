@@ -26,7 +26,7 @@ public class UniSwapV2ClientConfiguration {
             @Override
             public void apply(feign.RequestTemplate template) {
                 AppContext.putFeignTimestamp(Instant.now().toEpochMilli());
-                LOGGER.info("feign request prepared: serviceName={} url={}{}", "uniswap-dixx", listOfServers, template.url());
+                LOGGER.info("feign request prepared: serviceName={} url={}{}", "uniswap-dixx", listOfServers, template.request().url());
             }
         };
     }
