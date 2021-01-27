@@ -1,5 +1,5 @@
 server:
-  port: 29101
+  port: 19113
   tomcat:
     basedir: ${java.io.tmpdir}/@project.name@_${server.port}
     

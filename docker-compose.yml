@@ -18,21 +18,37 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     ports:
-      - 29111:29101
+      - 19113:19113
     entrypoint: ["java", "-Djava.library.path=/usr/local/tomcat/native-jni-lib", "-jar", "/root/app.jar"]
     volumes:
       - ./dist/microee-ethdix-app-1.0-SNAPSHOT.jar:/root/app.jar:ro
     restart: always
     networks:
         br0:
-          ipv4_address: 172.16.197.28
+          ipv4_address: 172.16.197.218
+  microee.ethdix.web:
+    container_name: microee.ethdix.web
+    image: chunhui2001/alpine:3.9.tomcat8.5
+    hostname: microee.ethdix.web
+    mem_limit: 300m
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - 19114:19114
+    entrypoint: ["java", "-Djava.library.path=/usr/local/tomcat/native-jni-lib", "-jar", "/root/app.jar"]
+    volumes:
+      - ./dist/microee-ethdix-web-1.0-SNAPSHOT.jar:/root/web.jar:ro
+    restart: always
+    networks:
+        br0:
+          ipv4_address: 172.16.197.219
   uniswap.sdk.dixx:
     container_name: uniswap.sdk.dixx
     image: chunhui2001/alpine:3.9.node_12.18.3
     hostname: uniswap.sdk.dixx
     mem_limit: 300m
     ports:
-      - 3011:3001
+      - 3100:3100
     #entrypoint: ["/bin/sh", "-c", "while true; do echo 1 >/dev/null 2>/dev/null; sleep 1; done"]
     entrypoint: ["sh", "-c", "/app/uniswap-dixx/run.sh"]
     volumes:
@@ -40,6 +56,6 @@ services:
     restart: always
     networks:
         br0:
-          ipv4_address: 172.16.197.128
+          ipv4_address: 172.16.197.220
 
 
