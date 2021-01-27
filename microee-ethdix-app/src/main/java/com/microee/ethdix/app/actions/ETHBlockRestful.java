@@ -100,6 +100,9 @@ public class ETHBlockRestful {
         //if (decode) {
             // TODO
         //}
+        if (currentBlock == null) {
+            return R.ok(null);
+        }
         return R.ok(currentBlock).message("该区块包含" + currentBlock.getTransactions().size() + "笔交易");
     }
 
