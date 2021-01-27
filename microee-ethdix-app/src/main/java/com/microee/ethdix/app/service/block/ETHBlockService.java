@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.microee.ethdix.app.components.ETHBlockShard;
@@ -49,6 +50,7 @@ public class ETHBlockService {
             EthRawBlock cachedResult = mongo.queryById(blockCollectionName, blockNumber, EthRawBlock.class);
             if (cachedResult != null) {
                 cachedResult.setTransactions(ethTransService.getTransactionsByBlockNumber(ethnode, chainId, blockNumber));
+                lazyTransactionReceipt(cachedResult, ethnode, chainId, blockNumber);
                 return cachedResult;
             }
         }
@@ -57,22 +59,25 @@ public class ETHBlockService {
         if (blockCollectionName != null && fanoutResult != null) {
             mongo.save(blockCollectionName, fanoutResult, blockNumber, "transactions"); // 交易信息保存到另一个表
             ethTransService.saveTransactions(chainId, blockNumber, fanoutResult.getTransactions());
-            // 懒加载交易回执
-            List<EthRawTransaction> trans = fanoutResult.getTransactions();
-            if (trans != null && trans.size() > 0) {
-                List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
-                List<String> transHashList = mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
-                if (transHashList.size() > 0) {
-                    threadPool.submit(() -> {
-                        for (int i = 0; i < transHashList.size(); i++) {
-                            final String currentTranHash = transHashList.get(i);
-                            txReceiptService.getTransactionReceipt(ethnode, chainId, blockNumber, currentTranHash);
-                        }
-                    });
-                }
-            }
+            lazyTransactionReceipt(fanoutResult, ethnode, chainId, blockNumber);
         }
         return fanoutResult;
+    }
+    
+    // 懒加载交易回执
+    public void lazyTransactionReceipt(@NotNull EthRawBlock block, String ethnode, ChainId chainId, Long blockNumber) {
+        List<EthRawTransaction> trans = block.getTransactions();
+        if (trans != null && trans.size() > 0) {
+            List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
+            List<String> transHashList = mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
+            if (transHashList.size() > 0) {
+                threadPool.submit(() -> {
+                    for (int i = 0; i < transHashList.size(); i++) {
+                        txReceiptService.getTransactionReceipt(ethnode, chainId, blockNumber, transHashList.get(i));
+                    }
+                });
+            }
+        }
     }
 
     // 根据区块哈希取得区块编号

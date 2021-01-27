@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.microee.ethdix.oem.eth.EthRawBlock;
 import com.microee.plugin.http.assets.HttpAssets;
 import com.microee.plugin.http.assets.HttpWebsocketHandler;
@@ -26,6 +25,9 @@ public class ETHWebsocketMessageHandler implements HttpWebsocketHandler {
     }
 
     public void writeMessage(String message) {
+        if (this.webSocket == null) {
+            throw new RuntimeException("websocket连接尚未建立");
+        }
         this.webSocket.send(message);
         logger.info("发送了一条消息: url={}, message={}", webSocket.request().url(), message);
     }

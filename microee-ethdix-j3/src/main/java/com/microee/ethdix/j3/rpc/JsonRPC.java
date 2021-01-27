@@ -47,28 +47,34 @@ public class JsonRPC {
 
     private final HttpClient httpClient;
     private final String[] ethnodes;
+    private final String primaryNode;
     private String wss;
     private ETHWebSocketFactory webSocketFactoryMainnet;
     private Headers authHeaders;
 
     public JsonRPC(String ethnode) {
-        this.ethnodes = new String[] {ethnode};
+        logger.info("JsonRPC=node{}", ethnode);
+        this.ethnodes = null;
+        this.primaryNode = ethnode;
         this.httpClient = HttpClient.create();
     }
 
     public JsonRPC(String ethnode, String httpUsername, String httpPasswd) {
-        this.ethnodes = new String[] {ethnode};
+        this.ethnodes = null;
+        this.primaryNode = ethnode;
         this.httpClient = HttpClient.create();
         this.authHeaders = Headers.of("Authorization", okhttp3.Credentials.basic(httpUsername, httpPasswd));
     }
 
     public JsonRPC(String[] ethnodes) {
         this.ethnodes = ethnodes == null ? null : ethnodes.clone();
+        this.primaryNode = null;
         this.httpClient = HttpClient.create();
     }
 
     public JsonRPC(List<String> ethnodes, String wss, ETHMessageListener ethMessageListener) {
         this.ethnodes = ethnodes.toArray(new String[ethnodes.size()]);
+        this.primaryNode = null;
         this.wss = wss;
         this.httpClient = HttpClient.create();
         this.webSocketFactoryMainnet = ETHWebSocketFactory.build(wss, ethMessageListener);
@@ -392,18 +398,23 @@ public class JsonRPC {
     }
 
     public <T> T post(String method, Object params, TypeReference<T> typeRef) {
-        HttpClientResult httpResult = this.httpClient.postJsonBody(UsedCount.getEthNode(this.ethnodes), authHeaders, JsonRpcRequest.json(method, params));
+        String currNode = this.primaryNode != null ? UsedCount.getEthNode(this.primaryNode) : UsedCount.getEthNode(this.ethnodes);
+        HttpClientResult httpResult = this.httpClient.postJsonBody(currNode, authHeaders, JsonRpcRequest.json(method, params));
         if (httpResult == null) {
             throw new RestException(R.TIME_OUT, "查询超时");
         }
         if (!httpResult.isSuccess()) {
             throw new RestException(R.FAILED, "查询失败");
         }
+        logger.info("post.post: ethnodes={}, currNode={}", this.ethnodes(), currNode);
         return HttpAssets.parseJson(httpResult.getResult(), typeRef);
     }
-
-    public String getEthNode() {
-        return UsedCount.getEthNode(this.ethnodes);
+    
+    private String ethnodes() {
+        if (this.ethnodes != null) {
+            return String.join(",", this.ethnodes);
+        }
+        return null;
     }
 
     public void inputDecoder() {
@@ -412,8 +423,7 @@ public class JsonRPC {
 
     public static class UsedCount {
 
-        public static final ConcurrentHashMap<String, ConcurrentHashMap<String, AtomicInteger>> usedCount =
-                new ConcurrentHashMap<>();
+        public static final ConcurrentHashMap<String, ConcurrentHashMap<String, AtomicInteger>> usedCount = new ConcurrentHashMap<>();
 
         public static int incr(String ethNode) {
             String currentDate = currentDateString();
@@ -427,6 +437,10 @@ public class JsonRPC {
             return map.get(ethNode).addAndGet(1);
         }
 
+        public static String getEthNode(String primaryNode) {
+            UsedCount.incr(primaryNode);
+            return primaryNode;
+        }
         public static String getEthNode(String[] ethNodes) {
             String currentDate = currentDateString();
             if (!UsedCount.get().containsKey(currentDate)) {
@@ -450,8 +464,7 @@ public class JsonRPC {
             List<Entry<String, Integer>> list = new LinkedList<>(unsortMap.entrySet());
             // Sorting the list based on values
             list.sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
-            return list.stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue,
-                    (a, b) -> b, LinkedHashMap::new));
+            return list.stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue,(a, b) -> b, LinkedHashMap::new));
 
         }
 
