@@ -11,7 +11,7 @@ import com.microee.stacks.starter.MainApp;
 @EnableDiscoveryClient
 @EnableAutoConfiguration()
 @ComponentScan(basePackages = {"com.microee"})
-@EnableFeignClients(basePackages = {"com.microee.**.rmi"})
+@EnableFeignClients(basePackages = {"com.microee.**.rmi", "com.uniswap.**.rmi"})
 @SpringBootApplication
 @MongoEnabled()
 public class App extends MainApp {
