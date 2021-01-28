@@ -1,15 +1,11 @@
-package com.microee.ethdix.app.components;
+package com.microee.ethdix.oem.eth.entity;
 
 import java.io.Serializable;
-
 import org.json.JSONObject;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.microee.plugin.http.assets.HttpAssets;
 import com.microee.plugin.http.assets.HttpClient;
 import com.microee.plugin.http.assets.HttpClientResult;
-import com.microee.plugin.response.R;
-import com.microee.plugin.response.exception.RestException;
 
 public class GasPriceNow implements Serializable {
 
@@ -95,7 +91,7 @@ public class GasPriceNow implements Serializable {
     public static GasPriceNow get() {
         HttpClientResult httpResult = HttpClient.create().doGet(GAS_NOW_URL);
         if (httpResult == null || !httpResult.isSuccess()) {
-            throw new RestException(R.FAILED, httpResult == null ? "获取gas价格失败" : httpResult.getMessage());
+            throw new RuntimeException("gas price not http error");
         }
         JSONObject dataJsonObject = new JSONObject(httpResult.getResult());
         JSONObject dataGasPrice = dataJsonObject.getJSONObject("data");

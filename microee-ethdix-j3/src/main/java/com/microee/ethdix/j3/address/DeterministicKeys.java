@@ -25,9 +25,14 @@ public class DeterministicKeys {
     // By default bitcoinj uses the path m/0'/0 for the chain of keys. 
     // And most of the Ethereum solutions uses m/44'/60'/0'/0 from the BIP44 specification. 
     // That's why the result wasn't as expected when comparing to other Ethereum tools.
-    public static String[] generator(String seedCode, String passwd) throws UnreadableWalletException {
+    public static String[] generator(String seedCode, String passwd) {
         // BitcoinJ
-        DeterministicSeed seed = new DeterministicSeed(seedCode, null, passwd, Instant.now().toEpochMilli());
+        DeterministicSeed seed = null;
+        try {
+            seed = new DeterministicSeed(seedCode, null, passwd, Instant.now().toEpochMilli());
+        } catch (UnreadableWalletException e) {
+            throw new RuntimeException(e);
+        }
         DeterministicKeyChain chain = DeterministicKeyChain.builder().seed(seed).build();
         List<ChildNumber> keyPath = HDUtils.parsePath("M/44H/60H/0H/0/0");
         DeterministicKey key = chain.getKeyByPath(keyPath, true);

@@ -1,7 +1,6 @@
 package com.microee.ethdix.app.actions;
 
 import org.assertj.core.api.Assertions;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.microee.ethdix.app.components.ETHContractAddressConf;
 import com.microee.ethdix.app.components.Web3JFactory;
+import com.microee.ethdix.interfaces.IETHBalanceRMi;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.ethdix.oem.eth.enums.ChainId;
@@ -18,7 +18,7 @@ import com.microee.plugin.response.R;
 
 @RestController
 @RequestMapping("/balance")
-public class ETHBalanceRestful {
+public class ETHBalanceRestful implements IETHBalanceRMi {
 
     @Autowired
     private Web3JFactory web3JFactory;
@@ -41,7 +41,7 @@ public class ETHBalanceRestful {
      * @return
      * @throws Exception
      */
-    @NotNull
+    @Override
     @RequestMapping(value = "/query", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Double> balanceOf(
