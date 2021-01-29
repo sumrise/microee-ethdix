@@ -37,7 +37,6 @@ public class WalletRestful implements IWalletRMi {
     }
 
     // 批量生成钱包地址
-    @Override
     @RequestMapping(value = "/generator", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Long> generator(
             @RequestParam(value = "count", required = false, defaultValue = "1") Integer count) {

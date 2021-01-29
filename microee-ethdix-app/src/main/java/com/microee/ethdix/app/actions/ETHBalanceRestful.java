@@ -1,5 +1,6 @@
 package com.microee.ethdix.app.actions;
 
+import java.math.BigDecimal;
 import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -27,7 +28,7 @@ public class ETHBalanceRestful implements IETHBalanceRMi {
     private ETHContractAddressConf contractAddressConf;
 
     /**
-     * 查询符合 erc20 标准的合约信息
+     * 查询余额
      *
      * @param username
      * @param password
@@ -57,12 +58,12 @@ public class ETHBalanceRestful implements IETHBalanceRMi {
         if (currency.equalsIgnoreCase("eth")) {
             JsonRPC jsonRpc = ethnode != null && username != null && password != null ? new JsonRPC(ethnode, username, password) : web3JFactory.getJsonRpc(ChainId.get(chainId));
             Long balance = jsonRpc.getQueryEthBalance(accountAddress);
-            return R.ok( balance == 0 ? 0.0 : balance / Math.pow(10, 18));
+            return R.ok( balance == 0 ? 0.0 : BigDecimal.valueOf(balance).divide(new BigDecimal("10").pow(18)).doubleValue());
         }
         String contractAddress = contractAddressConf.getContractAddress(ChainId.get(chainId), currency);
         ERC20ContractQuery erc20Contract = new ERC20ContractQuery(contractAddress, web3JFactory.get(ChainId.get(chainId), ethnode));
         Long balance = erc20Contract.balanceOf(accountAddress).send().longValue();
-        return R.ok(balance == 0 ? 0.0 : balance / Math.pow(10, erc20Contract.decimals().send().longValue()));
+        return R.ok(balance == 0 ? 0.0 : BigDecimal.valueOf(balance).divide(new BigDecimal("10").pow(erc20Contract.decimals().send().intValue())).doubleValue());
     }
 
 }
