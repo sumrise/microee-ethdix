@@ -15,8 +15,6 @@ import com.microee.ethdix.rmi.ETHBalanceRMi;
 import com.microee.ethdix.rmi.ETHEstimateGasRMi;
 import com.microee.ethdix.rmi.WalletRMi;
 import com.microee.ethdix.rmi.univ2.ETHUniSwapV2RMi;
-import com.microee.ethdix.rmi.univ2.ETHUniSwapV2SDKRMi;
-import com.microee.ethdix.rmi.univ2.ETHUniSwapV2SwapRMi;
 import com.microee.plugin.response.R;
 
 @RestController
@@ -35,11 +33,11 @@ public class DefaultRestful {
     @Autowired
     private ETHUniSwapV2RMi univ2RMi;
     
-    @Autowired
-    private ETHUniSwapV2SwapRMi univ2SwapRMi;
-
-    @Autowired
-    private ETHUniSwapV2SDKRMi univ2SDKRMi;
+//    @Autowired
+//    private ETHUniSwapV2SwapRMi univ2SwapRMi;
+//
+//    @Autowired
+//    private ETHUniSwapV2SDKRMi univ2SDKRMi;
     
     // ### Balance
     // 查询余额
