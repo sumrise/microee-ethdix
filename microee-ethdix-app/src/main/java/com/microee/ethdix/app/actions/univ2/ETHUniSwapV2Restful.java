@@ -14,6 +14,7 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.protocol.Web3j;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.app.service.ETHUniSwapV2SDKService;
+import com.microee.ethdix.interfaces.univ2.IETHUniSwapV2RMi;
 import com.microee.ethdix.j3.Constrants;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.j3.factory.Web3jOfInstanceFactory;
@@ -32,7 +33,7 @@ import com.microee.plugin.response.R;
 // https://uniswap.org
 @RestController
 @RequestMapping("/univ2")
-public class ETHUniSwapV2Restful {
+public class ETHUniSwapV2Restful implements IETHUniSwapV2RMi {
 
     @Autowired
     private Web3JFactory web3JFactory;
@@ -45,6 +46,7 @@ public class ETHUniSwapV2Restful {
      * @param chainId
      * @return
      */
+    @Override
     @RequestMapping(value = "/default-token-list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<List<Token>> defaultTokenList(
             @RequestParam(value = "chainId", required=false, defaultValue="mainnet") String chainId,

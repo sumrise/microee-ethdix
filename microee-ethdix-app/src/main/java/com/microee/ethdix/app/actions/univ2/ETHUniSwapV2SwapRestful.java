@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.web3j.abi.datatypes.Address;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.app.service.ETHUniSwapV2SDKService;
+import com.microee.ethdix.interfaces.univ2.IETHUniSwapV2SwapRMi;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
 import com.microee.ethdix.j3.contract.ETHInputEncoder;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
@@ -23,7 +24,7 @@ import com.microee.plugin.response.R;
 
 @RestController
 @RequestMapping("/univ2-swap")
-public class ETHUniSwapV2SwapRestful {
+public class ETHUniSwapV2SwapRestful implements IETHUniSwapV2SwapRMi {
 
     @Autowired
     private Web3JFactory web3JFactory;
@@ -32,6 +33,7 @@ public class ETHUniSwapV2SwapRestful {
     private ETHUniSwapV2SDKService univ2SDKService;
     
     // 根据输入数据计算 UniSwapV2 兑换参数
+    @Override
     @RequestMapping(value = "/getEth2TokenParams", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> getEth2TokenParams(
             @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
@@ -49,6 +51,7 @@ public class ETHUniSwapV2SwapRestful {
     }
     
     // ETH与代币兑换构建签名
+    @Override
     @RequestMapping(value = "/eth2TokenSwapSign", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> eth2TokenSwap(
             @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,

@@ -9,18 +9,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.microee.ethdix.app.service.ETHUniSwapV2SDKService;
+import com.microee.ethdix.interfaces.univ2.IETHUniSwapV2SDKRMi;
 import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.commons.RegexUtils;
 import com.microee.plugin.response.R;
 
 @RestController
 @RequestMapping("/univ2-sdk")
-public class ETHUniSwapV2SDKRestful {
+public class ETHUniSwapV2SDKRestful implements IETHUniSwapV2SDKRMi {
 
     @Autowired
     private ETHUniSwapV2SDKService univ2SDKService;
     
     // 根据token地址查询 token 对象
+    @Override
     @RequestMapping(value = "/token", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> token(
             @RequestParam("tokenAddr") String tokenAddr) {
@@ -28,6 +30,7 @@ public class ETHUniSwapV2SDKRestful {
     }
 
     // 根据代币查询其对应的 usdc 价格 [usdc 是计价货币] 
+    @Override
     @RequestMapping(value = "/usdcPrice", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> usdcPrice(
             @RequestParam("address") String address, @RequestParam(value = "decimals", required=false) Integer decimals) {
@@ -35,6 +38,7 @@ public class ETHUniSwapV2SDKRestful {
         return univ2SDKService.usdcPrice(address, decimals);
     }
 
+    @Override
     @RequestMapping(value = "/pair", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> pair(
             @RequestParam(value = "ethnode", required = false) String ethnode,
@@ -49,6 +53,7 @@ public class ETHUniSwapV2SDKRestful {
     }
     
     // 查询交易对合约地址
+    @Override
     @RequestMapping(value = "/pair/getPairAddress", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getPairAddress(
             @RequestParam(value = "ethnode", required = false) String ethnode,
@@ -62,6 +67,7 @@ public class ETHUniSwapV2SDKRestful {
     }
 
     // 查询价格
+    @Override
     @RequestMapping(value = "/pair/priceOf", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> priceOf(
             @RequestParam(value = "ethnode", required = false) String ethnode,
@@ -76,6 +82,7 @@ public class ETHUniSwapV2SDKRestful {
     }
 
     // 根据输入数量计算输出数量
+    @Override
     @RequestMapping(value = "/pair/getOutputAmount", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getOutputAmount(
             @RequestParam(value = "ethnode", required = false) String ethnode,
@@ -92,6 +99,7 @@ public class ETHUniSwapV2SDKRestful {
     }
 
     // 根据输出数量计算输入数量
+    @Override
     @RequestMapping(value = "/pair/getInputAmount", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> getInputAmount(
             @RequestParam(value = "ethnode", required = false) String ethnode,
@@ -108,6 +116,7 @@ public class ETHUniSwapV2SDKRestful {
     }
 
     // ..
+    @Override
     @RequestMapping(value = "/route", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> route(
             @RequestParam("tokenA") String tokenA,
