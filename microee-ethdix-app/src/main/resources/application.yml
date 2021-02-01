@@ -51,6 +51,9 @@ eth:
         chainId: 1
         logoURI: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x75231F58b43240C9718Dd58B4967c5114342a86c/logo.png"
 
-    
+
+# message topics
+topics:
+    eth.new-blocks.kafka: eth_new_block_topic_${spring.profiles.active}    
   
     

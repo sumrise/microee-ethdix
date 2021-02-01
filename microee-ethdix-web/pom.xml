@@ -77,6 +77,12 @@
             <artifactId>microee-redis</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <!-- WebSocket -->
+        <dependency>
+            <groupId>com.microee.stacks.ws</groupId>
+            <artifactId>microee-ws</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!-- For Thread -->
         <dependency>
             <groupId>com.microee.plugin.thread</groupId>

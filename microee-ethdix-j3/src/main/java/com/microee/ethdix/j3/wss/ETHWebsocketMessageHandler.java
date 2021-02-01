@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.microee.ethdix.oem.eth.EthRawBlock;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.http.assets.HttpAssets;
 import com.microee.plugin.http.assets.HttpWebsocketHandler;
 import okhttp3.Response;
@@ -15,11 +16,13 @@ public class ETHWebsocketMessageHandler implements HttpWebsocketHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ETHWebsocketMessageHandler.class);
 
+    private ChainId chainId;
     private WebSocket webSocket;
     private ConnectStatus connectStatus;
     private final ETHMessageListener ethMessageListener;
 
-    public ETHWebsocketMessageHandler(ETHMessageListener ethMessageListener) {
+    public ETHWebsocketMessageHandler(ChainId chainId, ETHMessageListener ethMessageListener) {
+        this.chainId = chainId;
         this.connectStatus = ConnectStatus.UNKNOW;
         this.ethMessageListener = ethMessageListener;
     }
@@ -56,7 +59,7 @@ public class ETHWebsocketMessageHandler implements HttpWebsocketHandler {
     public void onOpenHandler(WebSocket webSocket, Response response) {
         this.connectStatus = ConnectStatus.ONLINE;
         this.webSocket = webSocket;
-        logger.info("websocket连接成功: connectStatus={}, url={}", this.connectStatus.code, webSocket.request().url().toString());
+        logger.info("websocket连接成功: chainId={}, connectStatus={}, url={}", this.chainId, this.connectStatus.code, webSocket.request().url().toString());
     }
 
     @Override
@@ -67,7 +70,7 @@ public class ETHWebsocketMessageHandler implements HttpWebsocketHandler {
             Long timestamp = Long.parseLong(newBlock.getTimestamp().substring(2), 16) * 1000;
             Long blockNumber = Long.parseLong(newBlock.getNumber().substring(2), 16);
             if (this.ethMessageListener != null) {
-                this.ethMessageListener.onNewBlock(webSocket.request().url(), blockNumber, timestamp);
+                this.ethMessageListener.onNewBlock(this.chainId, webSocket.request().url(), blockNumber, timestamp);
                 return;
             }
         }

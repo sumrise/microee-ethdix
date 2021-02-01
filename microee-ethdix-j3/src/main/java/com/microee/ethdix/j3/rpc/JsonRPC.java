@@ -28,6 +28,7 @@ import com.microee.ethdix.j3.wss.ETHWebSocketFactory;
 import com.microee.ethdix.oem.eth.EthRawBlock;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.EthTransactionReceipt;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.commons.Helper;
 import com.microee.plugin.commons.Helper.KV;
 import com.microee.plugin.http.assets.HttpAssets;
@@ -72,12 +73,12 @@ public class JsonRPC {
         this.httpClient = HttpClient.create();
     }
 
-    public JsonRPC(List<String> ethnodes, String wss, ETHMessageListener ethMessageListener) {
+    public JsonRPC(List<String> ethnodes, ChainId chainId, String wss, ETHMessageListener ethMessageListener) {
         this.ethnodes = ethnodes.toArray(new String[ethnodes.size()]);
         this.primaryNode = null;
         this.wss = wss;
         this.httpClient = HttpClient.create();
-        this.webSocketFactoryMainnet = ETHWebSocketFactory.build(wss, ethMessageListener);
+        this.webSocketFactoryMainnet = ETHWebSocketFactory.build(chainId, wss, ethMessageListener); 
     }
 
     // 连接 WebSocket

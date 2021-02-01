@@ -1,22 +1,21 @@
 package com.microee.ethdix.app.listeners;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import com.microee.ethdix.app.components.NewBlockProcess;
 import com.microee.ethdix.j3.wss.ETHMessageListener;
+import com.microee.ethdix.oem.eth.enums.ChainId;
 import okhttp3.HttpUrl;
 
 @Component
 public class ETHBlockListener implements ETHMessageListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(ETHBlockListener.class);
-
+    @Autowired
+    private NewBlockProcess newBlockProcess;
+    
     @Override
-    public void onNewBlock(HttpUrl endpoint, Long blockNumber, Long timestamp) {
-        logger.info("新块产生: url={}, newBlockNumber={}, dateTime={}",
-                endpoint.toString(), blockNumber, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(timestamp)));
+    public void onNewBlock(ChainId chainId, HttpUrl endpoint, Long blockNumber, Long timestamp) {
+        newBlockProcess.onProcessNewBlock(chainId, endpoint, blockNumber, timestamp);
     }
 
 }

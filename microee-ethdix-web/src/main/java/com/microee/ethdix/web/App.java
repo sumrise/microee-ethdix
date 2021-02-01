@@ -7,6 +7,7 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 import com.microee.stacks.redis.config.RedisEnabled;
 import com.microee.stacks.starter.MainApp;
+import com.microee.stacks.ws.config.WebSocketEnabled;
 
 @EnableDiscoveryClient
 @EnableAutoConfiguration()
@@ -14,6 +15,7 @@ import com.microee.stacks.starter.MainApp;
 @EnableFeignClients(basePackages = {"com.microee.**.rmi"})
 @SpringBootApplication
 @RedisEnabled()
+@WebSocketEnabled()
 public class App extends MainApp {
     public static void main(String[] args) {
         startup(App.class, args);
