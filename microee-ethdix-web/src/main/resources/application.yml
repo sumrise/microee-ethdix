@@ -8,3 +8,11 @@ spring:
     active: local
   application:
     name: microee-ethdix-web
+
+# message topics
+topics:
+    eth.new-blocks.kafka: eth_new_block_topic_${spring.profiles.active}    
+
+
+topics-broadcase:
+    eth.new-blocks.redis: eth_new_block_message_broadcase_topic

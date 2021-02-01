@@ -15,7 +15,7 @@ import com.microee.stacks.starter.MainApp;
 @EnableFeignClients(basePackages = {"com.microee.**.rmi", "com.uniswap.**.rmi"})
 @SpringBootApplication
 @MongoEnabled()
-//@KafkaEnabled()
+@KafkaEnabled()
 public class App extends MainApp {
     public static void main(String[] args) {
         startup(App.class, args);
