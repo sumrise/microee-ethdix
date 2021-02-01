@@ -30,6 +30,7 @@ public class NewBlockConsumer {
     }
     
     public void newBlockConsumer(ConsumerRecord<String, String> messageRecord) {
+        // 用 redis 广播可能会丢消息
         redisMessage.send(newBlockMessageBroadcastTopic, new JSONObject(messageRecord.value()).toMap());
     }
     
