@@ -2,6 +2,7 @@ package com.microee.ethdix.web.consumers;
 
 import javax.annotation.PostConstruct;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,7 @@ public class NewBlockConsumer {
     }
     
     public void newBlockConsumer(ConsumerRecord<String, String> messageRecord) {
-        redisMessage.send(newBlockMessageBroadcastTopic, messageRecord.value());
+        redisMessage.send(newBlockMessageBroadcastTopic, new JSONObject(messageRecord.value()).toMap());
     }
     
 }

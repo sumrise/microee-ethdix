@@ -58,6 +58,9 @@
 	            stompClient.subscribe('/topic/timer', function(message) {
 	                document.getElementById('_timer').value = moment(parseInt(message.body)).format("YYYY-MM-DD HH:mm:ss");
 	            });
+                stompClient.subscribe('/topic/new-block', function(message) {
+                    console.log(message.body, 'newBlock');
+                });
 	        });
 		}
      </script>
