@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.w3.org/1999/xhtml"
+	layout:decorate="~{fragments/main_layout}">
+<head>
+<title>钱包</title>
+</head>
+<body style="text-align: center;">
+	<div layout:fragment="__main_content" class="container">
+		<h1 style="margin: 0">钱包</h1>
+		<div id="root"></div>
+	</div>
+	<th:block layout:fragment="__scripts">
+		<script th:inline="javascript" type="text/javascript">
+     /*<![CDATA[*/
+     var _version=[[${_version}]];
+     /*]]>*/
+    </script>
+	</th:block>
+</body>
+</html>
