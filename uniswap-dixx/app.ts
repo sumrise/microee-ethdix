@@ -17,7 +17,7 @@ import { ErrorHandler } from './common/error';
 
 const app: express.Application = express();
 const server: http.Server = http.createServer(app);
-const port: number = 3100;
+const port: number = 3101;
 const routes: Array<CommonRoutesConfig> = [];
 const loggerInfo: debug.IDebugger = debug('app');
 const loggerError: debug.IDebugger = debug('app-error');

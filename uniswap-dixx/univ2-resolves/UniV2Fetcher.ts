@@ -58,7 +58,7 @@ export function defaultTokenList() {
     function find(a: any, tokenList: [any]): any | undefined {
         for (let token of tokenList) {
             if (a.address.toLowerCase() === token.address.toLowerCase() && a.chainId === token.chainId) {
-                return a;
+                return token;
             }
         }
         return null;
