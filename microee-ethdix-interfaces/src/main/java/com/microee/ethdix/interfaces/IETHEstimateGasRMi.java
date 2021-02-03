@@ -25,6 +25,7 @@ public interface IETHEstimateGasRMi {
     // 预估 eth 转帐 gas limits
     @RequestMapping(value = "/estimateGasLimitsForETHTransfer", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Long> estimateGasLimitsForETHTransfer(
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "ethnode", required = true) String ethnode, // 以太坊节点地址
             @RequestParam(value = "fromAddr", required = false) String fromAddr, // 出帐地址
             @RequestParam(value = "toAddr", required = true) String toAddr, // 转入地址, 如果是usdt转帐请传usdt合约地址, 如果是用户间转帐请传用户地址
@@ -36,6 +37,7 @@ public interface IETHEstimateGasRMi {
     // 预估 erc20 代币 转帐 gas 费 
     @RequestMapping(value = "/estimateGasLimitsForTokenTransfer", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Long> estimateGasLimitsForTokenTransfer(
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
             @RequestParam(value = "fromAddr", required = true) String fromAddr, // 出帐地址
             @RequestParam(value = "contractAddr", required = true) String contractAddr, // erc20 合约地址
@@ -47,6 +49,7 @@ public interface IETHEstimateGasRMi {
     // 预估eth兑换代币手续费
     @RequestMapping(value = "/estimateGasLimitsForETH2TokenSwaper", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Long> estimateGasLimitsForETH2TokenSwaper(
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
             @RequestParam(value = "fromAddr", required = true) String fromAddr, // 出帐地址
             @RequestParam(value = "contractAddr", required = true) String contractAddr, // 代币地址

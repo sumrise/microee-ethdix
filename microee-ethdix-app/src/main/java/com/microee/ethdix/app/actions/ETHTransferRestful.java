@@ -41,34 +41,41 @@ public class ETHTransferRestful {
     // 返回链id
     @RequestMapping(value = "/getChainId", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Long> getChainId(
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "ethnode", required = true) String ethnode // 以太坊节点地址
     ) {
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(ethnode).withFailMessage("`ethnode` 必传").isNotBlank();
-        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).getChainId());
+        return R.ok(web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).getChainId());
     }
 
     // 查询当前账户地址在传入的节点上发起的交易数量
     @RequestMapping(value = "/getTransactionCount", method = RequestMethod.GET, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Long> getTransactionCount(
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "ethnode", required = true) String ethnode, // 以太坊节点地址
             @RequestParam(value = "accountAddress", required = true) String accountAddress // 转入地址
     ) {
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(ethnode).withFailMessage("`ethnode` 必传").isNotBlank();
         Assertions.assertThat(accountAddress).withFailMessage("`accountAddress` 必传").isNotBlank();
-        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).getTransactionCount(accountAddress));
+        return R.ok(web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).getTransactionCount(accountAddress));
     }
 
     // 签名交易: 构建ETH转帐交易签名数据, 返回签名后的数据
     // signedTransactionData
     @RequestMapping(value = "/signETHTransferTransaction", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> signETHTransferTransaction(
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
             @RequestParam(value = "toAddr", required = true) String toAddr, // 转入地址
             @RequestParam(value = "gasPrice", required = true) Long gasPrice, // 即 rapid OR fast OR standard OR slow 对应的值
             @RequestParam(value = "gasLimit", required = false, defaultValue = "21000") Long gasLimit,
             @RequestParam(value = "amount", required = true) BigDecimal amount, // 转帐数量, 单位是 ether
             @RequestParam(value = "fromAddr", required = true) String fromAddr, // 出帐地址
-            @RequestParam(value = "privateKey", required = true) String privateKey) { // 地址私钥
+            @RequestParam(value = "privateKey", required = true) String privateKey // 地址私钥
+    ) { 
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(ethnode == null || ethnode.isEmpty()).withFailMessage("`ethnode` 必传").isFalse();
         Assertions.assertThat(toAddr).withFailMessage("`toAddr` 必传").isNotBlank();
         Assertions.assertThat(gasPrice).withFailMessage("`gasPrice`必须大于0").isGreaterThan(0l);
@@ -80,13 +87,14 @@ public class ETHTransferRestful {
         // 1eth = 1000000000000000000
         // 0.035eth = 35000000000000000
         final BigInteger amountValue = amount.multiply(new BigDecimal("10").pow(18)).toBigInteger(); // 转帐数量
-        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).signETHTransaction(fromAddr, toAddr, gasPrice, gasLimit, amountValue, privateKey));
+        return R.ok(web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).signETHTransaction(fromAddr, toAddr, gasPrice, gasLimit, amountValue, privateKey));
     }
     
     // 签名交易: 构建 erc20 交易签名, 返回签名后的数据
     // signedTransactionData
     @RequestMapping(value = "/signTokenTransferTransaction", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> signTokenTransferTransaction(
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
             @RequestParam(value = "erc20Addr", required = true) String erc20Addr, // erc20 合约地址
             @RequestParam(value = "toAddr", required = true) String toAddr, // 转入地址, 账户地址
@@ -94,7 +102,9 @@ public class ETHTransferRestful {
             @RequestParam(value = "gasLimit", required = false, defaultValue = "21000") Long gasLimit,
             @RequestParam(value = "amount", required = true) BigDecimal amount, // 转帐数量, 单位是 erc20代币单位
             @RequestParam(value = "fromAddr", required = true) String fromAddr, // 出帐地址
-            @RequestParam(value = "privateKey", required = true) String privateKey) throws Exception { // 地址私钥
+            @RequestParam(value = "privateKey", required = true) String privateKey // 地址私钥
+    ) throws Exception { 
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(ethnode == null || ethnode.isEmpty()).withFailMessage("`ethnode` 必传").isFalse();
         Assertions.assertThat(erc20Addr).withFailMessage("`erc20Addr` 必传").isNotBlank();
         Assertions.assertThat(toAddr).withFailMessage("`toAddr` 必传").isNotBlank();
@@ -106,7 +116,7 @@ public class ETHTransferRestful {
         BigInteger tokenDecimal = (BigInteger) new RemoteCallFunction<>(new ERC20ContractQuery(erc20Addr, web3JFactory.get(null, ethnode)).decimals()).call();
         final BigInteger amountValue = amount.multiply(new BigDecimal("10").pow(tokenDecimal.intValue())).toBigInteger(); // 转帐数量(代币的最小单位), 例如: 1usdt = 1000000
         final String inputData = ETHInputEncoder.getInputDataForTokenTransfer(toAddr, amountValue);
-        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).signTokenTransaction(fromAddr, erc20Addr, gasPrice, gasLimit, privateKey, inputData));
+        return R.ok(web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).signTokenTransaction(fromAddr, erc20Addr, gasPrice, gasLimit, privateKey, inputData));
     }
 
     // 根据签名后的数据获取交易哈希
@@ -137,10 +147,13 @@ public class ETHTransferRestful {
     // signedTransactionData
     @RequestMapping(value = "/sendTransaction", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> sendTransaction(
+            @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
-            @RequestBody String signedTransactionData) {
+            @RequestBody String signedTransactionData
+    ) {
+        Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(ethnode == null || ethnode.isEmpty()).withFailMessage("`ethnode` 必传").isFalse();
-        return R.ok(web3JFactory.getJsonRpcByEthNode(ethnode).sendRawTransaction(signedTransactionData));
+        return R.ok(web3JFactory.getJsonRpc(ChainId.get(chainId), ethnode).sendRawTransaction(signedTransactionData));
     }
 
     // 取消交易

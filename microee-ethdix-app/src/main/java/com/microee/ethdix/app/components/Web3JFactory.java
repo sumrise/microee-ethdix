@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
+import com.microee.ethdix.app.listeners.JsonRpcHttpClientListener;
 import com.microee.ethdix.app.props.ETHConfigurationProperties;
 import com.microee.ethdix.j3.factory.Web3jOfInstanceFactory;
 import com.microee.ethdix.j3.rpc.JsonRPC;
@@ -30,6 +31,9 @@ public class Web3JFactory {
     @Qualifier("jsonRPCClientRopsten")
     private JsonRPC jsonRPCClientRopsten;
 
+    @Autowired
+    private JsonRpcHttpClientListener jsonRpcHttpListener;
+    
     private final ConcurrentMap<String, Web3j> map = new ConcurrentHashMap<>();
 
     // mainnet, Ropsten, Rinkeby, Görli, Kovan
@@ -66,18 +70,14 @@ public class Web3JFactory {
         throw new RestException(R.SERVER_ERROR, "不支持的链id");
     }
 
-    public JsonRPC getJsonRpcByEthNode(String ethnode) {
-        return new JsonRPC(ethnode);
-    }
-
     public JsonRPC getJsonRpc(ChainId chainId) {
-        return this.getJsonRpc(chainId, null);
+        return this.getJsonRpc(chainId, null).setHttpClientLoggerListener(jsonRpcHttpListener);
     }
 
     @NotNull
     public JsonRPC getJsonRpc(ChainId chainId, String ethnode) {
         if (ethnode != null) {
-            return new JsonRPC(ethnode);
+            return new JsonRPC(chainId, ethnode).setHttpClientLoggerListener(jsonRpcHttpListener);
         }
         if (ChainId.MAINNET.equals(chainId)) {
             return jsonRPCClientMainnet;

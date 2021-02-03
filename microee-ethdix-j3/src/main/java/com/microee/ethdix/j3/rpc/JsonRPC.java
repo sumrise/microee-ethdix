@@ -67,7 +67,7 @@ public class JsonRPC {
         this.webSocketFactory = ETHWebSocketFactory.build(networkConfig); 
     }
     
-    public JsonRPC(String ethnode) {
+    public JsonRPC(ChainId chainId, String ethnode) {
         this.ethnodes = null;
         this.primaryNode = ethnode;
         this.httpClient = HttpClient.create();
