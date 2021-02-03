@@ -18,7 +18,7 @@ import okhttp3.HttpUrl;
 public class ETHBlockListener implements ETHMessageListener, InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ETHBlockListener.class);
-    private static ThreadPoolFactoryLow threadPool = ThreadPoolFactoryLow.newInstance("ethdix-app-新块延迟处理线程池");
+    private static ThreadPoolFactoryLow threadPool = ThreadPoolFactoryLow.create("ethdix-app-新块延迟处理线程池", "ASYN-NEWBLOCK-POOL");
     public static final int DELAY_PROCESS_NEW_BLOCK_TIME_MS = 2000; // 2000 毫秒后处理新块
 
     private final DelayQueue<DelayedProcessNewBlockItem<ProcessNewBlockItem>> delayProcessNewBlockQueue = new DelayQueue<>();
