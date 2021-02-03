@@ -3,6 +3,7 @@ package com.microee.ethdix.app.actions;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class ETHBlockRestful {
     @Autowired
     private ETHBlockShard ethBlockShard;
 
-    @Autowired
+    @Autowired(required=false)
     private ElasticSearchIndexSupport searchIndexSupport;
 
     // ### 创建索引
@@ -189,6 +190,12 @@ public class ETHBlockRestful {
             @RequestParam(value = "blockNumber", required = false) Long blockNumber,
             @RequestParam(value = "txHash", required = false) String txHash) {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
+        Assertions.assertThat(blockNumber != null && StringUtils.isNotBlank(txHash)).withFailMessage("blockNumber and txHash 二传一").isTrue();
+        if (blockNumber != null) {
+            Assertions.assertThat(blockNumber).withFailMessage("%s 有误", "chainId").isGreaterThanOrEqualTo(0);
+        } else {
+            Assertions.assertThat(txHash).withFailMessage("txHash not be empty").isNotBlank();
+        }
         EthRawTransaction tx = null;
         String _txHash = null;
         if (txHash != null) {
@@ -201,9 +208,6 @@ public class ETHBlockRestful {
                 blockNumber = findedBlockNumber;
                 _txHash = tx.getHash();
             }
-        }
-        if (blockNumber == null) {
-            return R.ok(null);
         }
         EthRawBlock block = this.blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber, false);
         if (this.blockService.ethBlockLonely(ethnode, ChainId.get(chainId), block)) {
@@ -219,11 +223,9 @@ public class ETHBlockRestful {
     public R<Boolean> ethBlockLonely(
             @RequestParam(value = "ethnode", required = false) String ethnode,
             @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId,
-            @RequestParam(value = "blockNumber", required = false) Long blockNumber) {
+            @RequestParam(value = "blockNumber", required = true) Long blockNumber) {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
-        if (blockNumber == -1) {
-            throw new RestException(R.ILLEGAL, "区块编号有误");
-        }
+        Assertions.assertThat(blockNumber).withFailMessage("%s 有误", "blockNumber").isGreaterThanOrEqualTo(0);
         EthRawBlock block = this.blockService.ethGetBlockByNumber(ethnode, ChainId.get(chainId), blockNumber, false);
         if (block == null) {
             throw new RestException(R.FAILED, "无效的区块编号");

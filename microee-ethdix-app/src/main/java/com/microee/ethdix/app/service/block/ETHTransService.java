@@ -1,42 +1,30 @@
 package com.microee.ethdix.app.service.block;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import com.microee.ethdix.app.components.ETHBlockShard;
 import com.microee.ethdix.app.components.Web3JFactory;
+import com.microee.ethdix.app.repositories.IETHTransRepository;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.enums.ChainId;
-import com.microee.stacks.mongodb.support.Mongo;
 
 @Service
 public class ETHTransService {
 
-    public static final String COLLECTION_TRANS = "trans";
-
     @Autowired
     private Web3JFactory web3JFactory;
 
-    @Autowired(required=false)
-    private Mongo mongo;
-
     @Autowired
-    private ETHBlockShard ethBlockShard;
+    private IETHTransRepository ethTransRepository;
     
     // 查询并保存交易基本信息
     public EthRawTransaction ethGetTransaction(String ethnode, ChainId chainId, Long blockNumber, String transHash) {
-        String transCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_TRANS, blockNumber);
-        EthRawTransaction result = mongo == null ? null : mongo.queryByStringId(transCollectionName, transHash, EthRawTransaction.class);
+        EthRawTransaction result = ethTransRepository.queryTxsByStringId(chainId, blockNumber, transHash);
         if (result == null) {
             result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionByHash(transHash);
             if ((ethnode == null || ethnode.isEmpty()) && result != null) {
                 if (result.getBlockNumber() != null) {
-                    if (mongo != null) {
-                        mongo.save(transCollectionName, result, transHash);
-                    }
+                    ethTransRepository.saveTransaction(chainId, blockNumber, result);
                 }
             }
         }
@@ -45,22 +33,13 @@ public class ETHTransService {
 
     // 根据区块编号查询该区块上的所有交易
     public List<EthRawTransaction> getTransactionsByBlockNumber(String ethNode, ChainId chainId, Long blockNumber) {
-        if (mongo == null) {
-            return new ArrayList<>();
-        }
-        String transCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_TRANS, blockNumber);
-        Query query = Query.query(Criteria.where("blockNumber").is("0x" + Long.toHexString(blockNumber)));
-        return mongo.queryList(transCollectionName, query, EthRawTransaction.class);
+        return ethTransRepository.getTransactionsByBlockNumber(chainId, blockNumber);
     }
 
     // 保存区块上的所有交易记录
     public boolean saveTransactions(ChainId chainId, Long blockNumber, List<EthRawTransaction> transactions) {
-        if (mongo == null) {
-            return true;
-        }
         if (transactions != null && transactions.size() > 0) {
-            String transCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_TRANS, blockNumber);
-            mongo.saveList(transCollectionName, "hash", transactions);
+            ethTransRepository.saveTransactions(chainId, blockNumber, transactions); 
         }
         return true;
     }

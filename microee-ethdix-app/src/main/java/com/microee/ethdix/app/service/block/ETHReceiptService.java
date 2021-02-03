@@ -6,44 +6,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.microee.ethdix.app.components.ETHBlockShard;
 import com.microee.ethdix.app.components.Web3JFactory;
+import com.microee.ethdix.app.repositories.IETHReceiptRepository;
 import com.microee.ethdix.j3.Constrants;
 import com.microee.ethdix.oem.eth.EthTransactionReceipt;
 import com.microee.ethdix.oem.eth.enums.ChainId;
-import com.microee.stacks.mongodb.support.Mongo;
 
 @Service
 public class ETHReceiptService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ETHReceiptService.class);
 
-    public static final String COLLECTION_NAME = "receipts";
-
-    @Autowired
-    private ETHBlockShard ethBlockShard;
-
-    @Autowired(required=false)
-    private Mongo mongo;
-
     @Autowired
     private Web3JFactory web3JFactory;
+
+    @Autowired
+    private IETHReceiptRepository ethReceiptRepository;
 
     // 查询并保存交易回执
     public EthTransactionReceipt getTransactionReceipt(String ethnode, ChainId chainId, Long blockNumber, String txHash) {
         EthTransactionReceipt result = null;
-        String receiptCollectionName = blockNumber == null ? null : ethBlockShard.getCollection(chainId, COLLECTION_NAME, blockNumber);
         if (blockNumber != null) {
-            result = mongo == null ? null : mongo.queryByStringId(receiptCollectionName, txHash, EthTransactionReceipt.class);
+            result = ethReceiptRepository.queryReceiptsByStringId(chainId, blockNumber, txHash);
         }
         if (result == null) {
             result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionReceipt(txHash);
             if (result != null && result.getBlockNumber() != null) {
-                if (receiptCollectionName != null) {
-                    if (mongo != null) {
-                        mongo.save(receiptCollectionName, result, txHash);
-                    }
-                }
+                ethReceiptRepository.saveReceipts(chainId, blockNumber, result, txHash); 
             }
         }
         return result;

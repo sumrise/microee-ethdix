@@ -8,13 +8,13 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.microee.ethdix.app.components.ETHBlockShard;
 import com.microee.ethdix.app.components.Web3JFactory;
+import com.microee.ethdix.app.repositories.IETHBlockRepository;
+import com.microee.ethdix.app.repositories.IETHReceiptRepository;
 import com.microee.ethdix.oem.eth.EthRawBlock;
 import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.thread.ThreadPoolFactoryLow;
-import com.microee.stacks.mongodb.support.Mongo;
 
 @Service
 public class ETHBlockService {
@@ -25,10 +25,10 @@ public class ETHBlockService {
     public static final String COLLECTION_BLOCKS = "blocks";
 
     @Autowired
-    private ETHBlockShard ethBlockShard;
-
-    @Autowired(required=false)
-    private Mongo mongo;
+    private IETHBlockRepository ethBlockRepository;
+    
+    @Autowired
+    private IETHReceiptRepository ethReceiptRepository;
 
     @Autowired
     private ETHReceiptService txReceiptService;
@@ -41,13 +41,9 @@ public class ETHBlockService {
 
     // 查询并保存区块
     public EthRawBlock ethGetBlockByNumber(String ethnode, ChainId chainId, Long blockNumber, boolean fanout) {
-        if (blockNumber != null && blockNumber < 0) {
-            return null;
-        }
-        String blockCollectionName = blockNumber == null ? null : ethBlockShard.getCollection(chainId, COLLECTION_BLOCKS, blockNumber);
-        if (blockCollectionName != null && !fanout) {
+        if (!fanout) {
             // 从数据库查
-            EthRawBlock cachedResult = mongo == null ? null : mongo.queryById(blockCollectionName, blockNumber, EthRawBlock.class);
+            EthRawBlock cachedResult = ethBlockRepository.queryBlockById(chainId, blockNumber); 
             if (cachedResult != null) {
                 cachedResult.setTransactions(ethTransService.getTransactionsByBlockNumber(ethnode, chainId, blockNumber));
                 lazyTransactionReceipt(cachedResult, ethnode, chainId, blockNumber);
@@ -55,11 +51,9 @@ public class ETHBlockService {
             }
         }
         // 数据库没查到，查链
-        EthRawBlock fanoutResult = blockNumber == null ? null : web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
-        if (blockCollectionName != null && fanoutResult != null) {
-            if (mongo != null) {
-                mongo.save(blockCollectionName, fanoutResult, blockNumber, "transactions"); // 交易信息保存到另一个表
-            }
+        EthRawBlock fanoutResult = web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
+        if (fanoutResult != null) {
+            ethBlockRepository.saveBlock(chainId, blockNumber, fanoutResult);
             ethTransService.saveTransactions(chainId, blockNumber, fanoutResult.getTransactions());
             lazyTransactionReceipt(fanoutResult, ethnode, chainId, blockNumber);
         }
@@ -71,7 +65,7 @@ public class ETHBlockService {
         List<EthRawTransaction> trans = block.getTransactions();
         if (trans != null && trans.size() > 0) {
             List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
-            List<String> transHashList = mongo == null ? currentTransHashList : mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
+            List<String> transHashList = ethReceiptRepository.notStoredReceipts(currentTransHashList); 
             if (transHashList.size() > 0) {
                 threadPool.submit(() -> {
                     for (int i = 0; i < transHashList.size(); i++) {
@@ -89,7 +83,7 @@ public class ETHBlockService {
 
     // 找出不连续的区块id
     public List<Long> ethBreakBlockNumber(String collectionName, Long start, Long end) {
-        List<Long> blockList = mongo.between(collectionName, start, end);
+        List<Long> blockList = ethBlockRepository.between(collectionName, start, end);
         List<Long> result = new LinkedList<>();
         if (blockList.isEmpty()) {
             result.add(start);
