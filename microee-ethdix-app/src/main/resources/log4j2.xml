@@ -52,6 +52,7 @@
         </Root>
         <Logger name="org.springframework" level="WARN" />
         <Logger name="org.springframework.web.servlet.PageNotFound" level="ERROR" />
+        <Logger name="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver" level="ERROR" />
         <!-- <Logger name="org.hibernate.validator" level="WARN"/> -->
         <Logger name="org.apache.tomcat" level="INFO" />
         <Logger name="org.apache.catalina" level="INFO" />
