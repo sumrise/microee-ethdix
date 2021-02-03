@@ -33,6 +33,7 @@ import com.microee.plugin.commons.Helper;
 import com.microee.plugin.commons.Helper.KV;
 import com.microee.plugin.http.assets.HttpAssets;
 import com.microee.plugin.http.assets.HttpClient;
+import com.microee.plugin.http.assets.HttpClientLogger;
 import com.microee.plugin.http.assets.HttpClientResult;
 import com.microee.plugin.response.R;
 import com.microee.plugin.response.exception.RestException;
@@ -73,12 +74,17 @@ public class JsonRPC {
         this.httpClient = HttpClient.create();
     }
 
-    public JsonRPC(List<String> ethnodes, ChainId chainId, String wss, ETHMessageListener ethMessageListener) {
-        this.ethnodes = ethnodes.toArray(new String[ethnodes.size()]);
+    public JsonRPC(NetworkConfig networkConfig) {
+        this.ethnodes = networkConfig.getEthnodes() != null ? networkConfig.getEthnodes().toArray(new String[networkConfig.getEthnodes().size()]) : null;
         this.primaryNode = null;
-        this.wss = wss;
+        this.wss = networkConfig.getWss();
         this.httpClient = HttpClient.create();
-        this.webSocketFactoryMainnet = ETHWebSocketFactory.build(chainId, wss, ethMessageListener); 
+        this.webSocketFactoryMainnet = ETHWebSocketFactory.build(networkConfig.getChainId(), networkConfig.getWss(), networkConfig.getEthMessageListener()); 
+    }
+    
+    public JsonRPC setHttpClientLoggerListener(HttpClientLogger listener) {
+        this.httpClient.setListener(listener);
+        return this;
     }
 
     // 连接 WebSocket
@@ -634,6 +640,59 @@ public class JsonRPC {
             this.message = message;
         }
 
+    }
+    
+    public static class NetworkConfig {
+        
+        private List<String> ethnodes;
+        private ChainId chainId;
+        private String wss;
+        private ETHMessageListener ethMessageListener;
+        
+        public NetworkConfig() {
+            super();
+        }
+
+        public NetworkConfig(List<String> ethnodes, ChainId chainId, String wss,
+                ETHMessageListener ethMessageListener) {
+            super();
+            this.ethnodes = ethnodes;
+            this.chainId = chainId;
+            this.wss = wss;
+            this.ethMessageListener = ethMessageListener;
+        }
+
+        public List<String> getEthnodes() {
+            return ethnodes;
+        }
+
+        public void setEthnodes(List<String> ethnodes) {
+            this.ethnodes = ethnodes;
+        }
+
+        public ChainId getChainId() {
+            return chainId;
+        }
+
+        public void setChainId(ChainId chainId) {
+            this.chainId = chainId;
+        }
+
+        public String getWss() {
+            return wss;
+        }
+
+        public void setWss(String wss) {
+            this.wss = wss;
+        }
+
+        public ETHMessageListener getEthMessageListener() {
+            return ethMessageListener;
+        }
+
+        public void setEthMessageListener(ETHMessageListener ethMessageListener) {
+            this.ethMessageListener = ethMessageListener;
+        }
     }
 
 }
