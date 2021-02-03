@@ -51,12 +51,13 @@ public class ETHBalanceRestful implements IETHBalanceRMi {
             @RequestParam(value = "ethnode", required = false) String ethnode, // 以太坊节点地址
             @RequestParam(value = "chainId", required = false, defaultValue = "mainnet") String chainId, // 网络类型: 主网或测试网
             @RequestParam(value = "currency") String currency, // 币种
-            @RequestParam(value = "accountAddress") String accountAddress) throws Exception {
+            @RequestParam(value = "accountAddress") String accountAddress
+    ) throws Exception {
         Assertions.assertThat(ChainId.get(chainId)).withFailMessage("%s 有误", "chainId").isNotNull();
         Assertions.assertThat(currency).withFailMessage("%s 必传", "currency").isNotBlank();
         Assertions.assertThat(accountAddress).withFailMessage("%s 必传", "accountAddress").isNotBlank();
         if (currency.equalsIgnoreCase("eth")) {
-            JsonRPC jsonRpc = ethnode != null && username != null && password != null ? new JsonRPC(ethnode, username, password) : web3JFactory.getJsonRpc(ChainId.get(chainId));
+            JsonRPC jsonRpc = ethnode != null && username != null && password != null ? new JsonRPC(ChainId.get(chainId), ethnode, username, password) : web3JFactory.getJsonRpc(ChainId.get(chainId));
             Long balance = jsonRpc.getQueryEthBalance(accountAddress);
             return R.ok( balance == 0 ? 0.0 : BigDecimal.valueOf(balance).divide(new BigDecimal("10").pow(18)).doubleValue());
         }

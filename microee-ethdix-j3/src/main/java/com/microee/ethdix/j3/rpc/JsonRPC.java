@@ -68,22 +68,18 @@ public class JsonRPC {
     }
     
     public JsonRPC(ChainId chainId, String ethnode) {
+        this.chainId = chainId;
         this.ethnodes = null;
         this.primaryNode = ethnode;
         this.httpClient = HttpClient.create();
     }
 
-    public JsonRPC(String ethnode, String httpUsername, String httpPasswd) {
+    public JsonRPC(ChainId chainId, String ethnode, String httpUsername, String httpPasswd) {
+        this.chainId = chainId;
         this.ethnodes = null;
         this.primaryNode = ethnode;
         this.httpClient = HttpClient.create();
         this.authHeaders = Headers.of("Authorization", okhttp3.Credentials.basic(httpUsername, httpPasswd));
-    }
-
-    public JsonRPC(String[] ethnodes) {
-        this.ethnodes = ethnodes == null ? null : ethnodes.clone();
-        this.primaryNode = null;
-        this.httpClient = HttpClient.create();
     }
     
     public JsonRPC setHttpClientLoggerListener(IJsonRpcHttpClientListener listener) {
