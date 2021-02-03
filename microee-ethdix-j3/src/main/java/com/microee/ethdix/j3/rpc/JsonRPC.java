@@ -68,7 +68,6 @@ public class JsonRPC {
     }
     
     public JsonRPC(String ethnode) {
-        logger.info("JsonRPC=node{}", ethnode);
         this.ethnodes = null;
         this.primaryNode = ethnode;
         this.httpClient = HttpClient.create();
