@@ -17,6 +17,8 @@ services:
     mem_limit: 300m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - elasticsearch.cluster-name=es7-cluster
+      - elasticsearch.cluster-nodes=http://127.0.0.1:9200
     ports:
       - 19113:19113
     entrypoint: ["java", "-Djava.library.path=/usr/local/tomcat/native-jni-lib", "-jar", "/root/app.jar"]
