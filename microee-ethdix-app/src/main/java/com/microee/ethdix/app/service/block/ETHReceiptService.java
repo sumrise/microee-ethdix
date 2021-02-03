@@ -22,8 +22,8 @@ public class ETHReceiptService {
 
     @Autowired
     private ETHBlockShard ethBlockShard;
-    
-    @Autowired
+
+    @Autowired(required=false)
     private Mongo mongo;
 
     @Autowired
@@ -34,13 +34,15 @@ public class ETHReceiptService {
         EthTransactionReceipt result = null;
         String receiptCollectionName = blockNumber == null ? null : ethBlockShard.getCollection(chainId, COLLECTION_NAME, blockNumber);
         if (blockNumber != null) {
-            result = mongo.queryByStringId(receiptCollectionName, txHash, EthTransactionReceipt.class);
+            result = mongo == null ? null : mongo.queryByStringId(receiptCollectionName, txHash, EthTransactionReceipt.class);
         }
         if (result == null) {
             result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionReceipt(txHash);
             if (result != null && result.getBlockNumber() != null) {
                 if (receiptCollectionName != null) {
-                    mongo.save(receiptCollectionName, result, txHash);
+                    if (mongo != null) {
+                        mongo.save(receiptCollectionName, result, txHash);
+                    }
                 }
             }
         }

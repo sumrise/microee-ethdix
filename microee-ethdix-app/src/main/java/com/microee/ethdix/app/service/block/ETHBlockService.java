@@ -27,7 +27,7 @@ public class ETHBlockService {
     @Autowired
     private ETHBlockShard ethBlockShard;
 
-    @Autowired
+    @Autowired(required=false)
     private Mongo mongo;
 
     @Autowired
@@ -47,7 +47,7 @@ public class ETHBlockService {
         String blockCollectionName = blockNumber == null ? null : ethBlockShard.getCollection(chainId, COLLECTION_BLOCKS, blockNumber);
         if (blockCollectionName != null && !fanout) {
             // 从数据库查
-            EthRawBlock cachedResult = mongo.queryById(blockCollectionName, blockNumber, EthRawBlock.class);
+            EthRawBlock cachedResult = mongo == null ? null : mongo.queryById(blockCollectionName, blockNumber, EthRawBlock.class);
             if (cachedResult != null) {
                 cachedResult.setTransactions(ethTransService.getTransactionsByBlockNumber(ethnode, chainId, blockNumber));
                 lazyTransactionReceipt(cachedResult, ethnode, chainId, blockNumber);
@@ -57,7 +57,9 @@ public class ETHBlockService {
         // 数据库没查到，查链
         EthRawBlock fanoutResult = blockNumber == null ? null : web3JFactory.getJsonRpc(chainId, ethnode).getBlockByNumber(blockNumber);
         if (blockCollectionName != null && fanoutResult != null) {
-            mongo.save(blockCollectionName, fanoutResult, blockNumber, "transactions"); // 交易信息保存到另一个表
+            if (mongo != null) {
+                mongo.save(blockCollectionName, fanoutResult, blockNumber, "transactions"); // 交易信息保存到另一个表
+            }
             ethTransService.saveTransactions(chainId, blockNumber, fanoutResult.getTransactions());
             lazyTransactionReceipt(fanoutResult, ethnode, chainId, blockNumber);
         }
@@ -69,7 +71,7 @@ public class ETHBlockService {
         List<EthRawTransaction> trans = block.getTransactions();
         if (trans != null && trans.size() > 0) {
             List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
-            List<String> transHashList = mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
+            List<String> transHashList = mongo == null ? currentTransHashList : mongo.notIn(ETHReceiptService.COLLECTION_NAME, currentTransHashList);
             if (transHashList.size() > 0) {
                 threadPool.submit(() -> {
                     for (int i = 0; i < transHashList.size(); i++) {

@@ -1,5 +1,6 @@
 package com.microee.ethdix.app.service.block;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -19,7 +20,7 @@ public class ETHTransService {
     @Autowired
     private Web3JFactory web3JFactory;
 
-    @Autowired
+    @Autowired(required=false)
     private Mongo mongo;
 
     @Autowired
@@ -28,12 +29,14 @@ public class ETHTransService {
     // 查询并保存交易基本信息
     public EthRawTransaction ethGetTransaction(String ethnode, ChainId chainId, Long blockNumber, String transHash) {
         String transCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_TRANS, blockNumber);
-        EthRawTransaction result = mongo.queryByStringId(transCollectionName, transHash, EthRawTransaction.class);
+        EthRawTransaction result = mongo == null ? null : mongo.queryByStringId(transCollectionName, transHash, EthRawTransaction.class);
         if (result == null) {
             result = web3JFactory.getJsonRpc(chainId, ethnode).getTransactionByHash(transHash);
             if ((ethnode == null || ethnode.isEmpty()) && result != null) {
                 if (result.getBlockNumber() != null) {
-                    mongo.save(transCollectionName, result, transHash);
+                    if (mongo != null) {
+                        mongo.save(transCollectionName, result, transHash);
+                    }
                 }
             }
         }
@@ -42,6 +45,9 @@ public class ETHTransService {
 
     // 根据区块编号查询该区块上的所有交易
     public List<EthRawTransaction> getTransactionsByBlockNumber(String ethNode, ChainId chainId, Long blockNumber) {
+        if (mongo == null) {
+            return new ArrayList<>();
+        }
         String transCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_TRANS, blockNumber);
         Query query = Query.query(Criteria.where("blockNumber").is("0x" + Long.toHexString(blockNumber)));
         return mongo.queryList(transCollectionName, query, EthRawTransaction.class);
@@ -49,6 +55,9 @@ public class ETHTransService {
 
     // 保存区块上的所有交易记录
     public boolean saveTransactions(ChainId chainId, Long blockNumber, List<EthRawTransaction> transactions) {
+        if (mongo == null) {
+            return true;
+        }
         if (transactions != null && transactions.size() > 0) {
             String transCollectionName = ethBlockShard.getCollection(chainId, COLLECTION_TRANS, blockNumber);
             mongo.saveList(transCollectionName, "hash", transactions);

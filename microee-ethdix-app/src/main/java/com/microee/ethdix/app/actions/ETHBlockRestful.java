@@ -1,11 +1,13 @@
 package com.microee.ethdix.app.actions;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +24,7 @@ import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.commons.RegexUtils;
 import com.microee.plugin.response.R;
 import com.microee.plugin.response.exception.RestException;
+import com.microee.stacks.es.supports.ElasticSearchIndexSupport;
 
 // 以太坊区块相关接口
 // 接口文档 https://infura.io/docs/ethereum/json-rpc
@@ -41,9 +44,29 @@ public class ETHBlockRestful {
     @Autowired
     private ETHBlockShard ethBlockShard;
 
+    @Autowired
+    private ElasticSearchIndexSupport searchIndexSupport;
+
+    // ### 创建索引
+    @RequestMapping(value = "/createIndex", method = RequestMethod.POST, consumes=MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<String> createIndex(
+            @RequestParam(value = "indexName", required = true) String indexName,
+            @RequestParam(value = "aliasName", required = true, defaultValue = "mainnet") String aliasName,
+            @RequestParam(value = "numberOfShards", required = false, defaultValue = "3") Integer numberOfShards,
+            @RequestParam(value = "numberOfReplicas", required = false, defaultValue = "3") Integer numberOfReplicas,
+            @RequestBody Map<String, Object> mappingProperties) throws IOException {
+        return R.ok(searchIndexSupport.createIndex(indexName, aliasName, numberOfShards, numberOfReplicas, mappingProperties));
+    }
+
+    // ### 删除索引
+    @RequestMapping(value = "/deleteIndex", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public R<Boolean> deleteIndex(
+            @RequestParam(value = "indexName", required = true) String indexName) throws IOException {
+        return R.ok(searchIndexSupport.deleteIndex(indexName));
+    }
+
     // ### 查询节点使用量
-    @RequestMapping(value = "/used-count", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/used-count", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Map<String, Integer>>> useCount() {
         return R.ok(JsonRPC.UsedCount.get());
     }
