@@ -19,7 +19,7 @@ import com.microee.plugin.thread.ThreadPoolFactoryLow;
 @Service
 public class ETHBlockService {
 
-    private static ThreadPoolFactoryLow threadPool = ThreadPoolFactoryLow.newInstance("ethblock-查询区块交易回执线程池");
+    private static ThreadPoolFactoryLow threadPool = ThreadPoolFactoryLow.create("ethblock-查询区块交易回执线程池", "ASYN-TXRECEIPTS-POOL");
 
     // db.eth_blocks.createIndex( { _id: -1 }, { background: true } )
     public static final String COLLECTION_BLOCKS = "blocks";
