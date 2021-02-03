@@ -1,5 +1,6 @@
 package com.microee.ethdix.j3.wss;
 
+import com.microee.ethdix.j3.rpc.JsonRPC.NetworkConfig;
 import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.http.assets.HttpClient;
 import com.microee.plugin.http.assets.HttpWebsocketListener;
@@ -25,6 +26,13 @@ public class ETHWebSocketFactory {
             return null;
         }
         return new ETHWebSocketFactory(chainId, wss, ethMessageListener);
+    }
+    
+    public static ETHWebSocketFactory build(NetworkConfig networkConfig) {
+        if (networkConfig.getWss() == null || networkConfig.getWss().isEmpty()) {
+            return null;
+        }
+        return new ETHWebSocketFactory(networkConfig.getChainId(), networkConfig.getWss(), networkConfig.getEthMessageListener());
     }
     
     public ETHWebSocketFactory createETHStream() {

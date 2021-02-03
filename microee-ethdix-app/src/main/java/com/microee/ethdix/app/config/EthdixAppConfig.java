@@ -30,12 +30,12 @@ public class EthdixAppConfig implements ApplicationListener<ApplicationEvent> {
     
     @Bean(name="jsonRPCClientMainnet")
     public JsonRPC jsonRPCClientMainnet() {
-        return new JsonRPC(getJsonRpcConfig(ChainId.MAINNET)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();
+        return JsonRPC.create(getJsonRpcConfig(ChainId.MAINNET)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();
     } 
     
     @Bean(name="jsonRPCClientRopsten")
     public JsonRPC jsonRPCClientRopsten() {
-        return new JsonRPC(getJsonRpcConfig(ChainId.ROPSTEN)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();  
+        return JsonRPC.create(getJsonRpcConfig(ChainId.ROPSTEN)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();  
     } 
     
     @Override

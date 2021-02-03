@@ -51,9 +51,21 @@ public class JsonRPC {
     private final String[] ethnodes;
     private final String primaryNode;
     private String wss;
-    private ETHWebSocketFactory webSocketFactoryMainnet;
+    private ETHWebSocketFactory webSocketFactory;
     private Headers authHeaders;
 
+    public static JsonRPC create(NetworkConfig networkConfig) {
+        return new JsonRPC(networkConfig);
+    }
+
+    public JsonRPC(NetworkConfig networkConfig) {
+        this.ethnodes = networkConfig.getETHNodes();
+        this.primaryNode = null;
+        this.wss = networkConfig.getWss();
+        this.httpClient = HttpClient.create();
+        this.webSocketFactory = ETHWebSocketFactory.build(networkConfig); 
+    }
+    
     public JsonRPC(String ethnode) {
         logger.info("JsonRPC=node{}", ethnode);
         this.ethnodes = null;
@@ -73,14 +85,6 @@ public class JsonRPC {
         this.primaryNode = null;
         this.httpClient = HttpClient.create();
     }
-
-    public JsonRPC(NetworkConfig networkConfig) {
-        this.ethnodes = networkConfig.getEthnodes() != null ? networkConfig.getEthnodes().toArray(new String[networkConfig.getEthnodes().size()]) : null;
-        this.primaryNode = null;
-        this.wss = networkConfig.getWss();
-        this.httpClient = HttpClient.create();
-        this.webSocketFactoryMainnet = ETHWebSocketFactory.build(networkConfig.getChainId(), networkConfig.getWss(), networkConfig.getEthMessageListener()); 
-    }
     
     public JsonRPC setHttpClientLoggerListener(HttpClientLogger listener) {
         this.httpClient.setListener(listener);
@@ -89,13 +93,13 @@ public class JsonRPC {
 
     // 连接 WebSocket
     public JsonRPC connect() {
-        this.webSocketFactoryMainnet.connect();
+        this.webSocketFactory.connect();
         return this;
     }
 
     // ws 订阅
     public Boolean subscribe(String string) {
-        this.webSocketFactoryMainnet.subscribe(string);
+        this.webSocketFactory.subscribe(string);
         return true;
     }
 
@@ -693,6 +697,14 @@ public class JsonRPC {
         public void setEthMessageListener(ETHMessageListener ethMessageListener) {
             this.ethMessageListener = ethMessageListener;
         }
+        
+        public String[] getETHNodes() {
+            if (this.getEthnodes() != null) {
+                return this.getEthnodes().toArray(new String[this.getEthnodes().size()]);
+            }
+            return null;
+        }
+        
     }
 
 }
