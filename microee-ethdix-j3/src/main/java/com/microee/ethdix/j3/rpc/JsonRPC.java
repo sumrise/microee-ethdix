@@ -33,7 +33,6 @@ import com.microee.plugin.commons.Helper;
 import com.microee.plugin.commons.Helper.KV;
 import com.microee.plugin.http.assets.HttpAssets;
 import com.microee.plugin.http.assets.HttpClient;
-import com.microee.plugin.http.assets.HttpClientLogger;
 import com.microee.plugin.http.assets.HttpClientResult;
 import com.microee.plugin.response.R;
 import com.microee.plugin.response.exception.RestException;
@@ -48,6 +47,7 @@ public class JsonRPC {
     private static final Logger logger = LoggerFactory.getLogger(JsonRPC.class);
 
     private final HttpClient httpClient;
+    private ChainId chainId;
     private final String[] ethnodes;
     private final String primaryNode;
     private String wss;
@@ -59,6 +59,7 @@ public class JsonRPC {
     }
 
     public JsonRPC(NetworkConfig networkConfig) {
+        this.chainId = networkConfig.getChainId();
         this.ethnodes = networkConfig.getETHNodes();
         this.primaryNode = null;
         this.wss = networkConfig.getWss();
@@ -86,8 +87,8 @@ public class JsonRPC {
         this.httpClient = HttpClient.create();
     }
     
-    public JsonRPC setHttpClientLoggerListener(HttpClientLogger listener) {
-        this.httpClient.setListener(listener);
+    public JsonRPC setHttpClientLoggerListener(IJsonRpcHttpClientListener listener) {
+        this.httpClient.setListener(new JsonRpcHttpClientListener(this.chainId, listener));
         return this;
     }
 

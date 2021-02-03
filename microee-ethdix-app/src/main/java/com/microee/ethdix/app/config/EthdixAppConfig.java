@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.microee.ethdix.app.listeners.ETHBlockListener;
-import com.microee.ethdix.app.listeners.JsonRpcHttpClientLogger;
+import com.microee.ethdix.app.listeners.JsonRpcHttpClientListener;
 import com.microee.ethdix.app.props.ETHConfigurationProperties;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.ethdix.j3.rpc.JsonRPC.NetworkConfig;
@@ -26,7 +26,7 @@ public class EthdixAppConfig implements ApplicationListener<ApplicationEvent> {
     private ETHBlockListener ethBlockListener;
 
     @Autowired
-    private JsonRpcHttpClientLogger jsonRpcHttpListener;
+    private JsonRpcHttpClientListener jsonRpcHttpListener;
     
     @Bean(name="jsonRPCClientMainnet")
     public JsonRPC jsonRPCClientMainnet() {
@@ -35,7 +35,7 @@ public class EthdixAppConfig implements ApplicationListener<ApplicationEvent> {
     
     @Bean(name="jsonRPCClientRopsten")
     public JsonRPC jsonRPCClientRopsten() {
-        return JsonRPC.create(getJsonRpcConfig(ChainId.ROPSTEN)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();  
+        return JsonRPC.create(getJsonRpcConfig(ChainId.ROPSTEN)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();   
     } 
     
     @Override
