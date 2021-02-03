@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Configuration status="WARN">
+    <properties>
+        <!-- Lookups, http://logging.apache.org/log4j/2.x/manual/lookups.html -->
+        <!-- log4j的PatternLayout参数含义, https://blog.csdn.net/garfielder007/article/details/82874529 -->
+        <property name="logPath">/tmp/log</property>
+        <property name="instance">${ctx:appname}</property>
+        <!-- property name="PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t][${ctx:appname}:_lid:%lid] %-5level %20.30c{1.}:%L - %M:『%r』>>> %msg%n</property-->
+        <!-- property name="PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t][${ctx:appname}:_lid:%lid] %-5level [%20.30c{1.}:%L]『%r』 > %msg%n</property -->
+        <property name="PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t][${ctx:appname}:_lid:%dd] %-5level [%logger{36}:%L]『%r』 > %msg%n</property>
+    </properties>
+    <Appenders>
+        <!-- trace, info, warn, debug, error -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!-- 只输出 trace level 及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
+            <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout header=" - ${java:runtime} %n - ${java:vm} %n - ${java:os}%n" pattern="${PATTERN}" />
+        </Console>
+        <!-- https://www.boraji.com/log4j-2-rollingfileappender-example -->
+        <RollingRandomAccessFile name="RollingFile" immediateFlush="false" append="false"
+                             fileName="${logPath}/${instance}/log.log" 
+                             filePattern="${logPath}/${instance}/%d{yyyyMMddhh}.log-%i.zip">
+            <!-- 只输出 debug level 及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${PATTERN}" />
+            <DefaultRolloverStrategy max="5" />	<!-- 最多存 5 个文件 -->
+            <Policies>
+                <TimeBasedTriggeringPolicy  modulate="true" interval="2" /> <!--2小时滚动一次, 依据 filePattern 设置的 “年月日” 精度 -->
+                <SizeBasedTriggeringPolicy size="1MB" /> <!-- 大于1G时归档 OR KB -->
+            </Policies>
+        </RollingRandomAccessFile>
+        <!-- 把 error 日志输出到单独的文件 -->
+        <RollingRandomAccessFile name="ErrorLog" immediateFlush="false" append="false"
+                             fileName="${logPath}/${instance}/err.log" 
+                             filePattern="${logPath}/${instance}/%d{yyyyMMddhh}.error-%i.zip">
+            <!-- 只输出 error level 及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
+            <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY" />
+            <PatternLayout pattern="${PATTERN}"/>
+            <DefaultRolloverStrategy max="5"/>	<!-- 最多存 5 个文件 -->
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="2"/> <!--2小时滚动一次, 依据 filePattern 设置的 “年月日” 精度 -->
+                <!-- <SizeBasedTriggeringPolicy size="1024MB" /> --> <!-- 大于1G时归档 -->
+                <SizeBasedTriggeringPolicy size="1MB" />
+            </Policies>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info" includeLocation="true">
+            <AppenderRef ref="Console" />
+            <appender-ref ref="ErrorLog"/>
+            <appender-ref ref="RollingFile" />
+        </Root>
+        <Logger name="org.springframework" level="WARN" />
+        <Logger name="org.springframework.web.servlet.PageNotFound" level="ERROR" />
+        <!-- <Logger name="org.hibernate.validator" level="WARN"/> -->
+        <Logger name="org.apache.tomcat" level="INFO" />
+        <Logger name="org.apache.catalina" level="INFO" />
+        <Logger name="org.apache.coyote" level="INFO" />
+        <Logger name="com.netflix" level="WARN" />
+        <logger name="org.mybatis" level="WARN" />
+        <logger name="org.mongodb" level="WARN" />
+        <logger name="org.apache.kafka" level="WARN" />
+        <Logger name="org.apache.zookeeper" level="WARN" />
+        <Logger name="org.apache.curator" level="WARN" />
+        <Logger name="okhttp3.OkHttpClient" level="WARN" />
+        <Logger name="com.microee.plugin.http.assets.HttpClientCallback" level="WARN" />
+    </Loggers>
+</Configuration>

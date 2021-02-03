@@ -418,15 +418,7 @@ public class JsonRPC {
         if (!httpResult.isSuccess()) {
             throw new RestException(R.FAILED, "查询失败");
         }
-        logger.info("post.post: ethnodes={}, currNode={}", this.ethnodes(), currNode);
         return HttpAssets.parseJson(httpResult.getResult(), typeRef);
-    }
-    
-    private String ethnodes() {
-        if (this.ethnodes != null) {
-            return String.join(",", this.ethnodes);
-        }
-        return null;
     }
 
     public void inputDecoder() {
