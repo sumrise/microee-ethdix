@@ -18,15 +18,19 @@ import com.microee.plugin.response.R;
         configuration = UniSwapV2ClientConfiguration.class)
 public interface UniSwapV2SDKClient {
 
+    // 查询默认支持的代币列表
     @RequestMapping(value = "/default-token-list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<List<Token>> defaultTokenList(@RequestParam("chainId") short chainId, @RequestParam("symbol") String symbol);
     
+    // 根据代币地址查询代币信息
     @RequestMapping(value = "/token", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> token(@RequestParam("tokenAddr") String tokenAddr);
 
+    // 查询传入的代币对应的 USDC 价格
     @RequestMapping(value = "/usdcPrice", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<String> usdcPrice(@RequestBody JSONObject param);
-    
+
+    // 根据两个代币地址查询交易对对象
     @RequestMapping(value = "/pair", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> pair(@RequestParam("tokenA") String tokenA, @RequestParam("tokenB") String tokenB, @RequestParam(value = "method", required=false) String method);
 
@@ -50,9 +54,11 @@ public interface UniSwapV2SDKClient {
             @RequestParam("tokenA") String tokenA, @RequestParam("tokenB") String tokenB, 
             @RequestParam(value="tokenAOutputAmount", required=false) String tokenAOutputAmount, @RequestParam(value="tokenBOutputAmount", required=false) String tokenBOutputAmount);
 
+    // 根据两个代币地址查询 route 对象
     @RequestMapping(value = "/route", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> route(@RequestParam("tokenA") String tokenA, @RequestParam("tokenB") String tokenB);
 
+    @Deprecated
     @RequestMapping(value = "/trade", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public R<Map<String, Object>> trade(@RequestParam("tokenA") String tokenA, @RequestParam("tokenB") String tokenB);
 
