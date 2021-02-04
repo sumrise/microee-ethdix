@@ -17,7 +17,7 @@
             <PatternLayout header=" - ${java:runtime} %n - ${java:vm} %n - ${java:os}%n" pattern="${PATTERN}" />
         </Console>
         <!-- https://www.boraji.com/log4j-2-rollingfileappender-example -->
-        <RollingRandomAccessFile name="RollingFile" immediateFlush="false" append="false"
+        <RollingRandomAccessFile name="RollingFile" immediateFlush="true" append="true"
                              fileName="${logPath}/${instance}/log.log" 
                              filePattern="${logPath}/${instance}/%d{yyyyMMddhh}.log-%i.zip">
             <!-- 只输出 debug level 及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
@@ -30,7 +30,7 @@
             </Policies>
         </RollingRandomAccessFile>
         <!-- 把 error 日志输出到单独的文件 -->
-        <RollingRandomAccessFile name="ErrorLog" immediateFlush="false" append="false"
+        <RollingRandomAccessFile name="ErrorLog" immediateFlush="true" append="true"
                              fileName="${logPath}/${instance}/err.log" 
                              filePattern="${logPath}/${instance}/%d{yyyyMMddhh}.error-%i.zip">
             <!-- 只输出 error level 及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
