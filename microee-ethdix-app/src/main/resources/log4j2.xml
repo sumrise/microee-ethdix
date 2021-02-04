@@ -64,6 +64,7 @@
         <Logger name="org.apache.zookeeper" level="WARN" />
         <Logger name="org.apache.curator" level="WARN" />
         <Logger name="okhttp3.OkHttpClient" level="WARN" />
+        <Logger name="com.microee.plugin.http.assets.HttpClient" level="WARN" />
         <Logger name="com.microee.plugin.http.assets.HttpClientCallback" level="WARN" />
     </Loggers>
 </Configuration>
