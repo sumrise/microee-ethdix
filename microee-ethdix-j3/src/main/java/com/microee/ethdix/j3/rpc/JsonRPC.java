@@ -408,7 +408,7 @@ public class JsonRPC {
         String currNode = this.primaryNode != null ? UsedCount.getEthNode(this.primaryNode) : UsedCount.getEthNode(this.ethnodes);
         HttpClientResult httpResult = this.httpClient.postJsonBody(currNode, authHeaders, JsonRpcRequest.json(method, params));
         if (httpResult == null) {
-            logger.warn("查询超时: method={}, currNode={}, params={}", currNode, method, HttpAssets.toJsonString(params));
+            logger.error("查询超时: jsonRpcMethod={}, currNode={}, params={}", method, currNode, HttpAssets.toJsonString(params));
             throw new RestException(R.TIME_OUT, "查询超时");
         }
         if (!httpResult.isSuccess()) {
