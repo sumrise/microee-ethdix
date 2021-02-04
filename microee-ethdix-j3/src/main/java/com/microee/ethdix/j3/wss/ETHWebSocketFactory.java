@@ -12,6 +12,7 @@ public class ETHWebSocketFactory {
     private final HttpClient wsHttpClient;
     private final ETHWebsocketMessageHandler ethWebsocketMessageHandler;
     private final ETHWebsocketThreader ethWebsocketThreader;
+    private final String webSocketThreadPoolName;
     
     public ETHWebSocketFactory(ChainId chainId, String wss, ETHMessageListener ethMessageListener) {
         this.chainId = chainId;
@@ -19,6 +20,7 @@ public class ETHWebSocketFactory {
         this.wsHttpClient = HttpClient.create();
         this.ethWebsocketMessageHandler = new ETHWebsocketMessageHandler(chainId, ethMessageListener); 
         this.ethWebsocketThreader = new ETHWebsocketThreader(this);
+        this.webSocketThreadPoolName = "ASYN-ETH-WEBSOCKET-LISTENER-POOL-" + chainId.name.toUpperCase();
     }
     
     public static ETHWebSocketFactory build(ChainId chainId, String wss, ETHMessageListener ethMessageListener) {
@@ -36,7 +38,7 @@ public class ETHWebSocketFactory {
     }
     
     public ETHWebSocketFactory createETHStream() {
-        this.wsHttpClient.websocket(this.ethWsHost, null, new HttpWebsocketListener(this.ethWebsocketMessageHandler, "ASYN-ETH-WEBSOCKET-POOL-" + this.chainId.name.toUpperCase())); 
+        this.wsHttpClient.websocket(this.ethWsHost, null, new HttpWebsocketListener(this.ethWebsocketMessageHandler, this.webSocketThreadPoolName)); 
         return this;
     }
 
