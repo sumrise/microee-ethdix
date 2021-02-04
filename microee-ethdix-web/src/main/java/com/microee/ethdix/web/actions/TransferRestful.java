@@ -1,14 +1,12 @@
 package com.microee.ethdix.web.actions;
 
 import java.math.BigDecimal;
-import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.ethdix.rmi.ETHEstimateGasRMi;
 import com.microee.plugin.response.R;
 
