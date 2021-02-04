@@ -29,7 +29,7 @@ public class JsonRpcHttpClientLogService {
     
     public void save(ChainId chainId, boolean success, int statusCode, long contentLength, String method, String url, String message, Long start, Long speed) {
         JSONObject jsonObject = new JSONObject()
-                                    .put("chainId", chainId.name)
+                                    .put("chainId", chainId.name).put("message", message)
                                     .put("url", url).put("method", method).put("code", statusCode)
                                     .put("success", success).put("start", start).put("speed", speed);
         if (saveSupport == null) {
