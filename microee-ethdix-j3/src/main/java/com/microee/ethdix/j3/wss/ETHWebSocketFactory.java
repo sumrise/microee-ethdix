@@ -36,7 +36,7 @@ public class ETHWebSocketFactory {
     }
     
     public ETHWebSocketFactory createETHStream() {
-        this.wsHttpClient.websocket(this.ethWsHost, null, new HttpWebsocketListener(this.ethWebsocketMessageHandler)); 
+        this.wsHttpClient.websocket(this.ethWsHost, null, new HttpWebsocketListener(this.ethWebsocketMessageHandler, "ASYN-ETH-WEBSOCKET-POOL-" + this.chainId.name.toUpperCase())); 
         return this;
     }
 
