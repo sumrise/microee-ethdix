@@ -29,8 +29,8 @@ public class NewBlockProcess {
 
     public void onProcessNewBlock(ChainId chainId, HttpUrl endpoint, Long blockNumber, Long timestamp) {
         logger.info("新块产生: chainId={}, url={}, newBlockNumber={}, dateTime={}", chainId.name, endpoint.toString(), blockNumber, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(timestamp)));
-        ethBlockService.ethGetBlockByNumber(null, ChainId.MAINNET, blockNumber, true);
-        kafkaStringProducer.sendMessage(newETHBlockTopic, new JSONObject().put("chainId", chainId.code).put("blockNumber", blockNumber).put("timestamp", timestamp).toString());
+        ethBlockService.ethGetBlockByNumber(chainId, blockNumber);
+        kafkaStringProducer.sendMessage(newETHBlockTopic, new JSONObject().put("chainId", chainId.code).put("blockNumber",blockNumber).put("timestamp", timestamp).toString());
     }
     
 }

@@ -40,6 +40,11 @@ public class ETHBlockService {
     private Web3JFactory web3JFactory;
 
     // 查询并保存区块
+    public EthRawBlock ethGetBlockByNumber(ChainId chainId, Long blockNumber) {
+        return this.ethGetBlockByNumber(null, chainId, blockNumber, true);
+    }
+    
+    // 查询并保存区块
     public EthRawBlock ethGetBlockByNumber(String ethnode, ChainId chainId, Long blockNumber, boolean fanout) {
         if (!fanout) {
             // 从数据库查
