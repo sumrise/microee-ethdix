@@ -28,8 +28,14 @@ eth:
     wss://ropsten.infura.io/ws/v3/031e253140e6401794fc3db9048e9e77
   ropsten-nodes:
     - https://ropsten.infura.io/v3/031e253140e6401794fc3db9048e9e77
+  heco-wss-mainnet: 
+    #wss://ws-mainnet-node.hecochain.com
+    wss://ws-mainnet-node.huobichain.com
+  heco-nodes-mainnet:
+    #- https://http-mainnet-node.hecochain.com
+    - https://http-mainnet-node.huobichain.com
 
-# message topics
+## message topics
 topics:
     eth.new-blocks.kafka: eth_new_block_topic_${spring.profiles.active}    
   

@@ -3,7 +3,6 @@ package com.microee.ethdix.app.props;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import com.microee.ethdix.oem.eth.entity.Token;
 
 @Configuration
 @ConfigurationProperties(prefix = "eth")
@@ -13,6 +12,8 @@ public class ETHConfigurationProperties {
     private List<String> ropstenNodes;
     private String mainnetWss;
     private String ropstenWss;
+    private List<String> hecoNodesMainnet;
+    private String hecoWssMainnet;
     
     public ETHConfigurationProperties() {
         
@@ -58,5 +59,20 @@ public class ETHConfigurationProperties {
 		this.ropstenWss = ropstenWss;
 	}
 
+    public List<String> getHecoNodesMainnet() {
+        return hecoNodesMainnet;
+    }
+
+    public void setHecoNodesMainnet(List<String> hecoNodesMainnet) {
+        this.hecoNodesMainnet = hecoNodesMainnet;
+    }
+
+    public String getHecoWssMainnet() {
+        return hecoWssMainnet;
+    }
+
+    public void setHecoWssMainnet(String hecoWssMainnet) {
+        this.hecoWssMainnet = hecoWssMainnet;
+    }
     
 }

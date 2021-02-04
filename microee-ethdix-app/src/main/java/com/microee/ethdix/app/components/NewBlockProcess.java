@@ -40,7 +40,9 @@ public class NewBlockProcess {
                 logger.warn("查询超时: chainId={}, url={}, newBlockNumber={}", chainId.name, endpoint.toString(), blockNumber);
             }
         }
-        kafkaStringProducer.sendMessage(newETHBlockTopic, new JSONObject().put("chainId", chainId.code).put("blockNumber",blockNumber).put("timestamp", timestamp).toString());
+        if (kafkaStringProducer != null) {
+            kafkaStringProducer.sendMessage(newETHBlockTopic, new JSONObject().put("chainId", chainId.code).put("blockNumber",blockNumber).put("timestamp", timestamp).toString());
+        }
     }
     
 }

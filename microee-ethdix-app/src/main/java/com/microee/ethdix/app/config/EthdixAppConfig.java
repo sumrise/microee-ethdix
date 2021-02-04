@@ -37,6 +37,12 @@ public class EthdixAppConfig implements ApplicationListener<ApplicationEvent> {
     public JsonRPC jsonRPCClientRopsten() {
         return JsonRPC.create(getJsonRpcConfig(ChainId.ROPSTEN)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();   
     } 
+
+    
+    @Bean(name="jsonRPCClientHecoMainnet")
+    public JsonRPC jsonRPCClientHecoMainnet() {
+        return JsonRPC.create(getJsonRpcConfig(ChainId.HECO)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();
+    } 
     
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
@@ -57,6 +63,11 @@ public class EthdixAppConfig implements ApplicationListener<ApplicationEvent> {
             LOGGER.info("ethNetwork-mainnet-wss={}", String.join(",", ethNetworkProperties.getMainnetWss()));
             networkConfig.setEthnodes(ethNetworkProperties.getMainnetNodes());
             networkConfig.setWss(ethNetworkProperties.getMainnetWss());
+        } else if (chainId.equals(ChainId.HECO)) {
+            LOGGER.info("ethNetwork-heco-mainnet-nodes={}", String.join(",", ethNetworkProperties.getHecoNodesMainnet()));
+            LOGGER.info("ethNetwork-heco-mainnet-wss={}", String.join(",", ethNetworkProperties.getHecoWssMainnet()));
+            networkConfig.setEthnodes(ethNetworkProperties.getHecoNodesMainnet());
+            networkConfig.setWss(ethNetworkProperties.getHecoWssMainnet());
         }
         return networkConfig;
     }

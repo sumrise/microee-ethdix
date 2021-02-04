@@ -9,7 +9,8 @@ public enum ChainId {
     ROPSTEN((short)3, "ropsten"),
     RINKEBY((short)4, "rinkeby"),
     GÖRLI((short)5, "görli"),
-    KOVAN((short)42, "kovan");
+    KOVAN((short)42, "kovan"),
+    HECO((short)128, "heco");
 
     public short code;
     public String name;

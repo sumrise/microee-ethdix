@@ -11,13 +11,14 @@ import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.oem.eth.enums.ChainId;
 import com.microee.plugin.response.R;
 
+// websocket 相关接口
 @RestController
-@RequestMapping("/subscribe")
-public class ETHSubscribeRestful {
+@RequestMapping("/wss")
+public class ETHWSSRestful {
 
     @Autowired
     private Web3JFactory web3JFactory;
-    
+
     // ### 订阅新加入的区块
     @RequestMapping(value = "/newHeads", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

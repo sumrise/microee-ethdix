@@ -32,6 +32,10 @@ public class Web3JFactory {
     private JsonRPC jsonRPCClientRopsten;
 
     @Autowired
+    @Qualifier("jsonRPCClientHecoMainnet")
+    private JsonRPC jsonRPCClientHecoMainnet;
+
+    @Autowired
     private JsonRpcHttpClientListener jsonRpcHttpListener;
     
     private final ConcurrentMap<String, Web3j> map = new ConcurrentHashMap<>();
@@ -84,6 +88,9 @@ public class Web3JFactory {
         }
         if (ChainId.ROPSTEN.equals(chainId)) {
             return jsonRPCClientRopsten;
+        }
+        if (ChainId.HECO.equals(chainId)) {
+            return jsonRPCClientHecoMainnet;
         }
         throw new RestException(R.SERVER_ERROR, "不支持的链id");
     }
