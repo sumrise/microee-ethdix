@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.microee.ethdix.app.components.Web3JFactory;
-import com.microee.ethdix.app.props.ETHConfigurationProperties;
 import com.microee.ethdix.j3.contract.ERC20ContractQuery;
 import com.microee.ethdix.j3.contract.RemoteCallFunction;
 import com.microee.ethdix.oem.eth.entity.Token;
@@ -28,21 +27,13 @@ public class ETHUniSwapV2SDKService {
     @Autowired
     private UniSwapV2SwapParamClient univ2SwapParamClient;
 
-    @Autowired
-    private ETHConfigurationProperties ethConf;
-
     // 根据输入数据计算 UniSwapV2 兑换参数
     public Map<String, Object> getEth2TokenParams(ChainId chainId, String tokenAddr, String ethAmount, int slippageTolerance) {
          return univ2SwapParamClient.eth2token(tokenAddr, new JSONObject().put("ethInputAmount", ethAmount).put("slippageTolerance", slippageTolerance)).getData();
     }
     
     public List<Token> defaultTokenList(short chainId, String symbol) {
-        List<Token> defaultTokenList = univ2SDKClient.defaultTokenList(chainId, symbol).getData();
-        List<Token> extenalTokenList = ethConf.getExtenialTokens();
-        if (!defaultTokenList.addAll(extenalTokenList)) {
-            throw new RuntimeException("server error");
-        }
-        return defaultTokenList;
+        return univ2SDKClient.defaultTokenList(chainId, symbol).getData();
     }
     
     public Map<String, Object> token(String tokenAddr) {

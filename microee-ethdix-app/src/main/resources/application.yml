@@ -9,7 +9,6 @@ spring:
   application:
     name: microee-ethdix-app
 
-
 eth:
   mainnet-wss: 
     wss://mainnet.infura.io/ws/v3/fedf665469c044ffa50606459bfd8c54
@@ -24,33 +23,11 @@ eth:
     - https://mainnet.infura.io/v3/fedf665469c044ffa50606459bfd8c54
     - https://mainnet.infura.io/v3/d794d2820c2a49f4a1ffa1871ce35318
     - https://mainnet.infura.io/v3/95d3e329fed74a1fbf3ef9b56a0b4bdd
+    - https://mainnet.infura.io/v3/a7d50d8999914e5cba1055f83161bd4c
   ropsten-wss: 
     wss://ropsten.infura.io/ws/v3/031e253140e6401794fc3db9048e9e77
   ropsten-nodes:
     - https://ropsten.infura.io/v3/031e253140e6401794fc3db9048e9e77
-  extenial-tokens:
-    -
-        name: "HUSD"
-        address: "0xdf574c24545e5ffecb9a659c229253d4111d87e1"
-        symbol: "HUSD"
-        decimals: 8
-        chainId: 1
-        logoURI: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdF574c24545E5FfEcb9a659c229253D4111d87e1/logo.png"
-    -
-        name: "Huobi BTC"
-        address: "0x0316EB71485b0Ab14103307bf65a021042c6d380"
-        symbol: "HBTC"
-        decimals: 18
-        chainId: 1
-        logoURI: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x0316EB71485b0Ab14103307bf65a021042c6d380/logo.png"
-    -
-        name: "OKB"
-        address: "0x75231f58b43240c9718dd58b4967c5114342a86c"
-        symbol: "OKB"
-        decimals: 18
-        chainId: 1
-        logoURI: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x75231F58b43240C9718Dd58B4967c5114342a86c/logo.png"
-
 
 # message topics
 topics:

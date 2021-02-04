@@ -13,7 +13,6 @@ public class ETHConfigurationProperties {
     private List<String> ropstenNodes;
     private String mainnetWss;
     private String ropstenWss;
-    private List<Token> extenialTokens;
     
     public ETHConfigurationProperties() {
         
@@ -58,14 +57,6 @@ public class ETHConfigurationProperties {
 	public void setRopstenWss(String ropstenWss) {
 		this.ropstenWss = ropstenWss;
 	}
-
-    public List<Token> getExtenialTokens() {
-        return extenialTokens;
-    }
-
-    public void setExtenialTokens(List<Token> extenialTokens) {
-        this.extenialTokens = extenialTokens;
-    }
 
     
 }
