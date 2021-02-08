@@ -4,22 +4,15 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.app.repositories.IETHBlockRepository;
-import com.microee.ethdix.app.repositories.IETHReceiptRepository;
 import com.microee.ethdix.oem.eth.EthRawBlock;
-import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.enums.ChainId;
-import com.microee.plugin.thread.ThreadPoolFactoryLow;
 
 @Service
 public class ETHBlockService {
-
-    private static ThreadPoolFactoryLow threadPool = ThreadPoolFactoryLow.create("ethblock-查询区块交易回执线程池", "ASYN-TXRECEIPTS-POOL");
 
     // db.eth_blocks.createIndex( { _id: -1 }, { background: true } )
     public static final String COLLECTION_BLOCKS = "blocks";
@@ -27,9 +20,6 @@ public class ETHBlockService {
     @Autowired
     private IETHBlockRepository ethBlockRepository;
     
-    @Autowired
-    private IETHReceiptRepository ethReceiptRepository;
-
     @Autowired
     private ETHReceiptService txReceiptService;
 
@@ -51,7 +41,7 @@ public class ETHBlockService {
             EthRawBlock cachedResult = ethBlockRepository.queryBlockById(chainId, blockNumber); 
             if (cachedResult != null) {
                 cachedResult.setTransactions(ethTransService.getTransactionsByBlockNumber(ethnode, chainId, blockNumber));
-                lazyTransactionReceipt(cachedResult, ethnode, chainId, blockNumber);
+                txReceiptService.lazyTransactionReceipt(cachedResult, ethnode, chainId, blockNumber);
                 return cachedResult;
             }
         }
@@ -60,26 +50,11 @@ public class ETHBlockService {
         if (fanoutResult != null) {
             ethBlockRepository.saveBlock(chainId, blockNumber, fanoutResult);
             ethTransService.saveTransactions(chainId, blockNumber, fanoutResult.getTransactions());
-            lazyTransactionReceipt(fanoutResult, ethnode, chainId, blockNumber);
+            txReceiptService.lazyTransactionReceipt(fanoutResult, ethnode, chainId, blockNumber);
         }
         return fanoutResult;
     }
     
-    // 懒加载交易回执
-    public void lazyTransactionReceipt(@NotNull EthRawBlock block, String ethnode, ChainId chainId, Long blockNumber) {
-        List<EthRawTransaction> trans = block.getTransactions();
-        if (trans != null && trans.size() > 0) {
-            List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
-            List<String> transHashList = ethReceiptRepository.notStoredReceipts(currentTransHashList); 
-            if (transHashList.size() > 0) {
-                threadPool.submit(() -> {
-                    for (int i = 0; i < transHashList.size(); i++) {
-                        txReceiptService.getTransactionReceipt(ethnode, chainId, blockNumber, transHashList.get(i));
-                    }
-                });
-            }
-        }
-    }
 
     // 根据区块哈希取得区块编号
     public EthRawBlock ethGetBlockByHash(String ethnode, ChainId chainId, String blockHash) {

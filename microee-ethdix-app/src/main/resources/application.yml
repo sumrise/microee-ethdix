@@ -1,14 +1,41 @@
+### 服务器配置
 server:
   port: 19113
   tomcat:
     basedir: ${java.io.tmpdir}/@project.name@_${server.port}
-    
+
+### 应用程序配置
 spring:
   profiles:
     active: local
   application:
     name: microee-ethdix-app
 
+### 线程池配置
+thread-pool-conf:
+  eth-mainnet:
+      title: 以太坊主网WEBSOCKET线程池
+      threadName: ASYN-ETH-WEBSOCKET-LISTENER-POOL-MANINET
+      corePoolSize: 4
+      maximumPoolSize: 28
+      keepAliveTime: 1000
+      queueSize: 10000
+  eth-ropsten:
+      title: 以太坊测试网WEBSOCKET线程池
+      threadName: ASYN-ETH-WEBSOCKET-LISTENER-POOL-ROPSTEN
+      corePoolSize: 4
+      maximumPoolSize: 28
+      keepAliveTime: 1000
+      queueSize: 10000
+  heco-mainnet:
+      title: HECO测试网WEBSOCKET线程池
+      threadName: ASYN-ETH-WEBSOCKET-LISTENER-POOL-HECO
+      corePoolSize: 4
+      maximumPoolSize: 28
+      keepAliveTime: 1000
+      queueSize: 10000
+
+### 网络节点配置
 eth:
   mainnet-wss: 
     wss://mainnet.infura.io/ws/v3/fedf665469c044ffa50606459bfd8c54

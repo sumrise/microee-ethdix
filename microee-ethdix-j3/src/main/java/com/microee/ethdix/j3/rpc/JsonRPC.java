@@ -36,6 +36,7 @@ import com.microee.plugin.http.assets.HttpClient;
 import com.microee.plugin.http.assets.HttpClientResult;
 import com.microee.plugin.response.R;
 import com.microee.plugin.response.exception.RestException;
+import com.microee.plugin.thread.ThreadPoolConfig;
 import okhttp3.Headers;
 
 /**
@@ -55,16 +56,20 @@ public class JsonRPC {
     private Headers authHeaders;
 
     public static JsonRPC create(NetworkConfig networkConfig) {
-        return new JsonRPC(networkConfig);
+        return new JsonRPC(networkConfig, null);
     }
 
-    public JsonRPC(NetworkConfig networkConfig) {
+    public static JsonRPC create(NetworkConfig networkConfig, ThreadPoolConfig webSocketThreadPoolConfig) {
+        return new JsonRPC(networkConfig, webSocketThreadPoolConfig);
+    }
+
+    private JsonRPC(NetworkConfig networkConfig, ThreadPoolConfig webSocketThreadPoolConfig) {
         this.chainId = networkConfig.getChainId();
         this.ethnodes = networkConfig.getETHNodes();
         this.primaryNode = null;
         this.wss = networkConfig.getWss();
         this.httpClient = HttpClient.create();
-        this.webSocketFactory = ETHWebSocketFactory.build(networkConfig); 
+        this.webSocketFactory = ETHWebSocketFactory.build(networkConfig, webSocketThreadPoolConfig); 
     }
     
     public JsonRPC(ChainId chainId, String ethnode) {

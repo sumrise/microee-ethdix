@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import com.microee.ethdix.app.listeners.ETHBlockListener;
 import com.microee.ethdix.app.listeners.JsonRpcHttpClientListener;
 import com.microee.ethdix.app.props.ETHConfigurationProperties;
+import com.microee.ethdix.app.props.ThreadPoolConf;
 import com.microee.ethdix.j3.rpc.JsonRPC;
 import com.microee.ethdix.j3.rpc.JsonRPC.NetworkConfig;
 import com.microee.ethdix.oem.eth.enums.ChainId;
@@ -28,20 +29,23 @@ public class EthdixAppConfig implements ApplicationListener<ApplicationEvent> {
     @Autowired
     private JsonRpcHttpClientListener jsonRpcHttpListener;
     
+    @Autowired
+    private ThreadPoolConf threadPoolConf;
+    
     @Bean(name="jsonRPCClientMainnet")
     public JsonRPC jsonRPCClientMainnet() {
-        return JsonRPC.create(getJsonRpcConfig(ChainId.MAINNET)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();
+        return JsonRPC.create(getJsonRpcConfig(ChainId.MAINNET), threadPoolConf.getEthMainnet()).setHttpClientLoggerListener(jsonRpcHttpListener).connect();
     } 
     
     @Bean(name="jsonRPCClientRopsten")
     public JsonRPC jsonRPCClientRopsten() {
-        return JsonRPC.create(getJsonRpcConfig(ChainId.ROPSTEN)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();   
+        return JsonRPC.create(getJsonRpcConfig(ChainId.ROPSTEN), threadPoolConf.getEthRopsten()).setHttpClientLoggerListener(jsonRpcHttpListener).connect();   
     } 
 
     
     @Bean(name="jsonRPCClientHecoMainnet")
     public JsonRPC jsonRPCClientHecoMainnet() {
-        return JsonRPC.create(getJsonRpcConfig(ChainId.HECO)).setHttpClientLoggerListener(jsonRpcHttpListener).connect();
+        return JsonRPC.create(getJsonRpcConfig(ChainId.HECO), threadPoolConf.getHecoMainnet()).setHttpClientLoggerListener(jsonRpcHttpListener).connect();
     } 
     
     @Override

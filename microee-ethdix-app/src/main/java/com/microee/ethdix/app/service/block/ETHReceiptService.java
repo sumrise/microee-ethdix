@@ -2,6 +2,8 @@ package com.microee.ethdix.app.service.block;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,14 +11,19 @@ import org.springframework.stereotype.Service;
 import com.microee.ethdix.app.components.Web3JFactory;
 import com.microee.ethdix.app.repositories.IETHReceiptRepository;
 import com.microee.ethdix.j3.Constrants;
+import com.microee.ethdix.oem.eth.EthRawBlock;
+import com.microee.ethdix.oem.eth.EthRawTransaction;
 import com.microee.ethdix.oem.eth.EthTransactionReceipt;
 import com.microee.ethdix.oem.eth.enums.ChainId;
+import com.microee.plugin.thread.ThreadPoolFactoryLow;
 
 @Service
 public class ETHReceiptService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ETHReceiptService.class);
 
+    private static ThreadPoolFactoryLow threadPool = ThreadPoolFactoryLow.create("ethblock-查询区块交易回执线程池", "ASYN-TXRECEIPTS-POOL");
+    
     @Autowired
     private Web3JFactory web3JFactory;
 
@@ -47,6 +54,22 @@ public class ETHReceiptService {
         return null;
     }
 
+    // 懒加载交易回执
+    public void lazyTransactionReceipt(@NotNull EthRawBlock block, String ethnode, ChainId chainId, Long blockNumber) {
+        List<EthRawTransaction> trans = block.getTransactions();
+        if (trans != null && trans.size() > 0) {
+            List<String> currentTransHashList = trans.stream().map(m -> m.getHash()).collect(Collectors.toList());
+            List<String> transHashList = ethReceiptRepository.notStoredReceipts(currentTransHashList); 
+            if (transHashList.size() > 0) {
+                threadPool.submit(() -> {
+                    for (int i = 0; i < transHashList.size(); i++) {
+                        this.getTransactionReceipt(ethnode, chainId, blockNumber, transHashList.get(i));
+                    }
+                });
+            }
+        }
+    }
+    
     public void decodeLogByTopic(EthTransactionReceipt transReceipt) {
         String transHash = transReceipt.getTransactionHash();
         List<EthTransactionReceipt.ReceiptLog> receiptReceiptLogs = transReceipt.getLogs(); // 取得交易日志
