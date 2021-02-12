@@ -24,8 +24,7 @@ public class ETHBlockCompositeRepository implements IETHBlockRepository {
 
     @Override
     public EthRawBlock queryBlockById(ChainId chainId, @NotNull Long blockNumber) {
-        final String blockCollectionName =
-                ethBlockShard.getCollection(chainId, MONGODB_COLLECTION_BLOCKS, blockNumber);
+        final String blockCollectionName = ethBlockShard.getCollection(chainId, MONGODB_COLLECTION_BLOCKS, blockNumber);
         if (blockCollectionName == null) {
             return null;
         }
