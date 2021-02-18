@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import com.microee.stacks.kafka.config.KafkaEnabled;
 import com.microee.stacks.redis.config.RedisEnabled;
 import com.microee.stacks.starter.MainApp;
+import com.microee.stacks.starter.puppy.EnablePuppy;
 import com.microee.stacks.ws.config.WebSocketEnabled;
 
 @EnableDiscoveryClient
@@ -18,6 +19,7 @@ import com.microee.stacks.ws.config.WebSocketEnabled;
 @RedisEnabled()
 @KafkaEnabled()
 @WebSocketEnabled()
+@EnablePuppy
 public class App extends MainApp {
     public static void main(String[] args) {
         startup(App.class, args);
