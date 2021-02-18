@@ -45,7 +45,8 @@ public class EthdixAppConfig implements ApplicationListener<ApplicationEvent> {
     
     @Bean(name="jsonRPCClientHecoMainnet")
     public JsonRPC jsonRPCClientHecoMainnet() {
-        return JsonRPC.create(getJsonRpcConfig(ChainId.HECO), threadPoolConf.getHecoMainnet()).setHttpClientLoggerListener(jsonRpcHttpListener).connect();
+        // return JsonRPC.create(getJsonRpcConfig(ChainId.HECO), threadPoolConf.getHecoMainnet()).setHttpClientLoggerListener(jsonRpcHttpListener).connect();
+        return null;
     } 
     
     @Override

@@ -31,7 +31,7 @@ public class Web3JFactory {
     @Qualifier("jsonRPCClientRopsten")
     private JsonRPC jsonRPCClientRopsten;
 
-    @Autowired
+    @Autowired(required=false)
     @Qualifier("jsonRPCClientHecoMainnet")
     private JsonRPC jsonRPCClientHecoMainnet;
 

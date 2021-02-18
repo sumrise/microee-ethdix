@@ -36,8 +36,7 @@ public class ETHBlockCompositeRepository implements IETHBlockRepository {
 
     @Override
     public Boolean saveBlock(ChainId chainId, Long blockNumber, EthRawBlock block) { 
-        final String blockCollectionName =
-                ethBlockShard.getCollection(chainId, MONGODB_COLLECTION_BLOCKS, blockNumber);
+        final String blockCollectionName = ethBlockShard.getCollection(chainId, MONGODB_COLLECTION_BLOCKS, blockNumber);
         if (blockCollectionName == null) {
             throw new RuntimeException("未能取得分表名字");
         }
