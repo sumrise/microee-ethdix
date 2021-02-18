@@ -57,10 +57,10 @@ eth:
     - https://ropsten.infura.io/v3/031e253140e6401794fc3db9048e9e77
   heco-wss-mainnet: 
     #wss://ws-mainnet-node.hecochain.com
-    wss://ws-mainnet-node.huobichain.com
+    wss://127.0.0.1
   heco-nodes-mainnet:
     #- https://http-mainnet-node.hecochain.com
-    - https://http-mainnet-node.huobichain.com
+    - https://127.0.0.1
 
 ## message topics
 topics:
